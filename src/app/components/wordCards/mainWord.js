@@ -7,6 +7,11 @@ import { WordContext } from '../../(routes)/words/page.js';
 
 const MainWord = ({word, tr}) => {
     const wordData = useContext(WordContext);
+    
+    // קביעת גודל הטקסט בהתאם לאורך המילה
+    const textSizeClass = word.length > 8 
+        ? "lg:text-7xl text-5xl" 
+        : "lg:text-7xl text-6xl";
 
     return(
         <div className="flex items-center gap-2">
@@ -14,7 +19,7 @@ const MainWord = ({word, tr}) => {
                 <PartOfSpeech ps={wordData.ps}/>
             </div>
             <Tooltip content={tr}>
-                <h2 className="text-7xl font-medium">{word}</h2>
+                <h2 className={`${textSizeClass} font-medium`}>{word}</h2>
             </Tooltip>                         
             <AudioButton text={word}/>
         </div>

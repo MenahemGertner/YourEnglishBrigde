@@ -6,7 +6,11 @@ import MainCard from "../../components/wordCards/cards.js";
 import ExtractInfo from "../../components/wordCards/additionalInfo.js";
 import NextAndPrevious from "../../components/wordCards/nextAndPrevious.js";
 import GlobeLoader from '../../../app/components/common/Loading.js';
-// import Lights from '../../../app/components/pro/lights.js';
+import StatusIcons from '../../components/difficultyRating/statusIcons.js';
+import ProContent from '../../components/auth/ProContent';
+import GuestContent from '../../components/auth/GuestContent';
+
+
 
 export const WordContext = createContext(null);
 
@@ -34,13 +38,17 @@ const { data, error, isLoading } = useSWR(
 
   return (
     <WordContext.Provider value={data}>
-      <div  className="min-h-screen flex items-center justify-center flex-col">
+      <div  className="min-h-screen flex items-center justify-center flex-col py-8">
         <MainCard />
         <div className="mb-4 mt-8">
           <ExtractInfo/>
         </div>
-        <NextAndPrevious/>
-        {/* <Lights/> */}
+        <ProContent>
+        <StatusIcons/>
+        </ProContent>
+        <GuestContent>
+        <NextAndPrevious/> 
+        </GuestContent>       
       </div>
     </WordContext.Provider>
   );

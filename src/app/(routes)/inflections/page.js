@@ -37,6 +37,12 @@ export default function InflectionsPage() {
                 ))}
             </div>
             <p className='mt-6 text-sm'>* חשוב לציין, שרשימה זו היא רשימה נבחרת של הטיות. אך ישנם הטיות נוספות, או מונחים מקובלים שונים להגדרת אותם ההטיות!</p>
+            <div className=' mt-6 text-center'>
+            <Link
+            href={"/partOfSpeech"}
+            className='text-xl font-bold text-blue-900 hover:text-blue-700'
+            >לחלקי דיבור נוספים</Link>
+            </div>
         </div>
     )
 }
