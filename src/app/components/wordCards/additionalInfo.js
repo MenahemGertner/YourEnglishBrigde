@@ -81,21 +81,23 @@ const ExtractInfo = () => {
                     <div className="flex items-center gap-4">
                       <Tooltip content={<div>
                         <div className='flex items-center gap-2'>
+                        <span className="mx-2">{item.translateInflection}</span>
+                        <Link href={`/explainInflection?type=${partOfSpeechAdjastment[item.inflec]?.type || 'other'}&inflection=${item.inflection}`} className="hover:text-gray-700">
+                            ({item.inflection})                           
+                          </Link>
                           <PartOfSpeech 
                             ps={item.inflec} 
                             variant="compact" 
-                          />
-                          <Link href={`/explainInflection?type=${partOfSpeechAdjastment[item.inflec]?.type || 'other'}&inflection=${item.inflection}`} className="hover:text-gray-700">
-                            ({item.inflection})                           
-                          </Link>
-                          <span className="mx-2">{item.translateInflection}</span>
+                          /> 
                         </div>
                       </div>}>
                         <span>{item.word}</span>
                       </Tooltip>
                       <Tooltip content={<div>
-                        <AudioButton text={item.sentence}/>                   
-                        <span className="font-bold">{underLine(item.sentence, [item.word ])}</span><br/>
+                                          
+                        <span className="font-bold mb-8">{underLine(item.sentence, [item.word ])}</span>
+                        <AudioButton text={item.sentence}/> <br/>
+
                         {item.translateSentence}
                       </div>}>
                         <MessageCircleMore/>

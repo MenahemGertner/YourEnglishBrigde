@@ -1,5 +1,5 @@
 'use client';
-// import MongodbData from './components/common/mongodbData';
+// import DebugSession from './components/DebugSession';
 
 export default function Home() {
   return (
@@ -7,6 +7,6 @@ export default function Home() {
       <h1 className="mb-16 text-8xl ">Your English Bridge</h1> 
        <h2 className="mb-16 text-6xl">לשבור את מחסום השפה!</h2>
       
-      {/* <MongodbData /> */}
+      {/* <DebugSession/> */}
     </div>    
   )}

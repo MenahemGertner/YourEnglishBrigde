@@ -2,7 +2,10 @@ import localFont from "next/font/local"
 import "./globals.css"
 import Navbar from "./components/layout/navbar"
 import Footer from "./components/layout/footer"
-import Providers from "../app/providers/Providers"
+import Providers from "./providers/Providers"
+import AuthProvider from "./providers/SessionProvider"
+// import LoginButton from './components/auth/LoginButton'
+import { ColorProvider } from './components/difficultyRating/colorContext';
 
 const geistSans = localFont({
   src: "./styles/fonts/GeistVF.woff",
@@ -24,18 +27,24 @@ export const metadata = {
   description: "אנגלית לכל אחד"
 }
 
+
 export default function RootLayout({ children }) {
   return (
     <html lang="he" dir="rtl">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased page-container`}>
-        <Providers>
-          <Navbar />
-          <div className="content-wrapper">
-            <main>{children}</main>
-          </div>
-          <Footer />
-        </Providers>
+        <AuthProvider>
+          <Providers>
+            <ColorProvider>
+            {/* <LoginButton/> */}
+            <Navbar />
+            <div className="content-wrapper">
+              <main>{children}</main>
+            </div>
+            <Footer />
+            </ColorProvider>
+          </Providers>
+        </AuthProvider>
       </body>
     </html>
-  );
+  )
 }

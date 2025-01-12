@@ -51,7 +51,8 @@ export default function UsefulWordsDropdown({ onLinkClick }) {
               { href: "/usefulWords?category=1000", label: "רמה 2" },
               { href: "/usefulWords?category=1500", label: "רמה 3" },
               { href: "/usefulWords?category=2000", label: "רמה 4" },
-              { href: "/usefulWords?category=2500", label: "רמה 5" }
+              { href: "/usefulWords?category=2500", label: "רמה 5" },
+              { href: "/checkYourLevel", label: "מה הרמה שלי?" }
             ].map((item, index, array) => (
               <div key={item.href}>
                 <Link

@@ -6,7 +6,6 @@ export default function Tooltip({ content, children }) {
   const [open, setOpen] = React.useState(false)
   const tooltipRef = React.useRef(null)
 
-  // מטפל באירועי קליק מחוץ לטולטיפ
   React.useEffect(() => {
     const handleClickOutside = (event) => {
       if (tooltipRef.current && !tooltipRef.current.contains(event.target)) {
@@ -34,7 +33,7 @@ export default function Tooltip({ content, children }) {
         <TooltipPrimitive.Portal>
           <TooltipPrimitive.Content
             ref={tooltipRef}
-            className="bg-white text-sm text-black p-3 rounded shadow-lg text-center whitespace-pre-line z-[9999] border border-black"
+            className="bg-white text-sm text-black p-3 rounded shadow-lg text-right whitespace-pre-line z-[9999] border border-black"
             onPointerDownOutside={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -45,7 +44,7 @@ export default function Tooltip({ content, children }) {
               e.stopPropagation()
             }}
             sideOffset={5}
-            dir="ltr"
+            dir="rtl"
             style={{ maxWidth: '90vw' }}
           >
             <div 
@@ -57,6 +56,7 @@ export default function Tooltip({ content, children }) {
                 e.preventDefault()
                 e.stopPropagation()
               }}
+              className="text-right"
             >
               {content}
             </div>

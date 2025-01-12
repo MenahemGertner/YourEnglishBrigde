@@ -1,41 +1,52 @@
 import { connectToDatabase } from '../../../app/utils/mongodb';
+import { createClient } from '@supabase/supabase-js';
+import { getServerSession } from "next-auth/next";
 import { NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
 export async function GET(request) {
-   try {
-     const { searchParams } = new URL(request.url);
-     const index = searchParams.get('index');
+  try {
+    const session = await getServerSession();
+    const { searchParams } = new URL(request.url);
+    const index = searchParams.get('index');
+    
+    // קבל את המילה ממונגו
+    const { db } = await connectToDatabase();
+    const categories = ['500', '1000', '1500', '2000', '2500'];
+    
+    let wordData = null;
+    for (const category of categories) {
+      const collection = db.collection(category);
+      wordData = await collection.findOne({ index: parseInt(index) });
+      if (wordData) break;
+    }
 
-     console.log('Received ID:', index);
+    if (!wordData) {
+      return NextResponse.json({ error: 'Word not found' }, { status: 404 });
+    }
 
-     if (!index) {
-       return NextResponse.json(
-         { error: 'No ID provided' },
-         { status: 400 }
-       );
-     }
+    // אם המשתמש מחובר, הוסף את נתוני הלמידה שלו
+    if (session?.user) {
+      const { data: userWord } = await supabase
+        .from('user_words')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('word_id', parseInt(index))
+        .single();
 
-     const { db } = await connectToDatabase();
-     const categories = ['500', '1000', '1500'];
-
-     let wordData = null;
-     for (const category of categories) {
-       const collection = db.collection(category);
-       wordData = await collection.findOne({ index: parseInt(index) });
-
-       console.log(`Searching in ${category} collection:`, wordData);
-
-       if (wordData) break;
-     }
-
-     if (!wordData) {
-       console.log('Word not found in any category');
-       return NextResponse.json(
-         { error: 'Word not found' },
-         { status: 404 }
-       );
-     }
+      if (userWord) {
+        wordData.learningStatus = {
+          level: userWord.level,
+          lastSeen: userWord.last_seen,
+          nextReview: userWord.next_review
+        };
+      }
+    }
 
      // Populate synonyms
      if (wordData.syn && wordData.syn.length > 0) {
@@ -86,11 +97,11 @@ export async function GET(request) {
      }
 
      return NextResponse.json(wordData);
-   } catch (error) {
-     console.error('Full error details:', error);
-     return NextResponse.json(
-       { error: 'Failed to connect to database', details: error.message },
-       { status: 500 }
-     );
-   }
-}
+    } catch (error) {
+      console.error('Error:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch word data', details: error.message },
+        { status: 500 }
+      );
+    }
+  }
