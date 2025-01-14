@@ -1,3 +1,4 @@
+// api/nextAndPrevious/route.js
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '../../utils/mongodb';
 import { getServerSession } from "next-auth/next";
@@ -9,14 +10,30 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+function calculateNextReview(level, currentIndex) {
+  currentIndex = parseInt(currentIndex);
+  
+  if (level === 1) return null;
+  if (isNaN(currentIndex)) return null;
+  
+  const intervals = {
+    2: 10,
+    3: 5,
+    4: 3
+  };
+  
+  const interval = intervals[level];
+  if (!interval) return null;
+  
+  return currentIndex + interval;
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const rawIndex = searchParams.get('index');
     const category = searchParams.get('category') || '500';
     const direction = searchParams.get('direction');
-
-    console.log('API Request params:', { rawIndex, category, direction });
 
     if (!rawIndex || !category || !direction) {
       return NextResponse.json(
@@ -34,104 +51,79 @@ export async function GET(request) {
     }
 
     const session = await getServerSession(authOptions);
-    console.log('Session user ID:', session?.user?.id);
 
-    if (session?.user?.id && direction === 'next') {
-      try {
-        // קודם כל נבדוק אם יש מילים לחזרה
-        const { data: reviewWords, error: reviewError } = await supabase
+    // Only check for review words when going forward
+    if (session?.user?.email && direction === 'next') {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', session.user.email)
+        .single();
+
+      if (userData) {
+        // Get all review words and find the first one that's due
+        const { data: reviewWords } = await supabase
           .from('user_words')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', userData.id)
           .gt('level', 1)
-          .lte('next_review', index)
           .order('next_review', { ascending: true });
 
-        console.log('Review words found:', reviewWords);
+        // Find the first word that's due for review based on the exact intervals
+        const dueReviewWord = reviewWords?.find(word => 
+          word.next_review !== null && 
+          word.next_review <= index
+        );
 
-        if (reviewError) {
-          console.error('Review words error:', reviewError);
-          throw reviewError;
-        }
-
-        if (reviewWords && reviewWords.length > 0) {
+        if (dueReviewWord) {
           const { db } = await connectToDatabase();
           const collection = db.collection(category);
           
-          // קח את המילה הראשונה מרשימת החזרות
           const reviewWordData = await collection.findOne({ 
-            index: reviewWords[0].word_id 
+            index: dueReviewWord.word_id 
           });
-          
-          console.log('Found review word data:', reviewWordData);
 
           if (reviewWordData) {
-            const intervals = { 2: 10, 3: 5, 4: 3 };
-            const nextReview = index + (intervals[reviewWords[0].level] || 0);
+            // Calculate next review time based on the current level
+            const nextReview = calculateNextReview(dueReviewWord.level, index);
             
-            // עדכן את זמן החזרה הבא
+            // Update the review time in database
             await supabase
               .from('user_words')
               .update({
                 next_review: nextReview,
                 last_seen: new Date().toISOString()
               })
-              .eq('user_id', session.user.id)
-              .eq('word_id', reviewWords[0].word_id);
+              .eq('user_id', userData.id)
+              .eq('word_id', dueReviewWord.word_id);
 
-            return NextResponse.json(reviewWordData);
+            return NextResponse.json({
+              ...reviewWordData,
+              isReviewWord: true,
+              reviewLevel: dueReviewWord.level
+            });
           }
         }
-      } catch (reviewError) {
-        console.error('Review process error:', reviewError);
       }
     }
 
-    // אם אין מילים לחזרה, או יש שגיאה, נסה להביא את המילה הרגילה הבאה
+    // If no review word is due, get next/previous regular word
     const { db } = await connectToDatabase();
     const collection = db.collection(category);
     
-    const query = direction === 'next' ? { index: { $gt: index } } : { index: { $lt: index } };
+    const query = direction === 'next' ? 
+      { index: { $gt: index } } : 
+      { index: { $lt: index } };
     const sort = direction === 'next' ? { index: 1 } : { index: -1 };
+    
     const nextWord = await collection.findOne(query, { sort });
-
-    console.log('Regular next word:', nextWord);
-
-    if (!nextWord && session?.user?.id) {
-      // אם אין מילה רגילה הבאה, נבדוק שוב אם יש מילים לחזרה (כולל אלו שעוד לא הגיע זמנן)
-      const { data: allReviewWords } = await supabase
-        .from('user_words')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .gt('level', 1)
-        .order('next_review', { ascending: true });
-
-      console.log('All review words when no next word:', allReviewWords);
-
-      if (allReviewWords && allReviewWords.length > 0) {
-        const reviewWordData = await collection.findOne({ 
-          index: allReviewWords[0].word_id 
-        });
-
-        if (reviewWordData) {
-          const intervals = { 2: 10, 3: 5, 4: 3 };
-          const nextReview = index + (intervals[allReviewWords[0].level] || 0);
-          
-          await supabase
-            .from('user_words')
-            .update({
-              next_review: nextReview,
-              last_seen: new Date().toISOString()
-            })
-            .eq('user_id', session.user.id)
-            .eq('word_id', allReviewWords[0].word_id);
-
-          return NextResponse.json(reviewWordData);
-        }
-      }
-    }
     
     if (!nextWord) {
+      if (direction === 'next') {
+        // If no next word, start from beginning
+        const firstWord = await collection.findOne({}, { sort: { index: 1 } });
+        return NextResponse.json(firstWord || { error: 'No words found' });
+      }
       return NextResponse.json({ error: 'No word found' }, { status: 404 });
     }
     

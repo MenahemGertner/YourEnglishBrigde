@@ -1,22 +1,17 @@
 'use client'
 import { CircleDot, Info } from 'lucide-react';
 import Tooltip from '../common/Tooltip';
-import { useContext, useState, useEffect } from 'react';
+import { useContext, useState } from 'react';
 import { ColorContext } from './colorContext';
 import { WordContext } from '../../(routes)/words/page';
 import { useSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
-import { mutate } from 'swr';
 import useSWR from 'swr';
 
 const fetcher = async (url) => {
   const response = await fetch(url);
   if (!response.ok) {
-    if (response.status === 404) {
-      return null; // במקום לזרוק שגיאה, נחזיר null
-    }
-    const errorData = await response.json();
-    throw new Error(errorData.error || 'An error occurred');
+    throw new Error(await response.text());
   }
   return response.json();
 };
@@ -25,63 +20,52 @@ const StatusIcons = () => {
   const router = useRouter();
   const { setSelectedColor } = useContext(ColorContext);
   const wordData = useContext(WordContext);
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [reviewSequence, setReviewSequence] = useState([]);
-  const [isInReviewMode, setIsInReviewMode] = useState(false);
 
   const category = wordData?.category || '500';
   const index = wordData?.index;
 
-  // שינוי ב-SWR - עכשיו לא זורק שגיאה ב-404
-  const { data: nextWordData } = useSWR(
+  // Get next word data and review words in parallel
+  const { data: nextWordData, mutate: mutateNextWord } = useSWR(
     index ? `/api/nextAndPrevious?category=${category}&direction=next&index=${index}` : null,
-    fetcher
+    fetcher,
+    { revalidateOnFocus: false }
   );
 
   const { data: reviewWords, mutate: mutateReviewWords } = useSWR(
     session?.user && index ? `/api/userWords/nextReview?currentIndex=${index}` : null,
-    fetcher
+    fetcher,
+    { revalidateOnFocus: false }
   );
-
-  const findNextReviewWord = () => {
-    if (!reviewWords?.length) return null;
-    const currentIndex = reviewWords.findIndex(w => w.word_id === parseInt(index));
-    if (currentIndex === -1) return reviewWords[0];
-    return reviewWords[currentIndex + 1];
-  };
 
   const navigateToNextWord = async () => {
     try {
       setIsLoading(true);
-      
-      if (isInReviewMode) {
-        const nextReviewWord = findNextReviewWord();
-        if (nextReviewWord) {
-          router.push(`/words?index=${nextReviewWord.word_id}&category=${category}`);
-          return;
-        }
-        // אם אין עוד מילים לחזרה, נצא ממצב חזרה
-        setIsInReviewMode(false);
+
+      // Refresh both data sources
+      await Promise.all([
+        mutateNextWord(),
+        session?.user && mutateReviewWords()
+      ]);
+
+      // Check for review words first
+      if (reviewWords?.length > 0) {
+        const nextReviewWord = reviewWords[0];
+        router.push(`/words?index=${nextReviewWord.word_id}&category=${category}`);
+        return;
       }
 
-      // במצב רגיל או אם אין עוד מילים לחזרה
+      // If no review words, use regular next word
       if (nextWordData) {
         router.push(`/words?index=${nextWordData.index}&category=${category}`);
-      } else {
-        // בדוק אם יש מילים חדשות לחזרה
-        await mutateReviewWords();
-        const newReviewWords = await fetcher(`/api/userWords/nextReview?currentIndex=${index}`);
-        
-        if (newReviewWords?.length) {
-          setIsInReviewMode(true);
-          router.push(`/words?index=${newReviewWords[0].word_id}&category=${category}`);
-        } else {
-          // אם אין מילים לחזרה וגם אין מילה רגילה הבאה, חזור להתחלה
-          router.push(`/words?index=1&category=${category}`);
-        }
+        return;
       }
+
+      // If no next word, return to start
+      router.push(`/words?index=1&category=${category}`);
+      
     } catch (error) {
       console.error('Navigation error:', error);
       setError('שגיאה במעבר למילה הבאה');
@@ -103,8 +87,43 @@ const StatusIcons = () => {
 
     setIsLoading(true);
     try {
-      const currentSequencePosition = parseInt(wordData.index);
-      
+      // If setting to level 1, handle deletion first
+      if (level === 1) {
+        const response = await fetch('/api/userWords', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            word_id: wordData.index,
+            level: 1,
+            currentSequencePosition: parseInt(wordData.index)
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to update word level');
+        }
+
+        // Important: Force refresh reviewWords before navigation
+        await mutateReviewWords();
+        
+        // Navigate to next regular word directly
+        const nextResponse = await fetch(
+          `/api/nextAndPrevious?category=${category}&direction=next&index=${wordData.index}`
+        );
+        
+        if (!nextResponse.ok) {
+          throw new Error('Failed to get next word');
+        }
+        
+        const nextWord = await nextResponse.json();
+        setSelectedColor(color);
+        router.push(`/words?index=${nextWord.index}&category=${category}`);
+        return;
+      }
+
+      // For other levels, proceed with regular update
       const response = await fetch('/api/userWords', {
         method: 'POST',
         headers: {
@@ -113,23 +132,23 @@ const StatusIcons = () => {
         body: JSON.stringify({
           word_id: wordData.index,
           level,
-          currentSequencePosition
+          currentSequencePosition: parseInt(wordData.index)
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'שגיאה בעדכון סטטוס המילה');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'שגיאה בעדכון סטטוס המילה');
       }
 
       setSelectedColor(color);
-
-      if (level === 1) {
-        // עדכן את רשימת המילים לחזרה לפני הניווט
-        await mutateReviewWords();
-      }
       
+      // Update data before navigation
+      await Promise.all([
+        mutateNextWord(),
+        mutateReviewWords()
+      ]);
+
       await navigateToNextWord();
 
     } catch (error) {
@@ -146,10 +165,6 @@ const StatusIcons = () => {
     { color: 'orange', level: 3, content: 'המושג הזה,\n לא ברור לי מספיק!' },
     { color: 'red', level: 4, content: 'אני ממש מתקשה \nלקלוט את המושג הזה!' },
   ];
-
-  if (status === "loading") {
-    return <div className="text-right" dir="rtl">טוען...</div>;
-  }
 
   return (
     <div className="flex flex-col gap-2 border-t p-4">

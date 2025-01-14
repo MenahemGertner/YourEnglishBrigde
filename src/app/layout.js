@@ -4,7 +4,7 @@ import Navbar from "./components/layout/navbar"
 import Footer from "./components/layout/footer"
 import Providers from "./providers/Providers"
 import AuthProvider from "./providers/SessionProvider"
-// import LoginButton from './components/auth/LoginButton'
+import StoppingPoint from './components/difficultyRating/stoppingPoint';
 import { ColorProvider } from './components/difficultyRating/colorContext';
 
 const geistSans = localFont({
@@ -35,10 +35,11 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <Providers>
             <ColorProvider>
-            {/* <LoginButton/> */}
+
             <Navbar />
             <div className="content-wrapper">
               <main>{children}</main>
+              <StoppingPoint/>
             </div>
             <Footer />
             </ColorProvider>

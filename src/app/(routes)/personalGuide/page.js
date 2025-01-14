@@ -1,24 +1,8 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown } from 'lucide-react';
-
-const VideoPlayer = () => {
-    return (
-        <div>
-        <video
-          width="100%"
-          height="auto"
-          controls
-          autoPlay
-          muted
-        >
-          <source src="/video/example.mp4" type="video/mp4" />
-          הדפדפן שלך לא תומך בתג וידאו.
-        </video>
-      </div>
-    );
-  };
+import { ChevronDown, Cat } from 'lucide-react';
+import VideoPlayer from '../../components/common/VideoPlayer'
 
 const PersonalGuide = () => {
     const [openIndex, setOpenIndex] = useState(null);
@@ -80,7 +64,8 @@ const PersonalGuide = () => {
                 <h1 className="text-3xl font-bold mb-6 text-gray-800">המדריך האישי</h1>
                 <div className="text-lg text-gray-600 space-y-4 text-right">
                     <p>
-                        הי, אני המדריך האישי! <br/>
+                        <span className='flex gap-2'>
+                        הי, אני המדריך האישי! <Cat/></span>
                         התפקיד שלי הוא לעזור לך להטמיע את כל הלימוד החדש, בקצב שלך ובחווית הצלחה מירבית!<br/>
                         אנחנו לא נבזבז זמן על מה שקל עבורך, נתמקד בחלקים המאתגרים, ונעבוד על כך שהלימוד יהיה יעיל ומהיר.<br/>
                         לא פחות מכך, חשוב לי לשקף לך לאורך כל הדרך את ההתקדמות שלך!<br/>
@@ -89,17 +74,16 @@ const PersonalGuide = () => {
                     </p>
                 </div>
             </div>
-            <VideoPlayer/>
-
-            
-            <div className="mt-12 text-center">
+           
+            <div className="mt-12 text-center mb-8">
                 <Link 
-                    href="/pricingPage"
+                    href="/register"
                     className="inline-block bg-blue-900 text-white px-32 py-5 rounded text-lg font-medium hover:bg-blue-700 transition-colors duration-200"
                 >
                     להרשמה
                 </Link>
             </div>
+            <VideoPlayer src="/video/example.mp4"/>
 
             {/* FAQ Section */}
             <div className="w-full max-w-md mx-auto mt-16">
@@ -139,7 +123,7 @@ const PersonalGuide = () => {
             </div>
             <div className="mt-12 text-center">
                 <Link 
-                    href="/pricingPage"
+                    href="/register"
                     className="inline-block bg-blue-900 text-white px-32 py-5 rounded text-lg font-medium hover:bg-blue-700 transition-colors duration-200"
                 >
                     להרשמה

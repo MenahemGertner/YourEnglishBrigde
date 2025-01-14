@@ -7,7 +7,9 @@ import { WordContext } from '../../(routes)/words/page.js';
 
 const MainWord = ({word, tr}) => {
     const wordData = useContext(WordContext);
-    
+    if (!wordData || !wordData.ps || !word) {
+        return null; // או loading indicator
+    }
     // קביעת גודל הטקסט בהתאם לאורך המילה
     const textSizeClass = word.length > 8 
         ? "lg:text-7xl text-5xl" 

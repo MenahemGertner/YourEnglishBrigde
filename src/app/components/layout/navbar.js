@@ -1,7 +1,7 @@
 'use client'
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Cat } from 'lucide-react'
 import UsefulWordsDropdown from '../wordLists/usefulWordsDropdown.js'
 import LoginButton from '../auth/LoginButton'
 
@@ -96,7 +96,7 @@ export default function Navbar() {
                 className="block text-center py-2 hover:text-blue-900 hover:bg-blue-50 rounded"
                 onClick={toggleMenu}
               >
-                המדריך האישי
+               <span className='flex justify-center gap-2'> המדריך האישי <Cat/></span>
               </Link>
               <div className="py-2">
                 <LoginButton mobile />
