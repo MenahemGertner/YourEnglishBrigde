@@ -4,5 +4,8 @@
 import RegistrationPage from '../../components/auth/RegistrationPage';
 
 export default function RegisterPage() {
-  return <RegistrationPage />;
-}
+  return (<div className='py-16'>
+    <RegistrationPage />
+    </div>)
+  
+};

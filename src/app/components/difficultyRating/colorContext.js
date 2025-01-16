@@ -28,10 +28,10 @@ export const ColorProvider = ({ children }) => {
               console.log('Received level data:', data); // לצורכי דיבוג
               
               const colorMap = {
-                1: '#4CAF50',
-                2: '#FFC107',
-                3: '#FF9800',
-                4: '#F44336'
+                1: 'green',
+                2: 'yellow', 
+                3: 'orange',
+                4: 'red' 
               };
               
               setSelectedColor(data.level ? colorMap[data.level] : null);

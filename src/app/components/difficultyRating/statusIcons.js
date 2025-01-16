@@ -6,15 +6,6 @@ import { ColorContext } from './colorContext';
 import { WordContext } from '../../(routes)/words/page';
 import { useSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
-
-const fetcher = async (url) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(await response.text());
-  }
-  return response.json();
-};
 
 const StatusIcons = () => {
   const router = useRouter();
@@ -23,49 +14,74 @@ const StatusIcons = () => {
   const { data: session } = useSession();
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [lastRegularIndex, setLastRegularIndex] = useState(null);
 
   const category = wordData?.category || '500';
   const index = wordData?.index;
 
-  // Get next word data and review words in parallel
-  const { data: nextWordData, mutate: mutateNextWord } = useSWR(
-    index ? `/api/nextAndPrevious?category=${category}&direction=next&index=${index}` : null,
-    fetcher,
-    { revalidateOnFocus: false }
-  );
-
-  const { data: reviewWords, mutate: mutateReviewWords } = useSWR(
-    session?.user && index ? `/api/userWords/nextReview?currentIndex=${index}` : null,
-    fetcher,
-    { revalidateOnFocus: false }
-  );
-
   const navigateToNextWord = async () => {
     try {
       setIsLoading(true);
-
-      // Refresh both data sources
-      await Promise.all([
-        mutateNextWord(),
-        session?.user && mutateReviewWords()
-      ]);
-
-      // Check for review words first
-      if (reviewWords?.length > 0) {
-        const nextReviewWord = reviewWords[0];
-        router.push(`/words?index=${nextReviewWord.word_id}&category=${category}`);
-        return;
-      }
-
-      // If no review words, use regular next word
-      if (nextWordData) {
-        router.push(`/words?index=${nextWordData.index}&category=${category}`);
-        return;
-      }
-
-      // If no next word, return to start
-      router.push(`/words?index=1&category=${category}`);
+      console.log('Starting navigation process...');
+      console.log('Current index:', index);
+      console.log('Last regular index:', lastRegularIndex);
+  
+      // Check for review words
+      console.log('Checking for review words...');
+      const reviewResponse = await fetch(
+        `/api/userWords/nextReview?currentIndex=${lastRegularIndex || index}`
+      );
       
+      if (!reviewResponse.ok) {
+        console.error('Review response not OK:', await reviewResponse.text());
+        throw new Error('Failed to check review words');
+      }
+      
+      const reviewWords = await reviewResponse.json();
+      console.log('Review words received:', reviewWords);
+  
+      // אם יש מילים לחזרה שאינן המילה הנוכחית
+      if (reviewWords && reviewWords.length > 0 && reviewWords[0].word_id !== parseInt(index)) {
+        console.log('Found review word, navigating to:', reviewWords[0].word_id);
+        if (!lastRegularIndex) {
+          setLastRegularIndex(index);
+        }
+        router.push(`/words?index=${reviewWords[0].word_id}&category=${category}`);
+        return;
+      }
+  
+      // אם אין מילים לחזרה, נחזור למיקום האחרון ברשימה + 1
+      console.log('No review words, returning to sequence...');
+      const nextIndex = lastRegularIndex || index;
+      const nextResponse = await fetch(
+        `/api/nextAndPrevious?category=${category}&direction=next&index=${nextIndex}`
+      );
+      
+      if (!nextResponse.ok) {
+        console.error('Next word response not OK:', await nextResponse.text());
+        throw new Error('Failed to get next word');
+      }
+      
+      const nextWord = await nextResponse.json();
+      console.log('Next word received:', nextWord);
+      
+      // בדיקה אם הגענו לסוף הרשימה
+      if (nextWord.completed) {
+        setError(nextWord.message);
+        setIsLoading(false);
+        return;
+      }
+      
+      if (!nextWord || !nextWord.index) {
+        throw new Error('Invalid next word data received');
+      }
+  
+      // איפוס המיקום האחרון כשחוזרים לרצף הרגיל
+      setLastRegularIndex(null);
+      
+      console.log('Navigating to next word:', nextWord.index);
+      router.push(`/words?index=${nextWord.index}&category=${category}`);
+  
     } catch (error) {
       console.error('Navigation error:', error);
       setError('שגיאה במעבר למילה הבאה');
@@ -79,51 +95,11 @@ const StatusIcons = () => {
       setError('יש להתחבר כדי לשמור את הדירוג');
       return;
     }
-
-    if (!wordData?.index) {
-      setError('לא נמצאו נתונים עבור המילה');
-      return;
-    }
-
+  
     setIsLoading(true);
     try {
-      // If setting to level 1, handle deletion first
-      if (level === 1) {
-        const response = await fetch('/api/userWords', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            word_id: wordData.index,
-            level: 1,
-            currentSequencePosition: parseInt(wordData.index)
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to update word level');
-        }
-
-        // Important: Force refresh reviewWords before navigation
-        await mutateReviewWords();
-        
-        // Navigate to next regular word directly
-        const nextResponse = await fetch(
-          `/api/nextAndPrevious?category=${category}&direction=next&index=${wordData.index}`
-        );
-        
-        if (!nextResponse.ok) {
-          throw new Error('Failed to get next word');
-        }
-        
-        const nextWord = await nextResponse.json();
-        setSelectedColor(color);
-        router.push(`/words?index=${nextWord.index}&category=${category}`);
-        return;
-      }
-
-      // For other levels, proceed with regular update
+      const currentSequencePosition = parseInt(wordData.index);
+  
       const response = await fetch('/api/userWords', {
         method: 'POST',
         headers: {
@@ -132,25 +108,21 @@ const StatusIcons = () => {
         body: JSON.stringify({
           word_id: wordData.index,
           level,
-          currentSequencePosition: parseInt(wordData.index)
+          currentSequencePosition
         }),
       });
-
+  
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'שגיאה בעדכון סטטוס המילה');
+        throw new Error(await response.text());
       }
-
+  
       setSelectedColor(color);
-      
-      // Update data before navigation
-      await Promise.all([
-        mutateNextWord(),
-        mutateReviewWords()
-      ]);
-
-      await navigateToNextWord();
-
+      // איפוס הצבע לפני המעבר למילה הבאה
+      setTimeout(() => {
+        setSelectedColor(null);
+        navigateToNextWord();
+      }, 300);
+  
     } catch (error) {
       console.error('Error in handleClick:', error);
       setError(error.message);

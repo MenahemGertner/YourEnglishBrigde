@@ -80,11 +80,11 @@ export async function POST(request) {
     };
 
     const { error } = await supabaseAdmin
-      .from('user_words')
-      .upsert(insertData, {
-        onConflict: 'user_id,word_id',
-        update: ['level', 'last_seen', 'next_review']  // לא מעדכנים את current_sequence_position
-      });
+  .from('user_words')
+  .upsert(insertData, {
+    onConflict: 'user_id,word_id',
+    update: ['level', 'last_seen', 'next_review', 'current_sequence_position']  // הוספנו current_sequence_position
+  });
 
     if (error) {
       console.error('Upsert error:', error);

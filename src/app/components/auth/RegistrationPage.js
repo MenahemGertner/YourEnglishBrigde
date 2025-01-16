@@ -88,7 +88,7 @@ export default function RegistrationPage() {
       price: '99',
       duration: 'חודש',
       features: ['גישה מלאה למדריך האישי', 'תמיכה מלאה'],
-      isPopular: true,
+      isPopular: false,
       planId: 'monthly'
     },
     {
@@ -96,7 +96,7 @@ export default function RegistrationPage() {
       price: '399',
       duration: '6 חודשים',
       features: ['גישה מלאה למדריך האישי', 'תמיכה VIP', 'הטבות בלעדיות', 'חיסכון של 195 ש״ח'],
-      isPopular: false,
+      isPopular: true,
       planId: 'semi-annual'
     }
   ];
@@ -106,77 +106,83 @@ export default function RegistrationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8 min-h-screen">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <button 
-            onClick={() => router.back()} 
+          <button
+            onClick={() => router.back()}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-8"
           >
             <ArrowRight className="h-5 w-5" />
             <span>חזור</span>
           </button>
-          
-          <h1 className="text-4xl font-bold mb-4">הרשמה לאתר</h1>
-          
+  
+          <h1 className="text-4xl font-bold mb-8">הרשמה לאתר</h1>
+  
           {userName && (
-            <div className="bg-blue-50 p-6 rounded-lg mb-8">
-              <p className="text-lg">
-                <span className="font-bold">שלום {getFirstName(userName)}!</span>
-                <br />
-                אנא בחר תכנית מתאימה להרשמה:
-              </p>
+            <div className="bg-blue-50 rounded-lg mb-8">
+              <div className="px-6 py-4">
+                <p className="text-lg m-0">
+                  <span className="font-bold">שלום {getFirstName(userName)}!</span>
+                  <br />
+                  אנא בחר תכנית מתאימה להרשמה:
+                </p>
+              </div>
             </div>
           )}
-          
+  
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-8 flex items-center justify-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              <span>{error}</span>
+            <div className="bg-red-50 text-red-600 rounded-lg mb-8">
+              <div className="px-6 py-4 flex items-center justify-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                <span>{error}</span>
+              </div>
             </div>
           )}
         </div>
-
-        {/* כרטיסי תמחור */}
+  
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => (
-            <div key={plan.planId} className={`bg-white rounded-lg shadow-lg p-6 ${plan.isPopular ? 'border-2 border-blue-500' : ''} relative`}>
-              {plan.isPopular && (
-                <span className="absolute -top-3 right-4 bg-blue-500 text-white px-4 py-1 rounded-full text-sm">
-                  פופולרי
-                </span>
-              )}
-              
-              <h3 className="text-xl font-bold mb-4 text-right mt-4">{plan.title}</h3>
-              <div className="text-right mb-6">
-                <span className="text-3xl font-bold">₪{plan.price}</span>
-                {plan.duration && <span className="text-gray-500 mr-2">/ {plan.duration}</span>}
+            <div key={plan.planId} className="bg-white rounded-lg shadow-lg relative flex flex-col">
+              <div className="p-6 flex-grow">
+                {plan.isPopular && (
+                  <span className="absolute -top-3 right-4 bg-blue-500 text-white px-4 py-1 rounded-full text-sm">
+                    פופולרי
+                  </span>
+                )}
+  
+                <h3 className="text-xl font-bold mb-4 text-right mt-4">{plan.title}</h3>
+                <div className="text-right mb-6">
+                  <span className="text-3xl font-bold">₪{plan.price}</span>
+                  {plan.duration && <span className="text-gray-500 mr-2">/ {plan.duration}</span>}
+                </div>
+  
+                <ul dir="rtl" className="space-y-3 mb-6 list-none p-0">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
+                      <span className="text-right flex-grow">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              
-              <ul className="space-y-3 mb-6 text-right">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-center justify-end gap-2">
-                    <span>{feature}</span>
-                    <Check className="h-5 w-5 text-green-500" />
-                  </li>
-                ))}
-              </ul>
-              
-              <button 
-                onClick={() => handlePlanSelection(plan.planId)}
-                className={`w-full py-2 px-4 rounded transition-all ${
-                  plan.isPopular 
-                    ? 'bg-blue-500 hover:bg-blue-600 text-white' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                }`}
-              >
-                בחר תכנית זו
-              </button>
+  
+              <div className="p-6 pt-0">
+                <button
+                  onClick={() => handlePlanSelection(plan.planId)}
+                  className={`w-full py-2 px-4 rounded transition-all ${
+                    plan.isPopular
+                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                  }`}
+                >
+                  בחר תכנית זו
+                </button>
+              </div>
             </div>
           ))}
         </div>
-
-        {/* לוודר */}
+  
         {isLoading && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white p-6 rounded-lg">
@@ -186,5 +192,5 @@ export default function RegistrationPage() {
         )}
       </div>
     </div>
-  );
+  )
 }

@@ -28,7 +28,7 @@ export default function ExplainInflection() {
             
             <div className="space-y-8">
                 <section className="bg-white p-6 rounded-lg shadow">
-                    <h2 className="text-xl font-bold mb-4 text-right">הסבר מפורט</h2>
+                    <h2 className="text-xl font-bold mb-4 text-right">הסבר</h2>
                     <p className="text-right">{inflectionDetails.detailedExplanation}</p>
                 </section>
 

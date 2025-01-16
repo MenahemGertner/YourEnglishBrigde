@@ -11,7 +11,12 @@ const fetcher = async (url) => {
     const errorText = await response.text();
     throw new Error(errorText);
   }
-  return response.json();
+  const data = await response.json();
+  // מחזיר null אם הגענו לסוף הרשימה
+  if (data.completed) {
+    return null;
+  }
+  return data;
 };
 
 const NextAndPrevious = () => {
