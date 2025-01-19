@@ -5,7 +5,7 @@ import useSWR from 'swr';
 import MainCard from "../../components/wordCards/cards.js";
 import ExtractInfo from "../../components/wordCards/additionalInfo.js";
 import NextAndPrevious from "../../components/wordCards/nextAndPrevious.js";
-import GlobeLoader from '../../../app/components/common/Loading.js';
+import GlobeLoader from '../../components/common/Loading.js';
 import StatusIcons from '../../components/difficultyRating/statusIcons.js';
 import ProContent from '../../components/auth/ProContent';
 import GuestContent from '../../components/auth/GuestContent';

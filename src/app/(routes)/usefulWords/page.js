@@ -1,5 +1,5 @@
 'use client'
-import UsefulWordsPage from '../../../app/components/wordLists/usefulWordsPage'
+import UsefulWordsPage from '../../components/wordLists/usefulWordsPage'
 const UsefulWords = () => {
     return(        
         <UsefulWordsPage />      

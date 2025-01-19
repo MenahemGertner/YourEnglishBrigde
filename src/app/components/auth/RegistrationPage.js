@@ -38,7 +38,7 @@ export default function RegistrationPage() {
     setError('');
   
     try {
-      const response = await fetch('/api/register', {
+      const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ export default function RegistrationPage() {
       // רק כאן מתבצעת ההתחברות בפועל
       await signIn('google', { 
         redirect: true,
-        callbackUrl: '/checkYourLevel'
+        callbackUrl: '/afterRegistration'
       });
   
     } catch (err) {

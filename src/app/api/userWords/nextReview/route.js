@@ -28,40 +28,33 @@ export async function GET(request) {
 
     // קבל את כל המילים שדורשות חזרה
     const { data: words, error: wordsError } = await supabaseAdmin
-      .from('user_words')
-      .select('*')
-      .eq('user_id', userData.id)
-      .gt('level', 1);
+  .from('user_words')
+  .select('*')
+  .eq('user_id', userData.id);  // אין צורך בסינון level > 1
 
-    if (wordsError) {
-      console.error('Supabase error:', wordsError);
-      return NextResponse.json({ error: wordsError.message }, { status: 500 });
-    }
+// פילטור מילים שמוכנות לחזרה
+const dueWords = words.filter(word => {
+  // וודא שזו לא המילה הנוכחית
+  if (word.word_id === currentIndex) {
+    return false;
+  }
 
-    // פילטור מילים שמוכנות לחזרה
-    const dueWords = words.filter(word => {
-      // וודא שזו לא המילה הנוכחית
-      if (word.word_id === currentIndex) {
-        return false;
-      }
+  // וודא שעבר מספיק זמן מהפעם האחרונה שראינו את המילה
+  const timeSinceLastPosition = currentIndex - word.current_sequence_position;
+  
+  const intervals = {
+    2: 10,
+    3: 5,
+    4: 3
+  };
 
-      // וודא שעבר מספיק זמן מהפעם האחרונה שראינו את המילה
-      const timeSinceLastPosition = currentIndex - word.current_sequence_position;
-      
-      const intervals = {
-        2: 10,
-        3: 5,
-        4: 3
-      };
-
-      // בדוק אם עבר המרווח המינימלי הנדרש לרמה זו
-      const requiredInterval = intervals[word.level] || 0;
-      
-      return (
-        word.next_review <= currentIndex && // הגיע זמן החזרה המתוכנן
-        timeSinceLastPosition >= requiredInterval // עבר מספיק זמן מהפעם האחרונה
-      );
-    });
+  const requiredInterval = intervals[word.level] || 0;
+  
+  return (
+    word.next_review <= currentIndex && 
+    timeSinceLastPosition >= requiredInterval
+  );
+});
 
     // מיין את המילים לפי עדיפות
     dueWords.sort((a, b) => {

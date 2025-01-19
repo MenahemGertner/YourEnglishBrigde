@@ -1,7 +1,7 @@
 'use client'
 import { CircleDot, Info } from 'lucide-react';
 import Tooltip from '../common/Tooltip';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 import { ColorContext } from './colorContext';
 import { WordContext } from '../../(routes)/words/page';
 import { useSession } from "next-auth/react";
@@ -15,6 +15,7 @@ const StatusIcons = () => {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastRegularIndex, setLastRegularIndex] = useState(null);
+  const [isEndOfList, setIsEndOfList] = useState(false);
 
   const category = wordData?.category || '500';
   const index = wordData?.index;
@@ -25,22 +26,40 @@ const StatusIcons = () => {
       console.log('Starting navigation process...');
       console.log('Current index:', index);
       console.log('Last regular index:', lastRegularIndex);
-  
-      // Check for review words
-      console.log('Checking for review words...');
+      console.log('Is end of list:', isEndOfList);
+
+      if (isEndOfList) {
+        // טיפול במילים לחזרה בסוף הרשימה
+        const reviewResponse = await fetch('/api/userWords/endOfListReview');
+        if (!reviewResponse.ok) {
+          throw new Error('Failed to get review words');
+        }
+        
+        const reviewWords = await reviewResponse.json();
+        const remainingWords = reviewWords.filter(word => word.word_id !== parseInt(index));
+
+        if (remainingWords.length > 0) {
+          router.push(`/words?index=${remainingWords[0].word_id}&category=${category}&isEndOfList=true`);
+          return;
+        }
+
+        setError('סיימת ללמוד את כל המילים והחזרות!');
+        return;
+      }
+
+      // בדיקת מילים לחזרה במצב רגיל
       const reviewResponse = await fetch(
         `/api/userWords/nextReview?currentIndex=${lastRegularIndex || index}`
       );
       
       if (!reviewResponse.ok) {
-        console.error('Review response not OK:', await reviewResponse.text());
         throw new Error('Failed to check review words');
       }
       
       const reviewWords = await reviewResponse.json();
       console.log('Review words received:', reviewWords);
-  
-      // אם יש מילים לחזרה שאינן המילה הנוכחית
+
+      // אם יש מילים לחזרה
       if (reviewWords && reviewWords.length > 0 && reviewWords[0].word_id !== parseInt(index)) {
         console.log('Found review word, navigating to:', reviewWords[0].word_id);
         if (!lastRegularIndex) {
@@ -49,8 +68,8 @@ const StatusIcons = () => {
         router.push(`/words?index=${reviewWords[0].word_id}&category=${category}`);
         return;
       }
-  
-      // אם אין מילים לחזרה, נחזור למיקום האחרון ברשימה + 1
+
+      // אם אין מילים לחזרה, ממשיכים ברצף הרגיל מהנקודה האחרונה
       console.log('No review words, returning to sequence...');
       const nextIndex = lastRegularIndex || index;
       const nextResponse = await fetch(
@@ -58,7 +77,6 @@ const StatusIcons = () => {
       );
       
       if (!nextResponse.ok) {
-        console.error('Next word response not OK:', await nextResponse.text());
         throw new Error('Failed to get next word');
       }
       
@@ -67,21 +85,29 @@ const StatusIcons = () => {
       
       // בדיקה אם הגענו לסוף הרשימה
       if (nextWord.completed) {
+        setIsEndOfList(true);
+        
+        // בדיקה אם יש מילים לחזרה
+        const endListReviewResponse = await fetch('/api/userWords/endOfListReview');
+        if (!endListReviewResponse.ok) {
+          throw new Error('Failed to get end of list review words');
+        }
+        
+        const endListReviewWords = await endListReviewResponse.json();
+        if (endListReviewWords && endListReviewWords.length > 0) {
+          router.push(`/words?index=${endListReviewWords[0].word_id}&category=${category}&isEndOfList=true`);
+          return;
+        }
+        
         setError(nextWord.message);
-        setIsLoading(false);
         return;
       }
-      
-      if (!nextWord || !nextWord.index) {
-        throw new Error('Invalid next word data received');
-      }
-  
+
       // איפוס המיקום האחרון כשחוזרים לרצף הרגיל
       setLastRegularIndex(null);
-      
       console.log('Navigating to next word:', nextWord.index);
       router.push(`/words?index=${nextWord.index}&category=${category}`);
-  
+
     } catch (error) {
       console.error('Navigation error:', error);
       setError('שגיאה במעבר למילה הבאה');
@@ -89,6 +115,21 @@ const StatusIcons = () => {
       setIsLoading(false);
     }
   };
+
+  // משחזר את המצב מה-URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const endOfList = params.get('isEndOfList');
+    const lastIndex = params.get('lastRegularIndex');
+    
+    if (endOfList === 'true') {
+      setIsEndOfList(true);
+    }
+    
+    if (lastIndex) {
+      setLastRegularIndex(parseInt(lastIndex));
+    }
+  }, []);
 
   const handleClick = async (color, level) => {
     if (!session?.user?.id) {

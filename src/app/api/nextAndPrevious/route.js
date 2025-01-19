@@ -121,15 +121,60 @@ export async function GET(request) {
     
     const nextWord = await collection.findOne(query, { sort });
     
-    if (!nextWord) {
-      if (direction === 'next') {
-        return NextResponse.json({ 
-          completed: true,
-          message: 'סיימת ללמוד את כל המילים ברשימה!'
+  if (direction === 'next' && !nextWord) {
+  // הגענו לסוף הרשימה הרגילה
+  if (session?.user?.email) {
+    const { data: userData } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', session.user.email)
+      .single();
+
+    if (userData) {
+      // קבל את כל המילים שצריכות חזרה, ממוינות לפי רמת קושי ותאריך אחרון שנראו
+      const { data: remainingReviews } = await supabase
+        .from('user_words')
+        .select('word_id, level, last_seen')
+        .eq('user_id', userData.id)
+        .gt('level', 1)  // רק מילים שצריכות חזרה
+        .order('level', { ascending: false })  // קודם המילים הקשות יותר
+        .order('last_seen', { ascending: true });  // אח"כ המילים שלא ראינו מזמן
+
+      // בודקים אם יש מילים לחזרה
+      if (remainingReviews && remainingReviews.length > 0) {
+        // מביאים את המילה הראשונה מהרשימה הממוינת
+        const reviewWord = await collection.findOne({ 
+          index: remainingReviews[0].word_id 
         });
+        
+        if (reviewWord) {
+          // מעדכנים את זמן הצפייה האחרון
+          await supabase
+            .from('user_words')
+            .update({
+              last_seen: new Date().toISOString()
+            })
+            .eq('user_id', userData.id)
+            .eq('word_id', remainingReviews[0].word_id);
+
+          // מחזירים את המילה עם מידע נוסף
+          return NextResponse.json({
+            ...reviewWord,
+            isReviewWord: true,
+            reviewLevel: remainingReviews[0].level,
+            isEndOfListReview: true
+          });
+        }
       }
-      return NextResponse.json({ error: 'No word found' }, { status: 404 });
     }
+  }
+  
+  // רק אם אין בכלל מילים לחזרה
+  return NextResponse.json({ 
+    completed: true,
+    message: 'סיימת ללמוד את כל המילים והחזרות!'
+  });
+}
     
     return NextResponse.json(nextWord);
 

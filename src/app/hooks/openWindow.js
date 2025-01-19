@@ -1,6 +1,6 @@
 'use client'
 import { useEffect } from 'react';
-import { useWindowContext } from '../../app/providers/WindowContext';
+import { useWindowContext } from '../providers/WindowContext';
 
 const useOpenWindow = (sectionTitle) => {
   const { activeSection, toggleSection } = useWindowContext();

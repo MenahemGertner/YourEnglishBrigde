@@ -1,4 +1,4 @@
-import { connectToDatabase } from '../../../app/utils/mongodb';
+import { connectToDatabase } from '../../utils/mongodb';
 import { createClient } from '@supabase/supabase-js';
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from 'next/server';
