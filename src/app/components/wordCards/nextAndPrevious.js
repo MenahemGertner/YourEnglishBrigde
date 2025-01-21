@@ -28,24 +28,24 @@ const NextAndPrevious = () => {
   const index = currentWord?.index;
 
   const { data: nextWordData } = useSWR(
-    index ? `/api/nextAndPrevious?category=${category}&direction=next&index=${index}` : null,
+    index ? `/api/nextAndPrevious?direction=next&index=${index}` : null,
     fetcher
   );
 
   const { data: prevWordData } = useSWR(
-    index ? `/api/nextAndPrevious?category=${category}&direction=prev&index=${index}` : null,
+    index ? `/api/nextAndPrevious?direction=prev&index=${index}` : null,
     fetcher
   );
 
   const handleNext = () => {
     if (nextWordData) {
-      router.push(`/words?index=${nextWordData.index}&category=${category}`);
+      router.push(`/words?index=${nextWordData.index}&category=${nextWordData.category}`);
     }
   };
-
+  
   const handlePrev = () => {
     if (prevWordData) {
-      router.push(`/words?index=${prevWordData.index}&category=${category}`);
+      router.push(`/words?index=${prevWordData.index}&category=${prevWordData.category}`);
     }
   };
 

@@ -4,10 +4,17 @@ import { getServerSession } from "next-auth/next";
 import { NextResponse } from 'next/server';
 import { authOptions } from '../auth/[...nextauth]/route';
 
-function calculateNextReview(currentPosition, level) {
+function calculateNextReview(currentPosition, level, isEndOfList, existingNextReview) {
   if (level === 1) return null;
+  
   const intervals = { 2: 10, 3: 5, 4: 3 };
-  return currentPosition + (intervals[level] || 0);
+  const interval = intervals[level] || 0;
+  
+  if (isEndOfList) {
+    return existingNextReview + interval;
+  }
+  
+  return currentPosition + interval;
 }
 
 export async function POST(request) {
@@ -22,7 +29,7 @@ export async function POST(request) {
 
     const { data: userData, error: userError } = await supabaseAdmin
       .from('users')
-      .select('id')
+      .select('id, practice_counter')
       .eq('email', session.user.email)
       .single();
 
@@ -31,7 +38,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'משתמש לא נמצא' }, { status: 404 });
     }
 
-    const { word_id, level, currentSequencePosition } = await request.json();
+    const { word_id, level, currentSequencePosition, isEndOfList } = await request.json();
 
     // אם הרמה היא 1, נמחק את הרשומה אם היא קיימת
     if (level === 1) {
@@ -47,28 +54,49 @@ export async function POST(request) {
       return NextResponse.json({ success: true });
     }
 
+    // בדיקה והעדכון של מונה התרגול
+    let shouldRedirectToPractice = false;
+    if (level > 1) {
+      const newCounter = (userData.practice_counter || 0) + level;
+      
+      if (newCounter >= 10) {
+        shouldRedirectToPractice = true;
+        // איפוס המונה
+        await supabaseAdmin
+          .from('users')
+          .update({ practice_counter: 0 })
+          .eq('id', userData.id);
+      } else {
+        // עדכון המונה
+        await supabaseAdmin
+          .from('users')
+          .update({ practice_counter: newCounter })
+          .eq('id', userData.id);
+      }
+    }
+
     // בדוק אם כבר קיימת רשומה למילה זו
-    const { data: existingWord } = await supabaseAdmin
+    const { data: existingWord, error: existingWordError } = await supabaseAdmin
       .from('user_words')
-      .select('current_sequence_position, level')
+      .select('current_sequence_position, level, next_review')
       .eq('user_id', userData.id)
       .eq('word_id', parseInt(word_id))
       .single();
 
-    let finalLevel = level;
-    let position;
-
-    if (existingWord) {
-      // אם לא נשלחה רמה חדשה, השתמש ברמה הקיימת
-      finalLevel = level || existingWord.level;
-      // השתמש במיקום הקיים
-      position = existingWord.current_sequence_position;
-    } else {
-      // מילה חדשה - השתמש במיקום הנוכחי
-      position = currentSequencePosition;
+    if (existingWordError && existingWordError.code !== 'PGRST116') {
+      console.error('Existing word lookup error:', existingWordError);
+      throw existingWordError;
     }
 
-    const nextReview = calculateNextReview(position, finalLevel);
+    let finalLevel = level;
+    let position = existingWord?.current_sequence_position || currentSequencePosition;
+
+    const nextReview = calculateNextReview(
+      position,
+      finalLevel,
+      isEndOfList,
+      existingWord?.next_review || position
+    );
 
     const insertData = {
       user_id: userData.id,
@@ -79,19 +107,24 @@ export async function POST(request) {
       current_sequence_position: position
     };
 
-    const { error } = await supabaseAdmin
-  .from('user_words')
-  .upsert(insertData, {
-    onConflict: 'user_id,word_id',
-    update: ['level', 'last_seen', 'next_review', 'current_sequence_position']  // הוספנו current_sequence_position
-  });
+    const { error: upsertError } = await supabaseAdmin
+      .from('user_words')
+      .upsert(insertData, {
+        onConflict: 'user_id,word_id',
+        update: ['level', 'last_seen', 'next_review', 'current_sequence_position']
+      });
 
-    if (error) {
-      console.error('Upsert error:', error);
-      throw error;
+    if (upsertError) {
+      console.error('Upsert error:', upsertError);
+      throw upsertError;
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      shouldRedirectToPractice,
+      practiceCounter: shouldRedirectToPractice ? 0 : (userData.practice_counter || 0) + (level > 1 ? level : 0)
+    });
+
   } catch (error) {
     console.error('Full error:', error);
     return NextResponse.json(

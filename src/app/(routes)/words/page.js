@@ -9,6 +9,7 @@ import GlobeLoader from '../../components/common/Loading.js';
 import StatusIcons from '../../components/difficultyRating/statusIcons.js';
 import ProContent from '../../components/auth/ProContent';
 import GuestContent from '../../components/auth/GuestContent';
+import ProgressProcess from '../../components/difficultyRating/progressProcess'
 
 
 
@@ -45,6 +46,7 @@ const { data, error, isLoading } = useSWR(
         </div>
         <ProContent>
         <StatusIcons/>
+        {/* <ProgressProcess/> */}
         </ProContent>
         <GuestContent>
         <NextAndPrevious/> 
