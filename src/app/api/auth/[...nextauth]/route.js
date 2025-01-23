@@ -15,7 +15,6 @@ export const authOptions = {
         if (!user.email) return false;
   
         try {
-          // בדוק אם המשתמש קיים
           const { data: existingUser, error: fetchError } = await supabaseAdmin
             .from('users')
             .select()
@@ -27,7 +26,7 @@ export const authOptions = {
             return false;
           }
   
-          // אם המשתמש לא קיים, שלח לדף ההרשמה עם כל הפרטים
+          // אם המשתמש לא קיים, העבר לעמוד הרשמה עם פרטים מוצפנים
           if (!existingUser) {
             return `/register?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}&image=${encodeURIComponent(user.image)}`;
           }

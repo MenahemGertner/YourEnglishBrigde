@@ -18,7 +18,7 @@ const AfterRegistration = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center justify-center p-8">
       <div className="text-center max-w-3xl mx-auto space-y-12">
-        <h2 className="text-2xl font-bold text-blue-900 mb-32 animate-fade-in">
+        <h2 className="text-3xl font-bold text-blue-900 mb-56 animate-fade-in">
           נרשמת בהצלחה!
         </h2>
 

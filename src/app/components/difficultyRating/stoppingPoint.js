@@ -22,6 +22,7 @@ const StoppingPoint = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSequential, setIsSequential] = useState(true);
   const [isReviewWord, setIsReviewWord] = useState(false);
+  const [reviewWord, setReviewWord] = useState(null);
 
   const { data: serverPosition, mutate } = useSWR(
     session?.user ? '/api/userWords/userPosition' : null,
@@ -57,6 +58,7 @@ const StoppingPoint = () => {
           .then(data => {
             setIsSequential(data.isSequential);
             setIsReviewWord(data.isReviewWord);
+            setReviewWord(data.reviewWord);
             return mutate();
           })
           .catch((error) => {
@@ -75,6 +77,16 @@ const StoppingPoint = () => {
   }, [serverPosition]);
 
   const navigationIndex = lastPosition?.learning_sequence_pointer || 1;
+  const currentIndex = parseInt(searchParams.get('index'));
+  const learningPointer = lastPosition?.learning_sequence_pointer;
+
+  const isInSequence = 
+    currentIndex === (learningPointer - 1) ||
+    currentIndex === learningPointer ||
+    (isReviewWord && reviewWord && (
+      parseInt(reviewWord.current_sequence_position) === (learningPointer - 1) ||
+      parseInt(reviewWord.current_sequence_position) === learningPointer
+    ));
 
   const FloatingCat = () => {
     const [showTooltip, setShowTooltip] = useState(false);
@@ -85,19 +97,10 @@ const StoppingPoint = () => {
         setTimeout(() => {
           setShowTooltip(false);
         }, 2000);
-      }, 4000);
+      }, 3000);
 
       return () => clearInterval(tooltipInterval);
     }, []);
-
-    const currentIndex = parseInt(searchParams.get('index'));
-    const learningPointer = lastPosition?.learning_sequence_pointer;
-    
-    // עדכון הלוגיקה של isInSequence
-    const isInSequence = 
-      currentIndex === (learningPointer - 1) ||
-      currentIndex === learningPointer ||
-      isReviewWord; // מילת חזרה תקינה
 
     if (!session || !serverPosition || isInSequence) {
       return null;

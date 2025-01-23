@@ -7,6 +7,7 @@ import { ColorContext } from './colorContext';
 import { WordContext } from '../../(routes)/words/page';
 import IconData from './ColorMap';
 import { useWordNavigation } from '../../hooks/useWordNavigation';
+import NavigationMessage from '../difficultyRating/navigationMessage'
 
 const StatusIcons = () => {
   const { setSelectedColor } = useContext(ColorContext);
@@ -17,6 +18,8 @@ const StatusIcons = () => {
     isLoading,
     handleWordRating,
     navigateToPrevWord,
+    navigationState,
+    handleNextCategory
   } = useWordNavigation({ wordData, setSelectedColor });
 
   return (
@@ -59,6 +62,11 @@ const StatusIcons = () => {
           ))}
         </div>
       </div>
+
+      <NavigationMessage 
+        navigationState={navigationState}
+        onNextCategory={handleNextCategory}
+      />
 
       {error && (
         <div className="text-red-500 text-sm mt-2 text-right">

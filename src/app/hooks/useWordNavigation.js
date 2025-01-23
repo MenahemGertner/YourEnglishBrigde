@@ -3,6 +3,23 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
 
+const getStartingIndexForCategory = (category) => {
+  const indexMap = {
+    '500': 1,
+    '1000': 501,
+    '1500': 1001,
+    '2000': 1501,
+    '2500': 2001
+  };
+  return indexMap[category] || 1;
+};
+
+const getNextCategory = (currentCategory) => {
+  const categories = ['500', '1000', '1500', '2000', '2500'];
+  const currentIndex = categories.indexOf(currentCategory);
+  return currentIndex < categories.length - 1 ? categories[currentIndex + 1] : null;
+};
+
 export function useWordNavigation({ wordData, setSelectedColor }) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -10,6 +27,12 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
   const [isLoading, setIsLoading] = useState(false);
   const [lastRegularIndex, setLastRegularIndex] = useState(null);
   const [isEndOfList, setIsEndOfList] = useState(false);
+  const [navigationState, setNavigationState] = useState({
+    showMessage: false,
+    message: '',
+    status: '',
+    nextCategory: null
+  });
 
   const category = wordData?.category || '500';
   const index = wordData?.index;
@@ -56,7 +79,13 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
           return;
         }
 
-        setError('סיימת ללמוד את כל המילים והחזרות!');
+        const nextCategory = getNextCategory(category);
+        setNavigationState({
+          showMessage: true,
+          message: 'סיימת ללמוד את כל המילים והחזרות ברשימה הנוכחית!',
+          status: nextCategory ? 'LIST_END' : 'COMPLETE',
+          nextCategory
+        });
         return;
       }
 
@@ -104,7 +133,13 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
           return;
         }
         
-        setError(nextWord.message);
+        const nextCategory = getNextCategory(category);
+        setNavigationState({
+          showMessage: true,
+          message: nextWord.message,
+          status: nextCategory ? 'LIST_END' : 'COMPLETE',
+          nextCategory
+        });
         return;
       }
 
@@ -120,6 +155,76 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
     }
   }, [category, index, isEndOfList, lastRegularIndex, router, saveLastRegularIndex]);
 
+  const navigateToPrevWord = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      
+      // אם אנחנו במצב של סוף רשימה, נחזור למילה האחרונה הרגילה
+      if (isEndOfList && lastRegularIndex) {
+        router.push(`/words?index=${lastRegularIndex}&category=${category}`);
+        setIsEndOfList(false);
+        setNavigationState({
+          showMessage: false,
+          message: '',
+          status: '',
+          nextCategory: null
+        });
+        return;
+      }
+
+      // בדיקה אם אנחנו במצב של חזרה וצריך לחזור למילה הקודמת ברצף הרגיל
+      if (lastRegularIndex) {
+        const prevResponse = await fetch(
+          `/api/nextAndPrevious?category=${category}&direction=prev&index=${lastRegularIndex}`
+        );
+        
+        if (!prevResponse.ok) {
+          throw new Error('Failed to get previous word');
+        }
+        
+        const prevWord = await prevResponse.json();
+        
+        if (!prevWord.completed) {
+          setLastRegularIndex(prevWord.index);
+          saveLastRegularIndex(prevWord.index);
+          router.push(`/words?index=${prevWord.index}&category=${category}`);
+          return;
+        }
+      }
+      
+      // ניווט רגיל למילה הקודמת
+      const prevResponse = await fetch(
+        `/api/nextAndPrevious?category=${category}&direction=prev&index=${index}`
+      );
+      
+      if (!prevResponse.ok) {
+        throw new Error('Failed to get previous word');
+      }
+      
+      const prevWord = await prevResponse.json();
+      
+      if (prevWord.completed) {
+        setNavigationState({
+          showMessage: true,
+          message: 'הגעת לתחילת הרשימה הנוכחית',
+          status: 'LIST_START',
+          nextCategory: null
+        });
+        return;
+      }
+
+      // מעבר למילה הקודמת
+      setLastRegularIndex(null);
+      saveLastRegularIndex(null);
+      router.push(`/words?index=${prevWord.index}&category=${category}`);
+
+    } catch (error) {
+      console.error('Navigation error:', error);
+      setError('שגיאה במעבר למילה הקודמת');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [category, index, isEndOfList, lastRegularIndex, router, saveLastRegularIndex]);
 
   const handleWordRating = useCallback(async (color, level) => {
     if (!session?.user?.id) {
@@ -150,13 +255,12 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
   
       const data = await response.json();
       
-      // שמירת המיקום הנוכחי לפני המעבר לדף התרגול
       if (data.shouldRedirectToPractice) {
         localStorage.setItem('lastPosition', wordData.index);
-        localStorage.setItem('isEndOfList', isEndOfList);  // שמירת המצב
+        localStorage.setItem('isEndOfList', isEndOfList);
         router.push('/practiceSpace');
         return;
-    }
+      }
   
       setSelectedColor(color);
       setTimeout(() => {
@@ -171,6 +275,14 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
       setIsLoading(false);
     }
   }, [wordData.index, session?.user?.id, setSelectedColor, navigateToNextWord, router, isEndOfList]);
+
+  const handleNextCategory = useCallback(() => {
+    if (navigationState.nextCategory) {
+      setNavigationState(prev => ({ ...prev, showMessage: false }));
+      const startingIndex = getStartingIndexForCategory(navigationState.nextCategory);
+      router.push(`/words?index=${startingIndex}&category=${navigationState.nextCategory}`);
+    }
+  }, [navigationState.nextCategory, router]);
 
   // Effect for URL params
   useEffect(() => {
@@ -191,6 +303,9 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
     error,
     isLoading,
     handleWordRating,
+    navigateToPrevWord,
     isEndOfList,
+    navigationState,
+    handleNextCategory
   };
 }

@@ -1,13 +1,18 @@
-// app/api/register/route.js
-import { supabaseAdmin } from '../../lib/supabase';
+// app/api/auth/register/route.js
+import { supabaseAdmin } from '../../../lib/supabase';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
-    try {
-      const { email, name, avatar_url, planId } = await req.json();
-  
-      console.log('Received registration data:', { email, name, avatar_url, planId }); // לוג לדיבוג
-  
+  try {
+    const { email, name, avatar_url, planId } = await req.json();
+
+    // בדיקה אם המשתמש נכנס דרך Google
+    if (!email || !name) {
+      return NextResponse.json(
+        { error: 'יש לבצע זיהוי באמצעות Google לפני ההרשמה' },
+        { status: 400 }
+      );
+    }
 
     // בדיקה אם המשתמש קיים עם schema מפורש
     const { data: existingUser, error: checkError } = await supabaseAdmin
@@ -59,10 +64,9 @@ export async function POST(req) {
 
     return NextResponse.json({ user: newUser });
   } catch (error) {
-    console.error('Server error:', error);
     return NextResponse.json(
-      { error: 'Internal server error - ' + error.message },
-      { status: 500 }
+      { error: 'Invalid or expired token' },
+      { status: 400 }
     );
   }
 }

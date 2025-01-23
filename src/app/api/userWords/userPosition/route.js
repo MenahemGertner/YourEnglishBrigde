@@ -59,7 +59,6 @@ export async function POST(request) {
     const body = await request.json();
     const { index, category } = body;
 
-    // 1. קבל את המידע של המשתמש
     const { data: userData, error: userError } = await supabaseAdmin
       .from('users')
       .select('id, last_position')
@@ -70,25 +69,24 @@ export async function POST(request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // 2. בדוק אם המילה היא חלק מרצף הלמידה
     const currentLearningPointer = userData.last_position?.learning_sequence_pointer || 1;
-    const isSequential = await isPartOfLearningSequence(
-      userData.id,
-      index,
-      currentLearningPointer
-    );
 
-    // 3. בדוק אם זו מילת חזרה
+    // בדיקת מילת חזרה
     const { data: reviewWord } = await supabaseAdmin
       .from('user_words')
-      .select('next_review')
+      .select('next_review, current_sequence_position')
       .eq('user_id', userData.id)
       .eq('word_id', parseInt(index))
       .single();
 
+    const isSequential = reviewWord 
+      ? (reviewWord.current_sequence_position === (currentLearningPointer - 1) || 
+         reviewWord.current_sequence_position === currentLearningPointer)
+      : (parseInt(index) === currentLearningPointer - 1 || 
+         parseInt(index) === currentLearningPointer);
+
     let lastPosition;
 
-    // אם זו מילת חזרה תקינה
     if (reviewWord && reviewWord.next_review === currentLearningPointer - 1) {
       lastPosition = {
         index,
@@ -97,7 +95,6 @@ export async function POST(request) {
         learning_sequence_pointer: currentLearningPointer
       };
     } else {
-      // אם זו לא מילת חזרה
       lastPosition = {
         index,
         category,
@@ -118,7 +115,8 @@ export async function POST(request) {
     return NextResponse.json({ 
       success: true, 
       isSequential,
-      isReviewWord: !!reviewWord && reviewWord.next_review === currentLearningPointer - 1
+      isReviewWord: !!reviewWord && reviewWord.next_review === currentLearningPointer - 1,
+      reviewWord: reviewWord
     });
   } catch (error) {
     console.error('Server error:', error);
