@@ -1,6 +1,6 @@
 'use client'
 import { useSearchParams } from 'next/navigation'
-import { InflectionDetails } from '../../components/wordCards/Map'
+import { InflectionDetails } from '../../../components/wordCards/Map'
 import Link from 'next/link'
 
 export default function InflectionsPage() {

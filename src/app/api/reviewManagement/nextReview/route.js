@@ -1,8 +1,9 @@
-// app/api/userWords/nextReview/route.js
+// app/api/reviewManagement/nextReview/route.js
 import { supabaseAdmin } from '../../../lib/supabase';
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from 'next/server';
 import { authOptions } from '../../auth/[...nextauth]/route';
+import { prioritizeReviewWords } from '../../../utils/reviewHelperFunctions'
 
 export async function GET(request) {
   try {
@@ -32,39 +33,7 @@ export async function GET(request) {
   .select('*')
   .eq('user_id', userData.id);  // אין צורך בסינון level > 1
 
-// פילטור מילים שמוכנות לחזרה
-const dueWords = words.filter(word => {
-  // וודא שזו לא המילה הנוכחית
-  if (word.word_id === currentIndex) {
-    return false;
-  }
-
-  // וודא שעבר מספיק זמן מהפעם האחרונה שראינו את המילה
-  const timeSinceLastPosition = currentIndex - word.current_sequence_position;
-  
-  const intervals = {
-    2: 10,
-    3: 5,
-    4: 3
-  };
-
-  const requiredInterval = intervals[word.level] || 0;
-  
-  return (
-    word.next_review <= currentIndex && 
-    timeSinceLastPosition >= requiredInterval
-  );
-});
-
-    // מיין את המילים לפי עדיפות
-    dueWords.sort((a, b) => {
-      // קודם כל, מיין לפי רמת קושי (גבוה יותר = דחוף יותר)
-      if (a.level !== b.level) {
-        return b.level - a.level;
-      }
-      // אם הרמה זהה, מיין לפי זמן החזרה המתוכנן
-      return a.next_review - b.next_review;
-    });
+  const dueWords = prioritizeReviewWords(words, currentIndex);  
 
     // אם נמצאה מילה לחזרה, עדכן את המיקום הנוכחי שלה
     if (dueWords.length > 0) {

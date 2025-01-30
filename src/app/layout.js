@@ -35,7 +35,6 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <Providers>
             <ColorProvider>
-
             <Navbar />
             <div className="content-wrapper">
               <main>{children}</main>

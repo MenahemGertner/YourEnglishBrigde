@@ -1,44 +1,15 @@
-// app/api/nextAndPrevious/route.js
+// app/api/wordNavigation/route.js
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '../../utils/mongodb';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from '../auth/[...nextauth]/route';
 import { createClient } from '@supabase/supabase-js';
+import { calculateNextReview, getCategoryForIndex, getCategoryBounds } from '../../utils/reviewHelperFunctions'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
-
-function calculateNextReview(level, currentIndex) {
-  if (level === 1) return null;
-  if (isNaN(currentIndex)) return null;
-  
-  const interval = intervals[level];
-  if (!interval) return null;
-  
-  return currentIndex + interval;
-}
-
-function getCategoryForIndex(index) {
-  if (index >= 0 && index <= 500) return '500';
-  if (index > 500 && index <= 1000) return '1000';
-  if (index > 1000 && index <= 1500) return '1500';
-  if (index > 1500 && index <= 2000) return '2000';
-  if (index > 2000 && index <= 2500) return '2500';
-  return null;
-}
-
-function getCategoryBounds(category) {
-  const bounds = {
-    '500': [1, 500],
-    '1000': [501, 1000],
-    '1500': [1001, 1500],
-    '2000': [1501, 2000],
-    '2500': [2001, 2500]
-  };
-  return bounds[category];
-}
 
 export async function GET(request) {
   try {

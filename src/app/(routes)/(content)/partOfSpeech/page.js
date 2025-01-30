@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { InflectionDetails } from '../../components/wordCards/Map'
+import { InflectionDetails } from '../../../components/wordCards/Map'
 
 const PartOfSpeechExplain = () => {
     const partsOfSpeech = Object.entries(InflectionDetails);

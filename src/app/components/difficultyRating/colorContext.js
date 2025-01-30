@@ -16,7 +16,7 @@ export const ColorProvider = ({ children }) => {
         const fetchWordLevel = async () => {
             if (session?.user && currentWordId) {
                 try {
-                    const response = await fetch(`/api/userWords/getLevel?word_id=${currentWordId}`);
+                    const response = await fetch(`/api/userProgress/wordLevel?word_id=${currentWordId}`);
                     console.log('Fetching level for word:', currentWordId);
                     
                     if (!response.ok) {

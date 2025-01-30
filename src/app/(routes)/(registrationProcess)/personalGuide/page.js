@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Cat } from 'lucide-react';
-import VideoPlayer from '../../components/common/VideoPlayer'
+import VideoPlayer from '../../../components/common/VideoPlayer'
 
 const PersonalGuide = () => {
     const [openIndex, setOpenIndex] = useState(null);

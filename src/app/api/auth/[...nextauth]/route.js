@@ -2,45 +2,68 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { supabaseAdmin } from '../../../lib/supabase';
+import jwt from 'jsonwebtoken';
 
 export const authOptions = {
-    providers: [
-      GoogleProvider({
-        clientId: process.env.GOOGLE_ID,
-        clientSecret: process.env.GOOGLE_SECRET,
-      }),
-    ],
-    callbacks: {
-      async signIn({ user, account }) {
-        if (!user.email) return false;
-  
-        try {
-          const { data: existingUser, error: fetchError } = await supabaseAdmin
-            .from('users')
-            .select()
-            .eq('email', user.email)
-            .single();
-  
-          if (fetchError && fetchError.code !== 'PGRST116') {
-            console.error('Error fetching user:', fetchError);
-            return false;
-          }
-  
-          // אם המשתמש לא קיים, העבר לעמוד הרשמה עם פרטים מוצפנים
-          if (!existingUser) {
-            return `/register?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}&image=${encodeURIComponent(user.image)}`;
-          }
-  
-          return true;
-        } catch (error) {
-          console.error('SignIn error:', error);
+  providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_ID,
+      clientSecret: process.env.GOOGLE_SECRET,
+    }),
+  ],
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  callbacks: {
+    async signIn({ user, account }) {
+      if (!user.email) return false;
+
+      try {
+        const { data: existingUser, error: fetchError } = await supabaseAdmin
+          .from('users')
+          .select()
+          .eq('email', user.email)
+          .single();
+
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error('Error fetching user:', fetchError);
           return false;
         }
-      },
+
+        if (!existingUser) {
+          return `/register?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}&image=${encodeURIComponent(user.image)}`;
+        }
+
+        return true;
+      } catch (error) {
+        console.error('SignIn error:', error);
+        return false;
+      }
+    },
+
+    async jwt({ token, user, account }) {
+      // יצירת טוקן בהתחברות ראשונית
+      if (account && user) {
+        return {
+          ...token,
+          accessToken: jwt.sign(
+            {
+              email: user.email,
+              sub: user.id,
+            },
+            process.env.NEXTAUTH_SECRET,
+            { expiresIn: '8h' }  // טוקן תקף ל-8 שעות
+          )
+        };
+      }
+      return token;
+    },
 
     async session({ session, token }) {
       if (session?.user) {
-        // קבל את ה-UUID של המשתמש מ-Supabase
+        // קבלת ה-UUID של המשתמש מ-Supabase
         const { data: userData } = await supabaseAdmin
           .from('users')
           .select('id')
@@ -49,13 +72,11 @@ export const authOptions = {
 
         if (userData) {
           session.user.id = userData.id;
+          // הוספת הטוקן לסשן
+          session.accessToken = token.accessToken;
         }
       }
       return session;
-    },
-
-    async jwt({ token, account }) {
-      return token;
     }
   }
 };

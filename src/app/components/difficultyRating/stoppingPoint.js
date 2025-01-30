@@ -25,7 +25,7 @@ const StoppingPoint = () => {
   const [reviewWord, setReviewWord] = useState(null);
 
   const { data: serverPosition, mutate } = useSWR(
-    session?.user ? '/api/userWords/userPosition' : null,
+    session?.user ? '/api/userProgress/learningSequence' : null,
     fetcher
   );
 
@@ -47,7 +47,7 @@ const StoppingPoint = () => {
           learning_sequence_pointer: serverPosition?.learning_sequence_pointer,
         });
 
-        fetch('/api/userWords/userPosition', {
+        fetch('/api/userProgress/learningSequence', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

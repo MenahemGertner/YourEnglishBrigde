@@ -28,12 +28,12 @@ const NextAndPrevious = () => {
   const index = currentWord?.index;
 
   const { data: nextWordData } = useSWR(
-    index ? `/api/nextAndPrevious?direction=next&index=${index}` : null,
+    index ? `/api/wordNavigation?direction=next&index=${index}` : null,
     fetcher
   );
 
   const { data: prevWordData } = useSWR(
-    index ? `/api/nextAndPrevious?direction=prev&index=${index}` : null,
+    index ? `/api/wordNavigation?direction=prev&index=${index}` : null,
     fetcher
   );
 

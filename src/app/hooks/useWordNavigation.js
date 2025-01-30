@@ -2,23 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
+import { getStartingIndexForCategory, getNextCategory } from '../utils/reviewHelperFunctions'
 
-const getStartingIndexForCategory = (category) => {
-  const indexMap = {
-    '500': 1,
-    '1000': 501,
-    '1500': 1001,
-    '2000': 1501,
-    '2500': 2001
-  };
-  return indexMap[category] || 1;
-};
-
-const getNextCategory = (currentCategory) => {
-  const categories = ['500', '1000', '1500', '2000', '2500'];
-  const currentIndex = categories.indexOf(currentCategory);
-  return currentIndex < categories.length - 1 ? categories[currentIndex + 1] : null;
-};
 
 export function useWordNavigation({ wordData, setSelectedColor }) {
   const router = useRouter();
@@ -66,7 +51,7 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
       setIsLoading(true);
       
       if (isEndOfList) {
-        const reviewResponse = await fetch('/api/nextAndPrevious/endOfListReview');
+        const reviewResponse = await fetch('/api/reviewManagement/endOfListReview');
         if (!reviewResponse.ok) {
           throw new Error('Failed to get review words');
         }
@@ -90,7 +75,7 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
       }
 
       const reviewResponse = await fetch(
-        `/api/userWords/nextReview?currentIndex=${lastRegularIndex || index}`
+        `/api/reviewManagement/nextReview?currentIndex=${lastRegularIndex || index}`
       );
       
       if (!reviewResponse.ok) {
@@ -110,7 +95,7 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
       }
 
       const nextResponse = await fetch(
-        `/api/nextAndPrevious?category=${category}&direction=next&index=${lastRegularIndex || index}`
+        `/api/wordNavigation?category=${category}&direction=next&index=${lastRegularIndex || index}`
       );
       
       if (!nextResponse.ok) {
@@ -122,7 +107,7 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
       if (nextWord.completed) {
         setIsEndOfList(true);
         
-        const endListReviewResponse = await fetch('/api/nextAndPrevious/endOfListReview');
+        const endListReviewResponse = await fetch('/api/reviewManagement/endOfListReview');
         if (!endListReviewResponse.ok) {
           throw new Error('Failed to get end of list review words');
         }
@@ -175,7 +160,7 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
       // בדיקה אם אנחנו במצב של חזרה וצריך לחזור למילה הקודמת ברצף הרגיל
       if (lastRegularIndex) {
         const prevResponse = await fetch(
-          `/api/nextAndPrevious?category=${category}&direction=prev&index=${lastRegularIndex}`
+          `/api/wordNavigation?category=${category}&direction=prev&index=${lastRegularIndex}`
         );
         
         if (!prevResponse.ok) {
@@ -194,7 +179,7 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
       
       // ניווט רגיל למילה הקודמת
       const prevResponse = await fetch(
-        `/api/nextAndPrevious?category=${category}&direction=prev&index=${index}`
+        `/api/wordNavigation?category=${category}&direction=prev&index=${index}`
       );
       
       if (!prevResponse.ok) {
@@ -236,7 +221,7 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
     try {
       const currentSequencePosition = parseInt(wordData.index);
   
-      const response = await fetch('/api/userWords', {
+      const response = await fetch('/api/userProgress/wordRating', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

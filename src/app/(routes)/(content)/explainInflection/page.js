@@ -1,6 +1,6 @@
 'use client'
 import { useSearchParams } from 'next/navigation'
-import { InflectionDetails, ExtendedInflectionDetails } from '../../components/wordCards/Map'
+import { InflectionDetails, ExtendedInflectionDetails } from '../../../components/wordCards/Map'
 
 export default function ExplainInflection() {
     const searchParams = useSearchParams()

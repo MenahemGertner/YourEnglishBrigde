@@ -15,7 +15,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const index = searchParams.get('index');
     
-    // קבל את המילה ממונגו
+    // Get word from MongoDB
     const { db } = await connectToDatabase();
     const categories = ['500', '1000', '1500', '2000', '2500'];
     
@@ -30,7 +30,10 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Word not found' }, { status: 404 });
     }
 
-    // אם המשתמש מחובר, הוסף את נתוני הלמידה שלו
+    // Create word_forms array from the word and its inflections
+    const wordForms = [wordData.word, ...(wordData.inf || [])];
+
+    // If user is logged in, add their learning data
     if (session?.user) {
       const { data: userWord } = await supabase
         .from('user_words')
@@ -40,68 +43,80 @@ export async function GET(request) {
         .single();
 
       if (userWord) {
+        // Update the word_forms field in Supabase
+        const { error: updateError } = await supabase
+          .from('user_words')
+          .update({ word_forms: wordForms })
+          .eq('user_id', session.user.id)
+          .eq('word_id', parseInt(index));
+
+        if (updateError) {
+          console.error('Error updating word forms:', updateError);
+        }
+
         wordData.learningStatus = {
           level: userWord.level,
           lastSeen: userWord.last_seen,
-          nextReview: userWord.next_review
+          nextReview: userWord.next_review,
+          wordForms: wordForms
         };
       }
     }
 
-     // Populate synonyms
-     if (wordData.syn && wordData.syn.length > 0) {
-       const synonymWords = await Promise.all(
-         wordData.syn.map(async (synId) => {
-           for (const category of categories) {
-             const collection = db.collection(category);
-             const synonymWord = await collection.findOne({ 
-               _id: new ObjectId(synId) 
-             });
-             if (synonymWord) return synonymWord;
-           }
-         })
-       );
-       wordData.synonyms = synonymWords
-         .filter(Boolean)
-         .map(word => ({
-           word: word.word,
-           translation: word.tr,
-           index: word.index
-         }));
-     } else {
-       wordData.synonyms = [];
-     }
-
-     // Populate confused words
-     if (wordData.con && wordData.con.length > 0) {
-       const confusedWords = await Promise.all(
-         wordData.con.map(async (conId) => {
-           for (const category of categories) {
-             const collection = db.collection(category);
-             const confusedWord = await collection.findOne({ 
-               _id: new ObjectId(conId) 
-             });
-             if (confusedWord) return confusedWord;
-           }
-         })
-       );
-       wordData.confused = confusedWords
-         .filter(Boolean)
-         .map(word => ({
-           word: word.word,
-           translation: word.tr,
-           index: word.index
-         }));
-     } else {
-       wordData.confused = [];
-     }
-
-     return NextResponse.json(wordData);
-    } catch (error) {
-      console.error('Error:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch word data', details: error.message },
-        { status: 500 }
+    // Populate synonyms
+    if (wordData.syn && wordData.syn.length > 0) {
+      const synonymWords = await Promise.all(
+        wordData.syn.map(async (synId) => {
+          for (const category of categories) {
+            const collection = db.collection(category);
+            const synonymWord = await collection.findOne({ 
+              _id: new ObjectId(synId) 
+            });
+            if (synonymWord) return synonymWord;
+          }
+        })
       );
+      wordData.synonyms = synonymWords
+        .filter(Boolean)
+        .map(word => ({
+          word: word.word,
+          translation: word.tr,
+          index: word.index
+        }));
+    } else {
+      wordData.synonyms = [];
     }
+
+    // Populate confused words
+    if (wordData.con && wordData.con.length > 0) {
+      const confusedWords = await Promise.all(
+        wordData.con.map(async (conId) => {
+          for (const category of categories) {
+            const collection = db.collection(category);
+            const confusedWord = await collection.findOne({ 
+              _id: new ObjectId(conId) 
+            });
+            if (confusedWord) return confusedWord;
+          }
+        })
+      );
+      wordData.confused = confusedWords
+        .filter(Boolean)
+        .map(word => ({
+          word: word.word,
+          translation: word.tr,
+          index: word.index
+        }));
+    } else {
+      wordData.confused = [];
+    }
+
+    return NextResponse.json(wordData);
+  } catch (error) {
+    console.error('Error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch word data', details: error.message },
+      { status: 500 }
+    );
   }
+}

@@ -1,21 +1,10 @@
-// app/api/userWords/route.js
-import { supabaseAdmin } from '../../lib/supabase';
+// app/api/userProgress/wordRating/route.js
+import { supabaseAdmin } from '../../../lib/supabase';
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from 'next/server';
-import { authOptions } from '../auth/[...nextauth]/route';
-
-function calculateNextReview(currentPosition, level, isEndOfList, existingNextReview) {
-  if (level === 1) return null;
-  
-  const intervals = { 2: 10, 3: 5, 4: 3 };
-  const interval = intervals[level] || 0;
-  
-  if (isEndOfList) {
-    return existingNextReview + interval;
-  }
-  
-  return currentPosition + interval;
-}
+import { authOptions } from '../../auth/[...nextauth]/route';
+import { calculateNextReview, PRACTICE_THRESHOLD } from '../../../utils/reviewHelperFunctions';
+import { connectToDatabase } from '../../../utils/mongodb';
 
 export async function POST(request) {
   try {
@@ -40,6 +29,26 @@ export async function POST(request) {
 
     const { word_id, level, currentSequencePosition, isEndOfList } = await request.json();
 
+    // Fetch word data from MongoDB to get inflections
+    const { db } = await connectToDatabase();
+    const categories = ['500', '1000', '1500', '2000', '2500'];
+    
+    let wordData = null;
+    for (const category of categories) {
+      const collection = db.collection(category);
+      wordData = await collection.findOne({ index: parseInt(word_id) });
+      if (wordData) break;
+    }
+
+    // Create word_forms object structure
+    const wordForms = wordData ? {
+      word: wordData.word,
+      inflections: wordData.inf || []
+    } : {
+      word: '',
+      inflections: []
+    };
+
     // אם הרמה היא 1, נמחק את הרשומה אם היא קיימת
     if (level === 1) {
       const { error: deleteError } = await supabaseAdmin
@@ -59,15 +68,13 @@ export async function POST(request) {
     if (level > 1) {
       const newCounter = (userData.practice_counter || 0) + level;
       
-      if (newCounter >= 10) {
+      if (newCounter >= PRACTICE_THRESHOLD) {
         shouldRedirectToPractice = true;
-        // איפוס המונה
         await supabaseAdmin
           .from('users')
           .update({ practice_counter: 0 })
           .eq('id', userData.id);
       } else {
-        // עדכון המונה
         await supabaseAdmin
           .from('users')
           .update({ practice_counter: newCounter })
@@ -104,14 +111,21 @@ export async function POST(request) {
       level: finalLevel,
       last_seen: new Date().toISOString(),
       next_review: nextReview,
-      current_sequence_position: position
+      current_sequence_position: position,
+      word_forms: wordForms  // Now using the new object structure
     };
 
     const { error: upsertError } = await supabaseAdmin
       .from('user_words')
       .upsert(insertData, {
         onConflict: 'user_id,word_id',
-        update: ['level', 'last_seen', 'next_review', 'current_sequence_position']
+        update: [
+          'level', 
+          'last_seen', 
+          'next_review', 
+          'current_sequence_position',
+          'word_forms'
+        ]
       });
 
     if (upsertError) {
