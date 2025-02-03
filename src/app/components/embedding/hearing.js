@@ -33,7 +33,7 @@ const Hearing = () => {
                 
                 <div className="relative inline-block group">
                     <p className="text-md font-medium text-gray-600 max-w-2xl mx-auto">
-                        כדאי לשים לב למבטא, ולתרגל בראש 'שטף של דיבור' כמו בסרטון!
+                    שים לב לקצב ולהדגשים בדיבור, הם חלק חשוב מהבנת השפה!
                     </p>
                     <motion.div 
                         whileHover={{ scale: 1.1 }}
@@ -112,7 +112,7 @@ const Hearing = () => {
                             <span className="text-sm font-medium">טיפ #1</span>
                         </div>
                         <p className="text-sm text-gray-600">
-                            נסה לחזור על המשפטים אחרי הדובר, זה יעזור לשפר את המבטא שלך
+                            נסה לחזור על המשפטים אחרי הדובר, זה יעזור לשפר את המבטא שלך!
                         </p>
                     </div>
                     <div className="bg-white p-4 rounded-lg shadow-md">
@@ -120,7 +120,7 @@ const Hearing = () => {
                             <span className="text-sm font-medium">טיפ #2</span>
                         </div>
                         <p className="text-sm text-gray-600">
-                            שים לב לקצב ולהדגשים בדיבור, הם חלק חשוב מהשפה המדוברת
+                            שים לב, שניתן לשנות את קצב הדיבור לקצב שלך!
                         </p>
                     </div>
                 </motion.div>

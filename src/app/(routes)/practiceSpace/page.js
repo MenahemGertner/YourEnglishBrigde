@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import PracticeLogic from '../../components/embedding/practiceLogic';
+import ChallengingWords from '../../components/embedding/challengingWords'
 import Reading from '../../components/embedding/reading';
 import Hearing from '../../components/embedding/hearing';
 import Speaking from '../../components/embedding/speaking';
@@ -20,7 +21,7 @@ const PracticeSpace = () => {
             {({ handleReturn }) => (
                 <div className="min-h-screen">
                     {/* Hero Section with Gradient */}
-                    <div className="relative h-screen bg-gradient-to-b from-blue-50 to-white">
+                    <div className="mt-2 relative min-h-[calc(100vh-4rem)] bg-gradient-to-b from-blue-50 to-white">
                         <motion.div 
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: isVisible ? 1 : 0, y: 0 }}
@@ -78,6 +79,7 @@ const PracticeSpace = () => {
                     <div className="py-16 px-4">
                         <div className="max-w-6xl mx-auto">
                             <div className="grid gap-8 md:grid-cols-1 lg:gap-12">
+                                <ChallengingWords/>
                                 <Reading />
                                 <Hearing />
                                 <Writing/>

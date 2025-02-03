@@ -30,9 +30,8 @@ const Information = ({ sen, inf, word }) => {
     );
 }
 
-const Sentences = () => {
-    const wordData = useContext(WordContext);
-    const sectionTitle = Object.keys(wordData.sen)[0];
+const Sentences = ({ sen, inf, word }) => {
+    const sectionTitle = Object.keys(sen)[0];
     const { isOpen, toggleSection } = useOpenWindow(sectionTitle);
     
     return (
@@ -52,9 +51,9 @@ const Sentences = () => {
             {isOpen && (
                 <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gray-100 rounded shadow-lg p-2 z-[50] w-72 sm:w-68 max-w-xs max-h-[90vh] overflow-y-auto window-content">
                     <Information 
-                        sen={wordData.sen}
-                        inf={wordData.inf}
-                        word={wordData.word}
+                        sen={sen}
+                        inf={inf}
+                        word={word}
                     />
                 </div>
             )}

@@ -102,7 +102,7 @@ const StoppingPoint = () => {
       return () => clearInterval(tooltipInterval);
     }, []);
 
-    if (!session || !serverPosition || isInSequence) {
+    if (!session || !serverPosition || isInSequence || pathname === '/practiceSpace') {
       return null;
     }
 

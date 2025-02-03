@@ -111,14 +111,14 @@ const Reading = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-white font-medium">Story Time</span>
                         <div className="flex items-center space-x-2">
-                            <AudioButton 
-                                text={fullStory}
-                                className="flex items-center bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-full transition-colors duration-200"
-                            >
-                                <Volume2 className="w-4 h-4 mr-2" />
-                                השמע סיפור
-                            </AudioButton>
-                        </div>
+    <div className="flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full hover:bg-white/30 active:bg-white/80 transition-all duration-200 border-2 border-white/60">
+        <AudioButton 
+            text={fullStory}
+            className="text-white"
+        />
+        <span className="text-sm">השמע</span>
+    </div>
+</div>
                     </div>
                 </div>
 

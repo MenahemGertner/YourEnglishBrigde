@@ -45,6 +45,7 @@ const MainCard = () => {
           <MainWord 
             word={wordData.word}
             tr={wordData.tr}
+            ps={wordData.ps}
           />
         </div>
         <ConditionalRender data={wordData.inf}>

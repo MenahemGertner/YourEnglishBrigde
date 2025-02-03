@@ -6,8 +6,8 @@ export function calculateNextReview(currentPosition, level, isEndOfList, existin
     
     // Intervals for different learning levels
     const intervals = { 
-      2: 10,  // First review after 10 steps
-      3: 5,   // Second review after 5 steps
+      2: 15,  // First review after 13 steps
+      3: 6,   // Second review after 6 steps
       4: 3    // Subsequent reviews after 3 steps
     };
     
@@ -85,4 +85,4 @@ export function calculateNextReview(currentPosition, level, isEndOfList, existin
     return currentIndex < categories.length - 1 ? categories[currentIndex + 1] : null;
   }
 
-export const PRACTICE_THRESHOLD = 10;
+export const PRACTICE_THRESHOLD = 17;
