@@ -10,7 +10,6 @@ import StatusIcons from './navigation/components/statusIcons';
 import ProContent from '@/components/auth/ProContent';
 import GuestContent from '@/components/auth/GuestContent';
 
-
 export const WordContext = createContext(null);
 
 const fetcher = async (url) => {
@@ -23,13 +22,13 @@ const fetcher = async (url) => {
 
 export default function Word() {
   const searchParams = useSearchParams();
-const index = searchParams.get('index');
-const category = searchParams.get('category') || '500';
+  const index = searchParams.get('index');
+  const category = searchParams.get('category') || '500';
 
-const { data, error, isLoading } = useSWR(
-  index ? `words/card/api/word?index=${index}&category=${category}` : null,
-  fetcher
-);
+  const { data, error, isLoading } = useSWR(
+    index ? `words/card/api/word?index=${index}&category=${category}` : null,
+    fetcher
+  );
 
   if (isLoading) return <GlobeLoader/>;
   if (error) return <div>שגיאה: {error.message}</div>;
@@ -37,17 +36,17 @@ const { data, error, isLoading } = useSWR(
 
   return (
     <WordContext.Provider value={data}>
-      <div  className="min-h-screen flex items-center justify-center flex-col py-8">
-        <MainCard />
+      <div className="min-h-screen flex items-center justify-center flex-col py-8">
+        <MainCard wordData={data}/>
         <div className="mb-4 mt-8">
-          <ExtractInfo/>
+          <ExtractInfo wordData={data} />
         </div>
         <ProContent>
-        <StatusIcons/>
+          <StatusIcons/>
         </ProContent>
         <GuestContent>
-        <NextAndPrevious/> 
-        </GuestContent>       
+          <NextAndPrevious/>
+        </GuestContent>
       </div>
     </WordContext.Provider>
   );

@@ -1,4 +1,3 @@
-// app/api/userProgress/wordRating/route.js
 import { supabaseAdmin } from '@/lib/db/supabase';
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from 'next/server';

@@ -1,10 +1,9 @@
 'use client'
-import React, { useContext} from "react"
+import React from "react"
 import { MessageCircleMore, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AudioButton from "@/components/features/AudioButton";
 import Tooltip from "@/components/features/Tooltip";
-import { WordContext } from '../../page.js';
 import PartOfSpeech from "../helpers/partOfSpeech.js";
 import partOfSpeechInflection from '../helpers/partOfSpeechInflection.js';
 import WindowMode from "../helpers/windowMode";
@@ -13,9 +12,7 @@ import { useWindowContext } from '@/app/providers/WindowContext';
 import MoreOrLess from "@/components/features/MoreOrLess"
 import underLine from "@/components/features/UnderLine";
 
-
-const ExtractInfo = () => {
-  const wordData = useContext(WordContext);
+const ExtractInfo = ({ wordData }) => {
   const router = useRouter();
   const { toggleSection } = useWindowContext();
 
@@ -25,12 +22,14 @@ const ExtractInfo = () => {
       router.push(`/words?index=${index}`);
     }, 0);
   };
+
   const partOfSpeechAdjastment = {
     'V': { type: 'verbs' },
     'N': { type: 'nouns' },
     'A': { type: 'adjectives' },
     'F': { type: 'functionWords' }
-};
+  };
+
   const sections = [
     {
       title: "שימושים נוספים של המילה",
@@ -94,10 +93,8 @@ const ExtractInfo = () => {
                         <span>{item.word}</span>
                       </Tooltip>
                       <Tooltip content={<div>
-                                          
                         <span className="font-bold mb-8">{underLine(item.sentence, [item.word ])}</span>
                         <AudioButton text={item.sentence}/> <br/>
-
                         {item.translateSentence}
                       </div>}>
                         <MessageCircleMore/>
@@ -167,7 +164,6 @@ const ExtractInfo = () => {
                         style={{ cursor: 'pointer' }}
                       >
                         <ExternalLink className="h-3 w-3" />
-                        
                       </div>
                     )}
                     </div>
