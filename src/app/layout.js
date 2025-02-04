@@ -1,11 +1,11 @@
 import localFont from "next/font/local"
 import "./globals.css"
-import Navbar from "./components/layout/navbar"
-import Footer from "./components/layout/footer"
+import Navbar from "@/components/layout/navbar"
+import Footer from "@/components/layout/footer"
 import Providers from "./providers/Providers"
 import AuthProvider from "./providers/SessionProvider"
-import StoppingPoint from './components/difficultyRating/stoppingPoint';
-import { ColorProvider } from './components/difficultyRating/colorContext';
+import StoppingPoint from '@/components/personalGuide/stoppingPoint';
+import { ColorProvider } from '@/app/(routes)/words/navigation/components/colorContext';
 
 const geistSans = localFont({
   src: "../styles/fonts/GeistVF.woff",

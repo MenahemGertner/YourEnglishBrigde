@@ -1,12 +1,12 @@
 'use client'
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import PracticeLogic from '../../components/embedding/practiceLogic';
-import ChallengingWords from '../../components/embedding/challengingWords'
-import Reading from '../../components/embedding/reading';
-import Hearing from '../../components/embedding/hearing';
-import Speaking from '../../components/embedding/speaking';
-import Writing from '../../components/embedding/writing'
+import PracticeLogic from './components/practiceLogic';
+import ChallengingWords from './components/challengingWords'
+import Reading from './components/reading';
+import Hearing from './components/hearing';
+import Speaking from './components/speaking';
+import Writing from './components/writing'
 import { ChevronDown } from 'lucide-react';
 
 const PracticeSpace = () => {

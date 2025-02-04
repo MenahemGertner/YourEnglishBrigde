@@ -1,5 +1,5 @@
 import React from 'react';
-import MethodAdvantages from './utils/programExplanation';
+import MethodAdvantages from '@/lib/data/programExplanation';
 
 const Hero = () => {
   return (
@@ -42,7 +42,6 @@ export default function Home() {
       <div className="bg-gradient-to-b from-white to-blue-50">
         <MethodAdvantages />
       </div>
-      {/* ניתן להוסיף כאן סקציות נוספות */}
     </main>
   );
 }

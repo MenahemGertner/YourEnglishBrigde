@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown, Cat } from 'lucide-react';
-import VideoPlayer from '../../../components/common/VideoPlayer'
+import VideoPlayer from '@/components/features/VideoPlayer'
 
 const PersonalGuide = () => {
     const [openIndex, setOpenIndex] = useState(null);
@@ -77,7 +77,7 @@ const PersonalGuide = () => {
            
             <div className="mt-12 text-center mb-8">
                 <Link 
-                    href="/register"
+                    href="/registration"
                     className="inline-block bg-blue-900 text-white px-32 py-5 rounded text-lg font-medium hover:bg-blue-700 transition-colors duration-200"
                 >
                     להרשמה
@@ -123,7 +123,7 @@ const PersonalGuide = () => {
             </div>
             <div className="mt-12 text-center">
                 <Link 
-                    href="/register"
+                    href="/registration"
                     className="inline-block bg-blue-900 text-white px-32 py-5 rounded text-lg font-medium hover:bg-blue-700 transition-colors duration-200"
                 >
                     להרשמה

@@ -1,7 +1,7 @@
 // app/api/auth/[...nextauth]/route.js
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { supabaseAdmin } from '../../../lib/supabase';
+import { supabaseAdmin } from '@/lib/db/supabase';
 import jwt from 'jsonwebtoken';
 
 export const authOptions = {
@@ -33,7 +33,7 @@ export const authOptions = {
         }
 
         if (!existingUser) {
-          return `/register?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}&image=${encodeURIComponent(user.image)}`;
+          return `/registration?email=${encodeURIComponent(user.email)}&name=${encodeURIComponent(user.name)}&image=${encodeURIComponent(user.image)}`;
         }
 
         return true;
