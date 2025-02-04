@@ -110,7 +110,7 @@ const MethodAdvantages = () => {
 
       {/* הפתרונות */}
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold mb-4">איך השיטה שלנו פותרת את זה?</h2>
+        <h2 className="text-3xl font-bold mb-4 mt-12">איך השיטה שלנו פותרת את זה?</h2>
         <p className="text-lg text-gray-600">מערכת חכמה שמתאימה את עצמה אליך ומבטיחה התקדמות אמיתית</p>
       </div>
 

@@ -1,53 +1,59 @@
-'use client'
-import { createContext } from 'react';
-import { useSearchParams } from 'next/navigation';
-import useSWR from 'swr';
 import MainCard from "./card/components/mainCard";
 import ExtractInfo from "./card/components/additionalInfo";
 import NextAndPrevious from "./navigation/components/nextAndPrevious";
-import GlobeLoader from '@/components/features/Loading';
 import StatusIcons from './navigation/components/statusIcons';
 import ProContent from '@/components/auth/ProContent';
 import GuestContent from '@/components/auth/GuestContent';
+import { notFound } from 'next/navigation';
+import { headers } from 'next/headers';
 
-export const WordContext = createContext(null);
-
-const fetcher = async (url) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch');
+async function getWordData(index, category = '500') {
+  try {
+    const headersList = await headers();
+    const domain = await headersList.get('host');
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    
+    const response = await fetch(
+      `${protocol}://${domain}/words/card/api/word?index=${index}&category=${category}`,
+      { cache: 'no-store' }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch word data');
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error('Error fetching word data:', error);
+    return null;
   }
-  return response.json();
-};
+}
 
-export default function Word() {
-  const searchParams = useSearchParams();
-  const index = searchParams.get('index');
-  const category = searchParams.get('category') || '500';
+export default async function Word({ searchParams }) {
+  const { index, category = '500' } = await Promise.resolve(searchParams);
+  
+  if (!index) {
+    notFound();
+  }
 
-  const { data, error, isLoading } = useSWR(
-    index ? `words/card/api/word?index=${index}&category=${category}` : null,
-    fetcher
-  );
-
-  if (isLoading) return <GlobeLoader/>;
-  if (error) return <div>שגיאה: {error.message}</div>;
-  if (!data) return <div>לא נמצא מידע עבור המילה</div>;
+  const data = await getWordData(index, category);
+  
+  if (!data) {
+    notFound();
+  }
 
   return (
-    <WordContext.Provider value={data}>
-      <div className="min-h-screen flex items-center justify-center flex-col py-8">
-        <MainCard wordData={data}/>
-        <div className="mb-4 mt-8">
-          <ExtractInfo wordData={data} />
-        </div>
-        <ProContent>
-          <StatusIcons/>
-        </ProContent>
-        <GuestContent>
-          <NextAndPrevious/>
-        </GuestContent>
+    <div className="min-h-screen flex items-center justify-center flex-col py-8">
+      <MainCard wordData={data} />
+      <div className="mb-4 mt-8">
+        <ExtractInfo wordData={data} />
       </div>
-    </WordContext.Provider>
+      <ProContent>
+        <StatusIcons wordData={data} />
+      </ProContent>
+      <GuestContent>
+        <NextAndPrevious category={data.category} index={data.index} />
+      </GuestContent>
+    </div>
   );
 }

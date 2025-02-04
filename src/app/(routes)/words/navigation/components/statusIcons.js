@@ -1,17 +1,14 @@
-// components/StatusIcons.js
 'use client'
-import { CircleDot, Info, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CircleDot, Info, ArrowRight } from 'lucide-react';
 import Tooltip from '@/components/features/Tooltip';
 import { useContext } from 'react';
 import { ColorContext } from './colorContext';
-import { WordContext } from '../../page';
 import IconData from '@/lib/data/ColorMap';
 import { useWordNavigation } from '../hooks/useWordNavigation';
 import NavigationMessage from './navigationMessage'
 
-const StatusIcons = () => {
+const StatusIcons = ({ wordData }) => {
   const { setSelectedColor } = useContext(ColorContext);
-  const wordData = useContext(WordContext);
   
   const {
     error,
@@ -25,7 +22,6 @@ const StatusIcons = () => {
   return (
     <div className="flex flex-col gap-2 border-t p-4">
       <div className="flex gap-4 justify-between items-center">
-        {/* כפתור חזרה */}
         <button
           onClick={navigateToPrevWord}
           disabled={isLoading}
@@ -36,7 +32,6 @@ const StatusIcons = () => {
           <ArrowRight className="w-6 h-6 text-blue-900/80" />
         </button>
 
-        {/* כפתורי הדירוג */}
         <div className="flex gap-4">
           {IconData.map((icon) => (
             <div key={icon.level} className="flex flex-col items-center">

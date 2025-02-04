@@ -1,31 +1,20 @@
 'use client'
-import { useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import { WordContext } from '../../page.js';
 import { useSession } from "next-auth/react";
 import useSWR from 'swr';
 
 const fetcher = async (url) => {
   const response = await fetch(url);
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText);
+    throw new Error(await response.text());
   }
   const data = await response.json();
-  // מחזיר null אם הגענו לסוף הרשימה
-  if (data.completed) {
-    return null;
-  }
-  return data;
+  return data.completed ? null : data;
 };
 
-const NextAndPrevious = () => {
+const NextAndPrevious = ({ category = '500', index }) => {
   const router = useRouter();
-  const currentWord = useContext(WordContext);
   const { data: session } = useSession();
-
-  const category = currentWord?.category || '500';
-  const index = currentWord?.index;
 
   const { data: nextWordData } = useSWR(
     index ? `/words/navigation/api/wordNavigation?direction=next&index=${index}` : null,
@@ -42,7 +31,7 @@ const NextAndPrevious = () => {
       router.push(`/words?index=${nextWordData.index}&category=${nextWordData.category}`);
     }
   };
-  
+    
   const handlePrev = () => {
     if (prevWordData) {
       router.push(`/words?index=${prevWordData.index}&category=${prevWordData.category}`);
