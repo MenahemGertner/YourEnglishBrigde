@@ -1,9 +1,5 @@
-'use client'
 import UsefulWordsPage from './components/usefulWordsPage'
-const UsefulWords = () => {
-    return(        
-        <UsefulWordsPage />      
-    )
-}
 
-export default UsefulWords;
+export default function UsefulWords({ searchParams }) {
+  return <UsefulWordsPage searchParams={searchParams} />
+}

@@ -4,15 +4,15 @@ import { Cat } from 'lucide-react';
 import Link from 'next/link';
 
 const AfterRegistration = () => {
-  // הגדרת מערך של כל התוכניות עם המידע הרלוונטי
+
   const programs = [
-    { name: 'מתחילים מהבסיס', href: '/basics-program' },
+    { name: 'מתחילים מהבסיס', href: '/beginners' },
     { name: 'רמה 1', href: '/startLearn?level=1' },
     { name: 'רמה 2', href: '/startLearn?level=2' },
     { name: 'רמה 3', href: '/startLearn?level=3' },
     { name: 'רמה 4', href: '/startLearn?level=4' },
     { name: 'רמה 5', href: '/startLearn?level=5' },
-    { name: 'מתקדמים', href: '/advanced-program' }
+    { name: 'מתקדמים', href: '/advanced' }
   ];
 
   return (

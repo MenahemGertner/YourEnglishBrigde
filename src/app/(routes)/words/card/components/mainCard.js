@@ -6,7 +6,7 @@ import MainWord from './mainWord';
 import Sentences from './sentences';
 import { ColorProvider, ColorContext } from '../../navigation/components/colorContext';
 
-const MainCard = ({ wordData }) => {
+const MainCard = ({ word, index, tr, ps, inf, sen }) => {
   const { selectedColor } = useContext(ColorContext);
   const [isAnimating, setIsAnimating] = useState(false);
   
@@ -18,7 +18,7 @@ const MainCard = ({ wordData }) => {
     }
   }, [selectedColor]);
 
-  if (!wordData) return <ConditionalRender/>;
+  if (!inf) return <ConditionalRender/>;
 
   return (
     <ColorProvider>
@@ -41,25 +41,25 @@ const MainCard = ({ wordData }) => {
     >
       <div className="flex flex-col items-center gap-1 py-4 md:py-6 lg:py-8">
         <div className="text-blue-400/70 text-sm mb-1">
-          {wordData.index}
+          {index}
         </div>
         <div className="mb-2">
           <MainWord 
-            word={wordData.word}
-            tr={wordData.tr}
-            ps={wordData.ps}
+            word={word}
+            tr={tr}
+            ps={ps}
           />
         </div>
-        <ConditionalRender data={wordData.inf}>
+        <ConditionalRender data={inf}>
           <Inflections
-            inf={wordData.inf}
+            inf={inf}
           />
         </ConditionalRender>
         <div className="mt-6">
           <Sentences
-            sen={wordData.sen}
-            inf={wordData.inf}
-            word={wordData.word}
+            sen={sen}
+            inf={inf}
+            word={word}
           />
         </div>
       </div>

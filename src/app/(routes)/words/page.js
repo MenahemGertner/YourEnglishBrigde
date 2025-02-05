@@ -44,9 +44,16 @@ export default async function Word({ searchParams }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center flex-col py-8">
-      <MainCard wordData={data} />
+      <MainCard word={data.word} index={data.index} tr={data.tr}
+                ps={data.ps} inf={data.inf} sen={data.sen}/>
       <div className="mb-4 mt-8">
-        <ExtractInfo wordData={data} />
+      <ExtractInfo 
+  inflections={data.infl}
+  derivatives={data.der}
+  expressions={data.ex}
+  synonyms={data.synonyms}
+  confusedWords={data.confused}
+/>
       </div>
       <ProContent>
         <StatusIcons wordData={data} />

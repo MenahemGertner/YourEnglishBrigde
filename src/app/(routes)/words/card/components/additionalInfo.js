@@ -4,7 +4,7 @@ import { MessageCircleMore, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AudioButton from "@/components/features/AudioButton";
 import Tooltip from "@/components/features/Tooltip";
-import PartOfSpeech from "../helpers/partOfSpeech.js";
+import PartOfSpeech, {partOfSpeechMap} from "../helpers/partOfSpeech.js";
 import partOfSpeechInflection from '../helpers/partOfSpeechInflection.js';
 import WindowMode from "../helpers/windowMode";
 import Link from "next/link";
@@ -12,7 +12,13 @@ import { useWindowContext } from '@/app/providers/WindowContext';
 import MoreOrLess from "@/components/features/MoreOrLess"
 import underLine from "@/components/features/UnderLine";
 
-const ExtractInfo = ({ wordData }) => {
+const ExtractInfo = ({ 
+  inflections, // הטיות
+  derivatives, // נגזרות
+  expressions, // ביטויים
+  synonyms,    // מילים נרדפות
+  confusedWords // מילים דומות
+}) => {
   const router = useRouter();
   const { toggleSection } = useWindowContext();
 
@@ -21,13 +27,6 @@ const ExtractInfo = ({ wordData }) => {
     setTimeout(() => {
       router.push(`/words?index=${index}`);
     }, 0);
-  };
-
-  const partOfSpeechAdjastment = {
-    'V': { type: 'verbs' },
-    'N': { type: 'nouns' },
-    'A': { type: 'adjectives' },
-    'F': { type: 'functionWords' }
   };
 
   const sections = [
@@ -39,7 +38,7 @@ const ExtractInfo = ({ wordData }) => {
             {
               title: "הטיות",
               subTitle: "הטיה דקדוקית, שלא משנה את המשמעות הבסיסית של המילה",
-              items: wordData?.infl ? Object.entries(wordData.infl).map(([word, details]) => ({
+              items: inflections ? Object.entries(inflections).map(([word, details]) => ({
                 word,
                 inflec: partOfSpeechInflection(details.ps).abbreviation,
                 translateInflection: details.tr,
@@ -52,7 +51,7 @@ const ExtractInfo = ({ wordData }) => {
             {
               title: "נגזרות",
               subTitle: "יצירת מילה חדשה מהמילה המקורית, עם משמעות מעט שונה",
-              items: wordData?.der ? Object.entries(wordData.der).map(([word, details]) => ({
+              items: derivatives ? Object.entries(derivatives).map(([word, details]) => ({
                 word,
                 inflec: partOfSpeechInflection(details.ps).abbreviation,
                 translateInflection: details.tr,
@@ -81,7 +80,7 @@ const ExtractInfo = ({ wordData }) => {
                       <Tooltip content={<div>
                         <div className='flex items-center gap-2'>
                         <span className="mx-2">{item.translateInflection}</span>
-                        <Link href={`/explainInflection?type=${partOfSpeechAdjastment[item.inflec]?.type || 'other'}&inflection=${item.inflection}`} className="hover:text-gray-700">
+                        <Link href={`/explainInflection?type=${partOfSpeechMap[item.inflec]?.type || 'other'}&inflection=${item.inflection}`} className="hover:text-gray-700">
                             ({item.inflection})                           
                           </Link>
                           <PartOfSpeech 
@@ -116,7 +115,7 @@ const ExtractInfo = ({ wordData }) => {
             {
               title: "ביטויים",
               subTitle: "ביטויים נפוצים שעשויים לשנות את המשמעות הבסיסית של המילה",
-              items: wordData?.ex ? Object.entries(wordData.ex).map(([word, translation]) => ({
+              items: expressions ? Object.entries(expressions).map(([word, translation]) => ({
                 word,
                 translation
               })) : []
@@ -124,20 +123,12 @@ const ExtractInfo = ({ wordData }) => {
             {
               title: "מילים נרדפות",
               subTitle: "מילים חלופיות עם משמעות דומה",
-              items: wordData?.synonyms ? wordData.synonyms.map(word => ({
-                word: word.word,
-                translation: word.translation,
-                index: word.index
-              })) : []
+              items: synonyms || []
             },
             {
               title: "מילים דומות",
               subTitle: "מילים זרות שקל להתבלבל ביניהם",
-              items: wordData?.confused ? wordData.confused.map(word => ({
-                word: word.word,
-                translation: word.translation,
-                index: word.index
-              })) : []
+              items: confusedWords || []
             }
           ].filter(subsection => subsection.items.length > 0).map((subsection, index, filteredArray) => (
             <div 
