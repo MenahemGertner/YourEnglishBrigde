@@ -1,12 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from "next-auth/react";
 import { getStartingIndexForCategory, getNextCategory } from '../helpers/reviewHelperFunctions'
+import { ColorContext } from '../components/colorContext';
 
 
-export function useWordNavigation({ wordData, setSelectedColor }) {
+export function useWordNavigation({ wordData }) {
   const router = useRouter();
   const { data: session } = useSession();
+  const { setSelectedColor } = useContext(ColorContext);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastRegularIndex, setLastRegularIndex] = useState(null);
@@ -20,6 +22,7 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
 
   const category = wordData?.category || '500';
   const index = wordData?.index;
+  const { handleColorChange } = useContext(ColorContext);
 
   // שמירת המיקום האחרון ב-localStorage
   const saveLastRegularIndex = useCallback((index) => {
@@ -210,56 +213,6 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
     }
   }, [category, index, isEndOfList, lastRegularIndex, router, saveLastRegularIndex]);
 
-  const handleWordRating = useCallback(async (color, level) => {
-    if (!session?.user?.id) {
-      setError('יש להתחבר כדי לשמור את הדירוג');
-      return;
-    }
-  
-    setIsLoading(true);
-    try {
-      const currentSequencePosition = parseInt(wordData.index);
-  
-      const response = await fetch('/words/navigation/api/userProgress/wordRating', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          word_id: wordData.index,
-          level,
-          currentSequencePosition,
-          isEndOfList
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-  
-      const data = await response.json();
-      
-      if (data.shouldRedirectToPractice) {
-        localStorage.setItem('lastPosition', wordData.index);
-        localStorage.setItem('isEndOfList', isEndOfList);
-        router.push('/practiceSpace');
-        return;
-      }
-  
-      setSelectedColor(color);
-      setTimeout(() => {
-        setSelectedColor(null);
-        navigateToNextWord();
-      }, 300);
-  
-    } catch (error) {
-      console.error('Error in handleClick:', error);
-      setError(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [wordData.index, session?.user?.id, setSelectedColor, navigateToNextWord, router, isEndOfList]);
-
   const handleNextCategory = useCallback(() => {
     if (navigationState.nextCategory) {
       setNavigationState(prev => ({ ...prev, showMessage: false }));
@@ -268,20 +221,53 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
     }
   }, [navigationState.nextCategory, router]);
 
-  // Effect for URL params
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const endOfList = params.get('isEndOfList');
-    const lastIndex = params.get('lastRegularIndex');
-    
-    if (endOfList === 'true') {
-      setIsEndOfList(true);
+  const handleWordRating = useCallback(async (level) => {
+    if (!session?.user?.id) {
+        setError('יש להתחבר כדי לשמור את הדירוג');
+        return;
     }
-    
-    if (lastIndex) {
-      setLastRegularIndex(parseInt(lastIndex));
+
+    setIsLoading(true);
+    try {
+        const currentSequencePosition = parseInt(wordData.index);
+        
+        await handleColorChange(level);
+
+        const response = await fetch('/words/navigation/api/userProgress/wordRating', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                word_id: wordData.index,
+                level,
+                currentSequencePosition,
+                isEndOfList
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        const data = await response.json();
+        
+        if (data.shouldRedirectToPractice) {
+            localStorage.setItem('lastPosition', wordData.index);
+            localStorage.setItem('isEndOfList', isEndOfList);
+            router.push('/practiceSpace');
+            return;
+        }
+
+        navigateToNextWord();
+
+    } catch (error) {
+        console.error('Error in handleClick:', error);
+        setError(error.message);
+    } finally {
+        setIsLoading(false);
     }
-  }, []);
+  }, [wordData.index, session?.user?.id, handleColorChange, navigateToNextWord, router, isEndOfList]);
 
   return {
     error,
@@ -290,6 +276,6 @@ export function useWordNavigation({ wordData, setSelectedColor }) {
     navigateToPrevWord,
     isEndOfList,
     navigationState,
-    handleNextCategory
+    handleNextCategory 
   };
 }

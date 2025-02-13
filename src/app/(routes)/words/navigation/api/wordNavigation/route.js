@@ -1,4 +1,3 @@
-// app/api/wordNavigation/route.js
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db/mongodb';
 import { getServerSession } from "next-auth/next";

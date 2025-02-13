@@ -37,6 +37,7 @@ export default async function Word({ searchParams }) {
   }
 
   const data = await getWordData(index, category);
+  const categorySize = data.categorySize;
   
   if (!data) {
     notFound();
@@ -59,7 +60,7 @@ export default async function Word({ searchParams }) {
         <StatusIcons wordData={data} />
       </ProContent>
       <GuestContent>
-        <NextAndPrevious category={data.category} index={data.index} />
+      <NextAndPrevious index={data.index} categorySize={categorySize} />
       </GuestContent>
     </div>
   );

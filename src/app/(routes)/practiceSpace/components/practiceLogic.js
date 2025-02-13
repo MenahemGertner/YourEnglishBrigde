@@ -1,76 +1,47 @@
 'use client'
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
+import { getNextWord } from '@/app/(routes)/words/navigation/actions/getNextWord'  // ייבוא ישיר של ה-server action
 
 const PracticeLogic = ({ children }) => {
-    const router = useRouter();
-    const [showResult, setShowResult] = useState(false);
+  const router = useRouter()
+  const { data: session } = useSession()
+  const [showResult, setShowResult] = useState(false)
 
-    const handleComplete = () => {
-        setShowResult(true);
-    };
+  const handleComplete = () => {
+    setShowResult(true)
+  }
 
-    const handleReturn = async () => {
-        const lastPosition = localStorage.getItem('lastPosition');
-        const isEndOfList = localStorage.getItem('isEndOfList') === 'true';
+  const handleReturn = async () => {
+    if (!session?.user?.id) {
+      router.push('/words')
+      return
+    }
 
-        if (lastPosition) {
-            try {
-                if (isEndOfList) {
-                    const reviewResponse = await fetch('/words/navigation/api/reviewManagement/endOfListReview');
-                    if (!reviewResponse.ok) {
-                        throw new Error('Failed to get review words');
-                    }
-                    
-                    const reviewWords = await reviewResponse.json();
-                    const remainingWords = reviewWords.filter(word => word.word_id !== parseInt(lastPosition));
+    try {
+      // קריאה ישירה ל-server action
+      const nextWord = await getNextWord(session.user.id)
 
-                    if (remainingWords.length > 0) {
-                        router.push(`/words?index=${remainingWords[0].word_id}&category=500&isEndOfList=true`);
-                    } else {
-                        router.push('/words');
-                    }
-                } else {
-                    const nextResponse = await fetch(
-                        `/words/navigation/api/wordNavigation?category=500&direction=next&index=${lastPosition}`
-                    );
-                    
-                    if (!nextResponse.ok) {
-                        throw new Error('Failed to get next word');
-                    }
-                    
-                    const nextWord = await nextResponse.json();
-                    if (!nextWord.completed) {
-                        router.push(`/words?index=${nextWord.index}&category=500`);
-                    } else {
-                        const reviewResponse = await fetch('/words/navigation/api/reviewManagement/endOfListReview');
-                        if (!reviewResponse.ok) {
-                            throw new Error('Failed to get review words');
-                        }
-                        
-                        const reviewWords = await reviewResponse.json();
-                        const remainingWords = reviewWords.filter(word => word.word_id !== parseInt(lastPosition));
+      if (nextWord.error) {
+        throw new Error(nextWord.error)
+      }
 
-                        if (remainingWords.length > 0) {
-                            router.push(`/words?index=${remainingWords[0].word_id}&category=500&isEndOfList=true`);
-                        } else {
-                            router.push('/words');
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error('Navigation error:', error);
-                router.push('/words');
-            }
-            
-            localStorage.removeItem('lastPosition');
-            localStorage.removeItem('isEndOfList');
-        } else {
-            router.push('/words');
-        }
-    };
+      if (nextWord.found) {
+        router.push(`/words?index=${nextWord.index}&category=${nextWord.category}`)
+      } else if (nextWord.status === 'LIST_END' || nextWord.status === 'COMPLETE') {
+        router.push(`/words?status=${nextWord.status}&message=${encodeURIComponent(nextWord.message)}${nextWord.nextCategory ? `&nextCategory=${nextWord.nextCategory}` : ''}`)
+      } else {
+        router.push('/words')
+      }
+    } catch (error) {
+      console.error('Error returning from practice:', error)
+      router.push('/words')
+    }
+  }
 
-    return children({ handleReturn, handleComplete, showResult });
-};
+  return children({ handleReturn, handleComplete, showResult })
+}
 
-export default PracticeLogic;
+export default PracticeLogic

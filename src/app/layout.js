@@ -38,7 +38,7 @@ export default function RootLayout({ children }) {
             <Navbar />
             <div className="content-wrapper">
               <main>{children}</main>
-              <StoppingPoint/>
+              {/* <StoppingPoint/> */}
             </div>
             <Footer />
             </ColorProvider>

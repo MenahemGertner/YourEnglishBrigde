@@ -1,5 +1,5 @@
-import { connectToDatabase } from '@/lib/db/mongodb';
 import { NextResponse } from 'next/server';
+import { connectToDatabase } from '@/lib/db/mongodb';
 import { ObjectId } from 'mongodb';
 
 export async function GET(request) {
@@ -12,10 +12,20 @@ export async function GET(request) {
     const categories = ['500', '1000', '1500', '2000', '2500'];
     
     let wordData = null;
+    let categorySize = 0;
+    let currentCategory = '';
+
+    // מציאת הקטגוריה המתאימה והמילה
     for (const category of categories) {
       const collection = db.collection(category);
       wordData = await collection.findOne({ index: parseInt(index) });
-      if (wordData) break;
+      
+      if (wordData) {
+        // שמירת גודל הקטגוריה
+        categorySize = await collection.countDocuments();
+        currentCategory = category;
+        break;
+      }
     }
     
     if (!wordData) {
@@ -73,8 +83,14 @@ export async function GET(request) {
     } else {
       wordData.confused = [];
     }
-    
-    return NextResponse.json(wordData);
+
+    // הוספת המידע על הקטגוריה וגודלה
+    return NextResponse.json({
+      ...wordData,
+      category: currentCategory,
+      categorySize: categorySize
+    });
+
   } catch (error) {
     console.error('Error:', error);
     return NextResponse.json(

@@ -4,7 +4,7 @@ import ConditionalRender from '@/components/features/ConditionalRender';
 import Inflections from './inflections';
 import MainWord from './mainWord';
 import Sentences from './sentences';
-import { ColorProvider, ColorContext } from '../../navigation/components/colorContext';
+import { ColorContext } from '../../navigation/components/colorContext';
 
 const MainCard = ({ word, index, tr, ps, inf, sen }) => {
   const { selectedColor } = useContext(ColorContext);
@@ -21,7 +21,6 @@ const MainCard = ({ word, index, tr, ps, inf, sen }) => {
   if (!inf) return <ConditionalRender/>;
 
   return (
-    <ColorProvider>
     <div
       className={`bg-gray-50 rounded-t-lg shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] 
         w-80 min-w-[250px]
@@ -64,7 +63,6 @@ const MainCard = ({ word, index, tr, ps, inf, sen }) => {
         </div>
       </div>
     </div>
-    </ColorProvider>
   );
 };
 
