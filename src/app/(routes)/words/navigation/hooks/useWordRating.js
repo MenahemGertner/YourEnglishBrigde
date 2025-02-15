@@ -1,15 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useContext  } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
+import { ColorContext } from '../components/colorContext'
 import { updateInfo } from '../actions/updateInfo'
 import { getNextWord } from '../actions/getNextWord'
-import {getStartingIndexForCategory} from '../helpers/reviewHelperFunctions'
+import { getStartingIndexForCategory } from '../helpers/reviewHelperFunctions'
 
 export function useWordRating({ wordData }) {
   const router = useRouter()
   const { data: session, status } = useSession()
+  const { handleColorChange } = useContext(ColorContext)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [navigationState, setNavigationState] = useState({
@@ -40,45 +42,48 @@ export function useWordRating({ wordData }) {
     }
 
     try {
-        setIsLoading(true)
-        setError(null)
-  
-        const result = await updateInfo(
-          session.user.id,
-          wordData.index,
-          level,
-          wordData.category,
-          wordData.word,
-          wordData.inf
-        )
-  
-        if (!result?.success) {
-          throw new Error(result?.error || 'שגיאה בעדכון המילה')
-        }
-  
-        const nextWord = await getNextWord(session.user.id)
-  
-        if (nextWord.error) {
-          throw new Error(nextWord.error)
-        }
-  
-        if (nextWord.status === 'PRACTICE_NEEDED') {
-          // Store return position before redirecting to practice
-          localStorage.setItem('practiceReturnPosition', nextWord.lastPosition.index)
-          localStorage.setItem('practiceReturnCategory', nextWord.currentCategory)
-          router.push('/practiceSpace')
-        } else if (nextWord.found) {
-          router.push(`/words?index=${nextWord.index}&category=${nextWord.category}`)
-        } else if (nextWord.status === 'LIST_END' || nextWord.status === 'COMPLETE') {
-          setNavigationState({
-            showMessage: true,
-            status: nextWord.status,
-            message: nextWord.message,
-            nextCategory: nextWord.nextCategory,
-            currentCategory: nextWord.currentCategory
-          })
-        }
-      } catch (err) {
+      setIsLoading(true)
+      setError(null)
+
+      // הפעלת אנימציית שינוי צבע
+      await handleColorChange(level)
+
+      const result = await updateInfo(
+        session.user.id,
+        wordData.index,
+        level,
+        wordData.category,
+        wordData.word,
+        wordData.inf
+      )
+
+      if (!result?.success) {
+        throw new Error(result?.error || 'שגיאה בעדכון המילה')
+      }
+
+      const nextWord = await getNextWord(session.user.id)
+
+      if (nextWord.error) {
+        throw new Error(nextWord.error)
+      }
+
+      if (nextWord.status === 'PRACTICE_NEEDED') {
+        // Store return position before redirecting to practice
+        localStorage.setItem('practiceReturnPosition', nextWord.lastPosition.index)
+        localStorage.setItem('practiceReturnCategory', nextWord.currentCategory)
+        router.push('/practiceSpace')
+      } else if (nextWord.found) {
+        router.push(`/words?index=${nextWord.index}&category=${nextWord.category}`)
+      } else if (nextWord.status === 'LIST_END' || nextWord.status === 'COMPLETE') {
+        setNavigationState({
+          showMessage: true,
+          status: nextWord.status,
+          message: nextWord.message,
+          nextCategory: nextWord.nextCategory,
+          currentCategory: nextWord.currentCategory
+        })
+      }
+    } catch (err) {
       const errorMessage = err.message || 'שגיאה לא ידועה'
       console.error('Error updating word:', errorMessage, err)
       setError(errorMessage)

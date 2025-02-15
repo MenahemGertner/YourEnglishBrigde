@@ -1,11 +1,6 @@
 'use server'
 import { createClient } from '@supabase/supabase-js'
-
-const intervals = {
-  2: 15,
-  3: 6,
-  4: 3
-};
+import { intervals } from '../helpers/reviewHelperFunctions';
 
 export async function updateInfo(userId, wordId, level, category, word, inf) {
   try {
@@ -53,7 +48,7 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
         learning_sequence_pointer: userData.last_position?.learning_sequence_pointer || 0
       };
 
-      if (wordId > (userData.last_position?.learning_sequence_pointer || 0)) {
+      if (wordId - 1 == (userData.last_position?.learning_sequence_pointer || 0)) {
         updatedLastPosition.learning_sequence_pointer = wordId;
       }
 

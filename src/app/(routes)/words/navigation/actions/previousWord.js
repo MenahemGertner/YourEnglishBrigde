@@ -21,11 +21,9 @@ export async function getPreviousWord(userId, currentIndex) {
 
   const { index, category } = userData.last_position
 
-  // אם המשתמש כבר נמצא במילה הקודמת, מחזירים רק הודעה
-  if (currentIndex === index) {
+  if (String(currentIndex) === String(index)) {
     return { message: 'ניתן לחזור לאחור, מילה אחת בלבד!' }
   }
 
-  // רק אם המשתמש לא במילה הקודמת, מבצעים redirect
   redirect(`/words?index=${index}&category=${category}`)
 }

@@ -26,12 +26,6 @@ export default function NavigationMessage({
               </div>
             </div>
           )}
-          
-          {navigationState.status === 'COMPLETE' && (
-            <p className="text-center text-green-600">
-              כל הכבוד! סיימת את כל המילים והחזרות ברשימה הנוכחית.
-            </p>
-          )}
         </div>
       </div>
     );

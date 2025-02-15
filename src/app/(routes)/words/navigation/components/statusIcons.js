@@ -33,15 +33,16 @@ const StatusIcons = ({ wordData }) => {
           </div>
         )}
         <div className="flex gap-4 justify-between items-center">
-          <button
-            onClick={handlePrevious}
-            disabled={isPrevLoading}
-            className={`p-2 rounded hover:bg-gray-100 ${
-              isPrevLoading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          >
-            <ArrowRight className="w-6 h-6 text-blue-900/80" />
-          </button>
+        <button
+  onClick={handlePrevious}
+  disabled={isPrevLoading}
+  title="למילה הקודמת"
+  className={`p-2 rounded hover:bg-gray-100 ${
+    isPrevLoading ? 'opacity-50 cursor-not-allowed' : ''
+  }`}
+>
+  <ArrowRight className="w-6 h-6 text-blue-900/80" />
+</button>
 
           <div className="flex gap-4">
             {IconData.map((icon) => (

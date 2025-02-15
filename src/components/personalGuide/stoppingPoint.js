@@ -1,114 +1,60 @@
 'use client'
-import { Cat } from 'lucide-react';
-import Link from 'next/link';
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
-import useSWR from 'swr';
 
-const fetcher = async (url) => {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error('Failed to fetch');
-  }
-  return response.json();
-};
+import { Cat } from 'lucide-react'
+import { useSession } from "next-auth/react"
+import { useEffect, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { getNextWord } from '@/app/(routes)/words/navigation/actions/getNextWord'
 
 const StoppingPoint = () => {
-  const { data: session } = useSession();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [lastPosition, setLastPosition] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSequential, setIsSequential] = useState(true);
-  const [isReviewWord, setIsReviewWord] = useState(false);
-  const [reviewWord, setReviewWord] = useState(null);
+  const { data: session } = useSession()
+  const pathname = usePathname()
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
 
-  const { data: serverPosition, mutate } = useSWR(
-    session?.user ? '/api/personalGuide/learningSequence' : null,
-    fetcher
-  );
+  const handleCatClick = async () => {
+    if (!session?.user?.id || isLoading) return
+    
+    try {
+      setIsLoading(true)
+      const nextWord = await getNextWord(session.user.id)
 
-  useEffect(() => {
-    if (session?.user && pathname.includes('/words')) {
-      const currentIndex = searchParams.get('index');
-      const currentCategory = searchParams.get('category') || '500';
-
-      if (currentIndex) {
-        setIsLoading(true);
-        const position = {
-          index: currentIndex,
-          category: currentCategory,
-        };
-
-        setLastPosition({
-          ...position,
-          current_sequence_position: serverPosition?.current_sequence_position,
-          learning_sequence_pointer: serverPosition?.learning_sequence_pointer,
-        });
-
-        fetch('/api/personalGuide/learningSequence', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(position),
-        })
-          .then(response => response.json())
-          .then(data => {
-            setIsSequential(data.isSequential);
-            setIsReviewWord(data.isReviewWord);
-            setReviewWord(data.reviewWord);
-            return mutate();
-          })
-          .catch((error) => {
-            console.error('Error updating user position:', error);
-          })
-          .finally(() => setIsLoading(false));
+      if (nextWord.status === 'PRACTICE_NEEDED') {
+        router.push('/practiceSpace')
+      } else if (nextWord.found) {
+        router.push(`/words?index=${nextWord.index}&category=${nextWord.category}`)
       }
+    } finally {
+      setIsLoading(false)
     }
-  }, [pathname, searchParams, session, mutate, serverPosition]);
-
-  useEffect(() => {
-    if (serverPosition) {
-      setLastPosition(serverPosition);
-      setIsLoading(false);
-    }
-  }, [serverPosition]);
-
-  const navigationIndex = lastPosition?.learning_sequence_pointer || 1;
-  const currentIndex = parseInt(searchParams.get('index'));
-  const learningPointer = lastPosition?.learning_sequence_pointer;
-
-  const isInSequence = 
-    currentIndex === (learningPointer - 1) ||
-    currentIndex === learningPointer ||
-    (isReviewWord && reviewWord && (
-      parseInt(reviewWord.current_sequence_position) === (learningPointer - 1) ||
-      parseInt(reviewWord.current_sequence_position) === learningPointer
-    ));
+  }
 
   const FloatingCat = () => {
-    const [showTooltip, setShowTooltip] = useState(false);
+    const [showTooltip, setShowTooltip] = useState(false)
 
     useEffect(() => {
       const tooltipInterval = setInterval(() => {
-        setShowTooltip(true);
+        setShowTooltip(true)
         setTimeout(() => {
-          setShowTooltip(false);
-        }, 2000);
-      }, 3000);
+          setShowTooltip(false)
+        }, 2000)
+      }, 3000)
 
-      return () => clearInterval(tooltipInterval);
-    }, []);
+      return () => clearInterval(tooltipInterval)
+    }, [])
 
-    if (!session || !serverPosition || isInSequence || pathname === '/practiceSpace') {
-      return null;
+    if (!session || pathname === '/words' || pathname === '/practiceSpace' ||
+         pathname === '/afterRegistration'|| pathname === '/startLearn' || pathname === '/checkYourLevel') {
+      return null
     }
 
     return (
       <div className="fixed bottom-4 right-4 z-50">
-        <Link href={`/words?index=${navigationIndex -1}&category=${lastPosition?.category || '500'}`}>
+        <button 
+          onClick={handleCatClick}
+          disabled={isLoading}
+          className={`${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
+        >
           <div className="relative">
             <div className="animate-bounce">
               <Cat 
@@ -119,19 +65,19 @@ const StoppingPoint = () => {
             <div className={`absolute bg-white border border-gray-200 rounded-md p-2 shadow-lg -right-2 bottom-full mb-1 text-sm text-gray-700 whitespace-nowrap transition-opacity duration-300 ${
               showTooltip ? 'opacity-100' : 'opacity-0'
             }`}>
-              {`חזרה לרצף הלמידה - מילה ${navigationIndex - 1}`}
+              חזרה לרצף הלמידה
             </div>
           </div>
-        </Link>
+        </button>
       </div>
-    );
-  };
+    )
+  }
 
   return (
     <div>
       <FloatingCat />
     </div>
-  );
-};
+  )
+}
 
-export default StoppingPoint;
+export default StoppingPoint

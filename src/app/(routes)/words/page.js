@@ -6,6 +6,7 @@ import ProContent from '@/components/auth/ProContent';
 import GuestContent from '@/components/auth/GuestContent';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
+import SequenceReset from '@/components/personalGuide/sequenceReset'
 
 async function getWordData(index, category = '500') {
   try {
@@ -58,6 +59,7 @@ export default async function Word({ searchParams }) {
       </div>
       <ProContent>
         <StatusIcons wordData={data} />
+        <SequenceReset/>
       </ProContent>
       <GuestContent>
       <NextAndPrevious index={data.index} categorySize={categorySize} />

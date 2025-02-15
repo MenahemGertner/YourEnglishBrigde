@@ -2,8 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
-
-const categories = ['500', '1000', '1500', '2000', '2500']
+import {PRACTICE_THRESHOLD, categories} from '../helpers/reviewHelperFunctions'
 
 export async function getNextWord(userId) {
   try {
@@ -17,7 +16,6 @@ export async function getNextWord(userId) {
     )
 
     // Get user data
-    // Get user data
 const { data: userData, error: userError } = await supabase
 .from('users')
 .select('last_position, practice_counter')
@@ -27,7 +25,7 @@ const { data: userData, error: userError } = await supabase
 if (userError) throw userError
 
 // Check if practice threshold reached
-if (userData.practice_counter >= 17) {
+if (userData.practice_counter >= PRACTICE_THRESHOLD) {
     // Reset practice counter
     await supabase
       .from('users')
@@ -66,7 +64,7 @@ const currentCategory = userData.last_position?.category || '500'
     }
 
     // Try to find next new word
-    const headersList = headers()
+    const headersList = await headers()
     const domain = headersList.get('host')
     const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
     const nextIndex = learningSequencePointer + 1
