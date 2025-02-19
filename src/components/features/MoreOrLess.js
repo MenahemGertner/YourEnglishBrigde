@@ -11,7 +11,7 @@ const MoreOrLess = ({ items, itemRenderer, maxItems = 5 }) => {
       {hasMore && (
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-blue-700 hover:text-blue-900 text-sm px-2 mt-2 text-left "
+          className="text-blue-900 hover:text-blue-600 text-sm px-2 mt-2 text-left "
         >
           {isExpanded ? 'Less' : 'More'}
         </button>

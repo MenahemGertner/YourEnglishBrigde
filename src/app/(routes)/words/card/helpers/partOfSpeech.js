@@ -99,7 +99,9 @@ const PartOfSpeech = ({
                       </Link>
                     </div>
                   }>
-                    <div className={`flex items-center justify-center h-6 w-6 rounded-full ${currentColor.color} ${currentColor.textColor} font-bold text-1xl hover:text-gray-200`}>
+                    <div className={`flex items-center justify-center h-6 w-6 rounded-full
+                         ${currentColor.color} ${currentColor.textColor}
+                         font-bold text-1xl hover:text-gray-200`}>
                         {ps}
                     </div>
                     

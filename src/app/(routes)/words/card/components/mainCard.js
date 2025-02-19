@@ -22,7 +22,7 @@ const MainCard = ({ word, index, tr, ps, inf, sen }) => {
 
   return (
     <div
-      className={`bg-gray-50 rounded-t-lg shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] 
+      className={`bg-gradient-to-r from-blue-50 via-white to-purple-50 rounded-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] hover:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]
         w-80 min-w-[250px]
         md:w-96 lg:w-[450px]
         min-h-32 md:min-h-40 lg:min-h-48

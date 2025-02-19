@@ -4,7 +4,7 @@ import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import Providers from "./providers/Providers"
 import AuthProvider from "./providers/SessionProvider"
-import StoppingPoint from '@/components/personalGuide/stoppingPoint';
+import StoppingPoint from '@/app/(routes)/words/navigation/personalGuide/components/stoppingPoint';
 import { ColorProvider } from '@/app/(routes)/words/navigation/components/colorContext';
 
 const geistSans = localFont({

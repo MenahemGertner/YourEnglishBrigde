@@ -35,7 +35,7 @@ const PracticeSpace = () => {
                                     transition={{ delay: 0.3, duration: 0.5 }}
                                     className="mb-6"
                                 >
-                                    <span className="bg-blue-100 text-blue-800 text-sm font-medium px-4 py-2 rounded-full">
+                                    <span className="bg-gradient-to-r from-blue-200 to-purple-200 text-blue-800 text-sm font-medium px-4 py-2 rounded-full">
                                         כל הכבוד! למדת מילים חדשות נוספות!
                                     </span>
                                 </motion.div>
@@ -44,7 +44,7 @@ const PracticeSpace = () => {
                                     initial={{ y: 20, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
                                     transition={{ delay: 0.5, duration: 0.5 }}
-                                    className="text-5xl font-bold text-blue-900 mb-8"
+                                    className="text-5xl font-bold text-indigo-700 mb-8"
                                 >
                                     בואו נתרגל את מה שלמדנו
                                 </motion.h1>
@@ -66,7 +66,7 @@ const PracticeSpace = () => {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1, y: [0, 10, 0] }}
                                 transition={{ delay: 1.2, duration: 2, repeat: Infinity }}
-                                className="absolute bottom-8 cursor-pointer"
+                                className="absolute bottom-20 cursor-pointer"
                                 onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
                             >
                                 <ChevronDown className="w-8 h-8 text-blue-900" />
@@ -85,6 +85,9 @@ const PracticeSpace = () => {
                                 <Writing/>
                                 <Speaking />
                             </div>
+                            <div>
+                                
+                            </div>
                             
                             <motion.div 
                                 initial={{ opacity: 0 }}
@@ -92,9 +95,10 @@ const PracticeSpace = () => {
                                 transition={{ duration: 0.5 }}
                                 className="mt-16 text-center"
                             >
+                                <p className='mb-12 font-semibold text-gray-700'>סיימת לתרגל? מוכן להמשיך הלאה?</p>
                                 <button
                                     onClick={handleReturn}
-                                    className="bg-blue-900 hover:bg-blue-800 text-white font-bold py-4 px-8 rounded text-xl transition-colors duration-300 shadow-lg hover:shadow-xl"
+                                    className="bg-gradient-to-r from-indigo-600 to-purple-600 duration-300 hover:bg-purple-800 hover:scale-105 text-white font-bold py-4 px-8 rounded text-xl shadow-lg hover:shadow-xl"
                                 >
                                     חזרה לרשימת המילים
                                 </button>

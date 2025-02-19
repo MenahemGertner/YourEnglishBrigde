@@ -4,7 +4,7 @@ import { Cat } from 'lucide-react'
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { getNextWord } from '@/app/(routes)/words/navigation/actions/getNextWord'
+import { getNextWord } from '../../actions/getNextWord'
 
 const StoppingPoint = () => {
   const { data: session } = useSession()

@@ -46,7 +46,7 @@ const StartLearn = () => {
           <div className="space-y-6">
             <p className="text-lg text-center mb-8">
               ברוכים הבאים לתכנית הלימוד המתקדמת שלנו! 
-              כאן תלמדו את {500} המילים החשובות ביותר ברמה {level}.
+              כאן תלמדו את 500 המילים החשובות ביותר ברמה {level}.
             </p>
             
             <div className="grid md:grid-cols-2 gap-6">

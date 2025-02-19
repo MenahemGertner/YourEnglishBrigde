@@ -8,7 +8,7 @@ import { updateInfo } from '../actions/updateInfo'
 import { getNextWord } from '../actions/getNextWord'
 import { getStartingIndexForCategory } from '../helpers/reviewHelperFunctions'
 
-export function useWordRating({ wordData }) {
+export function useWordRating({ word, index, category, inf  }) {
   const router = useRouter()
   const { data: session, status } = useSession()
   const { handleColorChange } = useContext(ColorContext)
@@ -36,7 +36,7 @@ export function useWordRating({ wordData }) {
       return
     }
 
-    if (!wordData?.index || !wordData?.category) {
+    if (!index || !category) {
       setError('חסר מזהה מילה')
       return
     }
@@ -50,11 +50,11 @@ export function useWordRating({ wordData }) {
 
       const result = await updateInfo(
         session.user.id,
-        wordData.index,
+        index,
         level,
-        wordData.category,
-        wordData.word,
-        wordData.inf
+        category,
+        word,
+        inf
       )
 
       if (!result?.success) {

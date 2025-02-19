@@ -1,21 +1,19 @@
 'use client'
 import { CircleDot, Info, ArrowRight } from 'lucide-react'
-import { useWordNavigation } from '../hooks/useWordNavigation'
 import { useWordRating } from '../hooks/useWordRating'
 import { usePreviousNavigation } from '../hooks/usePreviousNavigation'
 import Tooltip from '@/components/features/Tooltip'
 import IconData from '@/lib/data/ColorMap'
 import NavigationMessage from './navigationMessage'
 
-const StatusIcons = ({ wordData }) => {
-  // const { isLoading, handleWordRating } = useWordNavigation({ wordData })
+const StatusIcons = ({ word, index, category, inf }) => {
   const { 
     handleWordRating, 
     isLoading, 
     error,
     navigationState,
     handleNextCategory
-  } = useWordRating({ wordData })
+  } = useWordRating({ word, index, category, inf  })
 
   const { handlePrevious, isPrevLoading, message } = usePreviousNavigation()
 
@@ -36,8 +34,8 @@ const StatusIcons = ({ wordData }) => {
         <button
   onClick={handlePrevious}
   disabled={isPrevLoading}
-  title="למילה הקודמת"
-  className={`p-2 rounded hover:bg-gray-100 ${
+  title="למילה האחרונה"
+  className={`p-2 duration-300 hover:scale-125 ${
     isPrevLoading ? 'opacity-50 cursor-not-allowed' : ''
   }`}
 >
@@ -48,23 +46,35 @@ const StatusIcons = ({ wordData }) => {
             {IconData.map((icon) => (
               <div key={icon.level} className="flex flex-col items-center">
                 <Tooltip content={icon.content}>
-                  <button className="p-1 hover:bg-gray-100 rounded">
+                  <button className="p-1 hover:bg-gray-100 rounded ">
                     <Info className="w-5 h-5 text-blue-900/80" />
                   </button>
                 </Tooltip>
                 
                 <button
-                  disabled={isLoading}
-                  onClick={() => handleWordRating(icon.level)}
-                  className={`p-2 rounded hover:opacity-70 ${
-                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                >
-                  <CircleDot
-                    className="w-14 h-14"
-                    style={{ color: icon.color }}
-                  />
-                </button>
+  disabled={isLoading}
+  onClick={() => handleWordRating(icon.level)}
+  className={`
+    p-2 
+    rounded-full 
+    transition-all duration-300 ease-in-out
+    transform hover:scale-110 hover:shadow-lg
+    active:scale-95
+    focus:outline-none focus:ring-2 focus:ring-opacity-50 focus:ring-blue-500
+    ${isLoading ? 'opacity-50 cursor-not-allowed' : 'shadow-md'}
+  `}
+>
+  <div className="relative">
+    <CircleDot
+      className="w-14 h-14 transition-transform duration-300 hover:rotate-12"
+      style={{ color: icon.color }}
+    />
+    <div 
+      className="absolute inset-0 rounded-full opacity-0 hover:opacity-20"
+      style={{ backgroundColor: icon.color, transition: 'opacity 0.3s' }}
+    />
+  </div>
+</button>
               </div>
             ))}
           </div>

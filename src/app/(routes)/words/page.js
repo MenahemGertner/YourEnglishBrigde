@@ -6,7 +6,7 @@ import ProContent from '@/components/auth/ProContent';
 import GuestContent from '@/components/auth/GuestContent';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
-import SequenceReset from '@/components/personalGuide/sequenceReset'
+import SequenceReset from './navigation/personalGuide/components/sequenceReset'
 
 async function getWordData(index, category = '500') {
   try {
@@ -49,16 +49,12 @@ export default async function Word({ searchParams }) {
       <MainCard word={data.word} index={data.index} tr={data.tr}
                 ps={data.ps} inf={data.inf} sen={data.sen}/>
       <div className="mb-4 mt-8">
-      <ExtractInfo 
-  inflections={data.infl}
-  derivatives={data.der}
-  expressions={data.ex}
-  synonyms={data.synonyms}
-  confusedWords={data.confused}
-/>
+      <ExtractInfo infl={data.infl} der={data.der} ex={data.ex}
+                    syn={data.synonyms} con={data.confused}/>
       </div>
       <ProContent>
-        <StatusIcons wordData={data} />
+        <StatusIcons word={data.word} index={data.index}
+                      category={category} inf={data.inf}/>
         <SequenceReset/>
       </ProContent>
       <GuestContent>

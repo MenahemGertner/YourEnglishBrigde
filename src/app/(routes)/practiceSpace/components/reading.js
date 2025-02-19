@@ -153,7 +153,7 @@ const Reading = () => {
 
                 <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50">
                     <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">עבור מעל המשפטים לתרגום</span>
+                        <span className="text-sm text-gray-500">לחץ על המשפטים לתרגום</span>
                         <div className="h-1 w-24 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"></div>
                     </div>
                 </div>

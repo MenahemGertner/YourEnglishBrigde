@@ -13,11 +13,11 @@ import MoreOrLess from "@/components/features/MoreOrLess"
 import underLine from "@/components/features/UnderLine";
 
 const ExtractInfo = ({ 
-  inflections, // הטיות
-  derivatives, // נגזרות
-  expressions, // ביטויים
-  synonyms,    // מילים נרדפות
-  confusedWords // מילים דומות
+  infl, // הטיות
+  der, // נגזרות
+  ex, // ביטויים
+  syn,    // מילים נרדפות
+  con // מילים דומות
 }) => {
   const router = useRouter();
   const { toggleSection } = useWindowContext();
@@ -37,12 +37,12 @@ const ExtractInfo = ({
           {[
             {
               title: "הטיות",
-              subTitle: "הטיה דקדוקית, שלא משנה את המשמעות הבסיסית של המילה",
-              items: inflections ? Object.entries(inflections).map(([word, details]) => ({
+              subTitle: "הטיית שימוש, שלא משנה את המשמעות הבסיסית של המילה",
+              items: infl ? Object.entries(infl).map(([word, details]) => ({
                 word,
                 inflec: partOfSpeechInflection(details.ps).abbreviation,
                 translateInflection: details.tr,
-                inflection: details.ps,
+                Inflections: details.ps,
                 sentence: details.sen,
                 translateSentence: details.trn,
                 type: partOfSpeechInflection(details.ps).type
@@ -51,11 +51,11 @@ const ExtractInfo = ({
             {
               title: "נגזרות",
               subTitle: "יצירת מילה חדשה מהמילה המקורית, עם משמעות מעט שונה",
-              items: derivatives ? Object.entries(derivatives).map(([word, details]) => ({
+              items: der ? Object.entries(der).map(([word, details]) => ({
                 word,
                 inflec: partOfSpeechInflection(details.ps).abbreviation,
                 translateInflection: details.tr,
-                inflection: details.ps,
+                Inflections: details.ps,
                 sentence: details.sen,
                 translateSentence: details.trn,
                 type: partOfSpeechInflection(details.ps).type
@@ -64,7 +64,7 @@ const ExtractInfo = ({
           ].filter(subsection => subsection.items.length > 0).map((subsection, index, filteredArray) => (
             <div 
               key={subsection.title}
-              className={`w-60 p-4 relative 
+              className={`w-60 p-4 relative
                 ${index < filteredArray.length - 1 ? 'md:border-l-4 border-gray-300/50' : ''}
                 ${index < filteredArray.length - 1 ? 'border-b-4 md:border-b-0' : ''}`} 
               dir="ltr"
@@ -74,14 +74,14 @@ const ExtractInfo = ({
               <MoreOrLess
                 items={subsection.items}
                 itemRenderer={(item) => (
-                  <div key={item.word} className="flex items-center">
+                  <div key={item.word} className="flex items-center mb-1">
                     <AudioButton text={item.word} />
                     <div className="flex items-center gap-4">
                       <Tooltip content={<div>
                         <div className='flex items-center gap-2'>
                         <span className="mx-2">{item.translateInflection}</span>
-                        <Link href={`/explainInflection?type=${partOfSpeechMap[item.inflec]?.type || 'other'}&inflection=${item.inflection}`} className="hover:text-gray-700">
-                            ({item.inflection})                           
+                        <Link href={`/explainInflection?type=${partOfSpeechMap[item.inflec]?.type || 'other'}&inflection=${item.Inflections}`} className="hover:text-gray-700">
+                            ({item.Inflections})                           
                           </Link>
                           <PartOfSpeech 
                             ps={item.inflec} 
@@ -89,14 +89,16 @@ const ExtractInfo = ({
                           /> 
                         </div>
                       </div>}>
-                        <span>{item.word}</span>
+                        <span className="hover:text-blue-700">{item.word}</span>
                       </Tooltip>
                       <Tooltip content={<div>
                         <span className="font-bold mb-8">{underLine(item.sentence, [item.word ])}</span>
                         <AudioButton text={item.sentence}/> <br/>
                         {item.translateSentence}
                       </div>}>
+                      <div className="hover:text-blue-700 hover:scale-110">
                         <MessageCircleMore/>
+                        </div>
                       </Tooltip>
                     </div>
                   </div>
@@ -115,7 +117,7 @@ const ExtractInfo = ({
             {
               title: "ביטויים",
               subTitle: "ביטויים נפוצים שעשויים לשנות את המשמעות הבסיסית של המילה",
-              items: expressions ? Object.entries(expressions).map(([word, translation]) => ({
+              items: ex ? Object.entries(ex).map(([word, translation]) => ({
                 word,
                 translation
               })) : []
@@ -123,12 +125,12 @@ const ExtractInfo = ({
             {
               title: "מילים נרדפות",
               subTitle: "מילים חלופיות עם משמעות דומה",
-              items: synonyms || []
+              items: syn || []
             },
             {
               title: "מילים דומות",
               subTitle: "מילים זרות שקל להתבלבל ביניהם",
-              items: confusedWords || []
+              items: con || []
             }
           ].filter(subsection => subsection.items.length > 0).map((subsection, index, filteredArray) => (
             <div 
@@ -143,18 +145,18 @@ const ExtractInfo = ({
               <MoreOrLess
                 items={subsection.items}
                 itemRenderer={(item) => (
-                  <div key={item.word} className="flex items-center">
+                  <div key={item.word} className="flex items-center mb-1">
                     <AudioButton text={item.word} />
                     <div className="flex items-center gap-3">
                     <Tooltip content={item.translation}>
-                      <span>{item.word}</span>          
+                      <span className="hover:text-blue-700">{item.word}</span>          
                     </Tooltip>
                     {(subsection.title === "מילים נרדפות" || subsection.title === "מילים דומות") && (
                       <div 
                         onClick={() => handleNavigation(item.index)} 
                         style={{ cursor: 'pointer' }}
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-3 w-3 hover:text-blue-700 hover:scale-110" />
                       </div>
                     )}
                     </div>

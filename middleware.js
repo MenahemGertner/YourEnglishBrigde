@@ -25,8 +25,8 @@ export default withAuth(
 export const config = {
   matcher: [
     '/api/userProgress/:path*',
-    '/api/reviewManagement/:path*',
-    '/api/wordNavigation/:path*',
-    '/words/navigation/api/:path*'  
+    '/words/navigation/api/:path*',
+    '/registration/api/:path*',
+    '/api/auth/:path*'
   ]
 };
