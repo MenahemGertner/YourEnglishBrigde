@@ -3,7 +3,7 @@
 # Your English Bridge 🌉
 
 ## מבוא
-Your English Bridge הוא המשך של Learn English Project - פרויקט אישי שפתחתי בפייתון. הפרויקט מציע גישה חדשנית וייחודית ללימוד השפה האנגלית, עם דגש על למידה אפקטיבית ומותאמת אישית.
+פרויקט Your English Bridge הוא המשך של Learn English Project - פרויקט אישי שפתחתי בפייתון. הפרויקט מציע גישה חדשנית וייחודית ללימוד השפה האנגלית, עם דגש על למידה אפקטיבית ומותאמת אישית.
 
 ## 🎯 מטרת הפרויקט
 פיתוח פלטפורמה חדשנית ללימוד אנגלית המתמקדת ב-2,500 המילים השימושיות ביותר, תוך שילוב טכנולוגיות מתקדמות ושיטות למידה חדשניות.
