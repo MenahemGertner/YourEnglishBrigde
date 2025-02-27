@@ -24,7 +24,7 @@ export default function NotFound() {
           </div>
 
           <div className="text-gray-500 italic mb-8">
-            "לפעמים הדרכים הטובות ביותר מתחילות בטעות ניווט" 
+          &quot;לפעמים הדרכים הטובות ביותר מתחילות בטעות ניווט&quot; 
             <br/>
             - מישהו חכם, כנראה 😉
           </div>

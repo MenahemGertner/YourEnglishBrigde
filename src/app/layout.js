@@ -1,4 +1,4 @@
-import localFont from "next/font/local"
+import { Inter } from 'next/font/google'
 import "./globals.css"
 import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
@@ -7,16 +7,11 @@ import AuthProvider from "./providers/SessionProvider"
 import StoppingPoint from '@/app/(routes)/words/navigation/personalGuide/components/stoppingPoint';
 import { ColorProvider } from '@/app/(routes)/words/navigation/components/colorContext';
 
-const geistSans = localFont({
-  src: "../styles/fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900"
-})
 
-const geistMono = localFont({
-  src: "../styles/fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900"
+const inter = Inter({
+  subsets: ['latin', 'latin-ext'], 
+  variable: '--font-inter',
+  display: 'swap'
 })
 
 export const metadata = {
@@ -26,12 +21,11 @@ export const metadata = {
   },
   description: "אנגלית לכל אחד"
 }
-
-
+ 
 export default function RootLayout({ children }) {
   return (
     <html lang="he" dir="rtl">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased page-container`}>
+      <body className={`${inter.variable} antialiased page-container`}>
         <AuthProvider>
           <Providers>
             <ColorProvider>

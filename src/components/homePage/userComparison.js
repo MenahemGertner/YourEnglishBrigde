@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { User, UserPlus, Check, Book, BarChart2, Brain, Bookmark, AlignLeft, Headphones, Mic, Edit, Clock, BadgeCheck, Lightbulb, Zap, Bot } from 'lucide-react';
 
-const UserComparisonComponent = () => {
+const UserComparison = () => {
   const [selectedTab, setSelectedTab] = useState('regular');
   
   const regularFeatures = [
@@ -171,9 +171,9 @@ const UserComparisonComponent = () => {
                     <h3 className="font-medium text-xl mb-3 text-center">התנסות ללא התחייבות</h3>
                     <p className="text-center mb-4">נסו את כל היתרונות המתקדמים שלנו במשך 14 יום, ללא עלות וללא התחייבות</p>
                     <div className="flex justify-center">
-                      <button className="bg-white text-indigo-700 py-2 px-6 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
+                    <Link href="/registration"  className="bg-white text-indigo-700 py-2 px-6 rounded-lg font-medium hover:bg-opacity-90 transition-colors">
                         התחילו בחינם
-                      </button>
+                      </Link>
                     </div>
                   </div>
                   <span className="text-white text-opacity-70 mx-2 text-lg">או</span>
@@ -182,9 +182,9 @@ const UserComparisonComponent = () => {
                     <h3 className="font-medium text-black text-xl mb-3 text-center">מנוי שנתי</h3>
                     <p className="text-center text-black mb-4">חיסכון של 40% לעומת המנוי החודשי, עם גישה מלאה לכל התכונות המתקדמות</p>
                     <div className="flex justify-center">
-                      <button className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-indigo-900 py-2 px-6 rounded-lg font-medium hover:shadow-lg transition-shadow">
+                    <Link href="/registration"  className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-indigo-900 py-2 px-6 rounded-lg font-medium hover:shadow-lg transition-shadow">
                         הצטרפו עכשיו
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -273,4 +273,4 @@ const UserComparisonComponent = () => {
   );
 };
 
-export default UserComparisonComponent;
+export default UserComparison;

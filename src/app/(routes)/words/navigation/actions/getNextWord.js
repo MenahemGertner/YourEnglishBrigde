@@ -1,8 +1,10 @@
 'use server'
 
-import { createClient } from '@supabase/supabase-js'
 import { headers } from 'next/headers'
-import {PRACTICE_THRESHOLD, categories} from '../helpers/reviewHelperFunctions'
+import { PRACTICE_THRESHOLD, categories } from '../helpers/reviewHelperFunctions'
+import { createServerClient } from '@/lib/db/supabase'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 export async function getNextWord(userId) {
   try {
@@ -10,38 +12,48 @@ export async function getNextWord(userId) {
       throw new Error('נדרש מזהה משתמש')
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    )
+    // קבלת מידע על הסשן מהשרת
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.accessToken || !session?.user?.id) {
+      throw new Error('נדרש אימות')
+    }
+    
+    // וידוא שהמשתמש מנסה לגשת למידע שלו בלבד
+    if (session.user.id !== userId) {
+      throw new Error('גישה לא מורשית')
+    }
+    
+    // יצירת לקוח Supabase עם הטוקן של המשתמש
+    const supabase = createServerClient(session.accessToken)
 
     // Get user data
-const { data: userData, error: userError } = await supabase
-.from('users')
-.select('last_position, practice_counter')
-.eq('id', userId)
-.single()
-
-if (userError) throw userError
-
-// Check if practice threshold reached
-if (userData.practice_counter >= PRACTICE_THRESHOLD) {
-    // Reset practice counter
-    await supabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
-      .update({ practice_counter: 0 })
+      .select('last_position, practice_counter')
       .eq('id', userId)
+      .single()
 
-    return {
-      found: false,
-      status: 'PRACTICE_NEEDED',
-      lastPosition: userData.last_position,
-      currentCategory: userData.current_category
+    if (userError) throw userError
+
+    // Check if practice threshold reached
+    if (userData.practice_counter >= PRACTICE_THRESHOLD) {
+      // Reset practice counter
+      await supabase
+        .from('users')
+        .update({ practice_counter: 0 })
+        .eq('id', userId)
+
+      return {
+        found: false,
+        status: 'PRACTICE_NEEDED',
+        lastPosition: userData.last_position,
+        currentCategory: userData.current_category
+      }
     }
-  }
 
-const learningSequencePointer = userData.last_position?.learning_sequence_pointer || 0
-const currentCategory = userData.last_position?.category || '500'
+    const learningSequencePointer = userData.last_position?.learning_sequence_pointer || 0
+    const currentCategory = userData.last_position?.category || '500'
 
     // Try to find word with next_review <= learning_sequence_pointer
     const { data: wordsLTE, error: wordsLTEError } = await supabase

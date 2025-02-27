@@ -43,7 +43,7 @@ const Sentences = ({ sen, inf, word }) => {
                     <div className="flex items-center">
                         {isOpen ? <ChevronUp /> : <ChevronDown />}
                     </div>
-                    <span>"{sectionTitle}"</span>
+                    <span>&quot;{sectionTitle}&quot;</span>
                 </div>
             </button>
             

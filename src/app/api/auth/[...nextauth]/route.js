@@ -44,42 +44,58 @@ export const authOptions = {
     },
 
     async jwt({ token, user, account }) {
-      // יצירת טוקן בהתחברות ראשונית
+      // הוספת מזהה משתמש לטוקן בהתחברות ראשונית
       if (account && user) {
-        return {
-          ...token,
-          accessToken: jwt.sign(
-            {
-              email: user.email,
-              sub: user.id,
-            },
-            process.env.NEXTAUTH_SECRET,
-            { expiresIn: '8h' }  // טוקן תקף ל-8 שעות
-          )
-        };
-      }
-      return token;
-    },
-
-    async session({ session, token }) {
-      if (session?.user) {
-        // קבלת ה-UUID של המשתמש מ-Supabase
         const { data: userData } = await supabaseAdmin
           .from('users')
           .select('id')
-          .eq('email', session.user.email)
+          .eq('email', user.email)
           .single();
-
+        
         if (userData) {
-          session.user.id = userData.id;
-          // הוספת הטוקן לסשן
-          session.accessToken = token.accessToken;
+          token.supabaseUserId = userData.id;
+          
+          // יצירת JWT עם תוקף של 55 דקות (פחות משעה כדי שיהיה מרווח ביטחון)
+          token.accessToken = createSupabaseToken(userData.id, user.email);
+          token.accessTokenExpires = Math.floor(Date.now() / 1000) + (55 * 60); // 55 דקות
         }
+      }
+      
+      // בדיקה אם הטוקן קרוב לפוג תוקף (פחות מ-5 דקות נותרו) ואם כן, חידוש הטוקן
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (token.supabaseUserId && (!token.accessTokenExpires || token.accessTokenExpires - currentTime < 300)) {
+        token.accessToken = createSupabaseToken(token.supabaseUserId, token.email);
+        token.accessTokenExpires = Math.floor(Date.now() / 1000) + (55 * 60); // 55 דקות
+      }
+      
+      return token;
+    },
+    
+    async session({ session, token }) {
+      if (session?.user && token) {
+        // העברת פרטי המשתמש והטוקן לסשן
+        session.user.id = token.supabaseUserId;
+        session.accessToken = token.accessToken;
+        session.accessTokenExpires = token.accessTokenExpires;
       }
       return session;
     }
   }
 };
+
+// פונקציה עזר ליצירת טוקן Supabase
+function createSupabaseToken(userId, email) {
+  return jwt.sign(
+    {
+      aud: 'authenticated',
+      exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 שעה
+      sub: userId,
+      email: email,
+      role: 'authenticated',
+    },
+    process.env.SUPABASE_JWT_SECRET
+  );
+}
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

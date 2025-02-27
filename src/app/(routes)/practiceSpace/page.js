@@ -66,7 +66,7 @@ const PracticeSpace = () => {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1, y: [0, 10, 0] }}
                                 transition={{ delay: 1.2, duration: 2, repeat: Infinity }}
-                                className="absolute bottom-20 cursor-pointer"
+                                className="absolute bottom-8 cursor-pointer"
                                 onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
                             >
                                 <ChevronDown className="w-8 h-8 text-blue-900" />

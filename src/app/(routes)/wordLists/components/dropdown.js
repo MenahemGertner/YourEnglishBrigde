@@ -47,11 +47,13 @@ export default function UsefulWordsDropdown({ onLinkClick }) {
         {isOpen && (
           <div className="absolute z-10 bg-white shadow-lg rounded mt-2 py-2 w-48 left-1/2 transform -translate-x-1/2">
             {[
+              // { href: '/beginners', label: 'מתחילים מהבסיס'},
               { href: "/wordLists?category=500", label: "רמה 1" },
               { href: "/wordLists?category=1000", label: "רמה 2" },
               { href: "/wordLists?category=1500", label: "רמה 3" },
               { href: "/wordLists?category=2000", label: "רמה 4" },
               { href: "/wordLists?category=2500", label: "רמה 5" },
+              // { href: '/underConstruction', label: 'מתקדמים'},
               { href: "/checkYourLevel", label: "מה הרמה שלי?" }
             ].map((item, index, array) => (
               <div key={item.href}>

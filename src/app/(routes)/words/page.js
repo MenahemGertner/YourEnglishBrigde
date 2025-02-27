@@ -8,6 +8,7 @@ import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import SequenceReset from './navigation/personalGuide/components/sequenceReset'
 
+
 async function getWordData(index, category = '500') {
   try {
     const headersList = await headers();

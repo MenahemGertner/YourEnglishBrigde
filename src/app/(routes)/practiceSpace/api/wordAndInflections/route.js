@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/db/supabase';
+import { createServerClient } from '@/lib/db/supabase';
 import { getServerSession } from "next-auth/next";
 import { NextResponse } from 'next/server';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -6,30 +6,44 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export async function GET(request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    if (!session?.user?.email || !session?.accessToken) {
       return NextResponse.json(
         { error: 'יש להתחבר כדי לצפות במילים' },
         { status: 401 }
       );
     }
 
-    // Get user ID first
-    const { data: userData, error: userError } = await supabaseAdmin
-      .from('users')
-      .select('id')
-      .eq('email', session.user.email)
-      .single();
+    // יצירת לקוח Supabase עם הטוקן של המשתמש
+    const supabaseClient = createServerClient(session.accessToken);
+    
+    // Get user ID - אופציונלי כי ה-ID אמור להיות בסשן
+    const userId = session.user.id;
+    
+    let userIdToUse;
+    
+    if (!userId) {
+      // במקרה שאין ID בסשן, אפשר לחפש אותו לפי אימייל
+      const { data: userData, error: userError } = await supabaseClient
+        .from('users')
+        .select('id')
+        .eq('email', session.user.email)
+        .single();
 
-    if (userError) {
-      console.error('User lookup error:', userError);
-      return NextResponse.json({ error: 'משתמש לא נמצא' }, { status: 404 });
+      if (userError) {
+        console.error('User lookup error:', userError);
+        return NextResponse.json({ error: 'משתמש לא נמצא' }, { status: 404 });
+      }
+      
+      userIdToUse = userData.id;
+    } else {
+      userIdToUse = userId;
     }
 
     // Get words and their levels
-    const { data: userWords, error: wordsError } = await supabaseAdmin
+    const { data: userWords, error: wordsError } = await supabaseClient
       .from('user_words')
       .select('word_forms, level')
-      .eq('user_id', userData.id)
+      .eq('user_id', userIdToUse)
       .not('word_forms', 'is', null);
 
     if (wordsError) {

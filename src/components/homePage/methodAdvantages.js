@@ -84,7 +84,7 @@ const MethodAdvantages = () => {
   ];
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden" dir="rtl">
+    <div className="shadow-lg rounded" >
       <div className="text-center p-8 bg-gradient-to-r from-blue-400 to-purple-400">
         <h1 className="text-3xl font-bold">
           דרך מהפכנית ללימוד אנגלית!
@@ -124,7 +124,7 @@ const MethodAdvantages = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {activeTab === 'challenges'
               ? challenges.map((item, index) => (
-                  <div key={index} className="flex space-x-4 space-x-reverse p-5 bg-red-50 rounded-lg border border-red-100 transition-transform hover:scale-102 hover:shadow-md p-4 gap-2">
+                  <div key={index} className="flex space-x-4 space-x-reverse p-5 bg-red-50 rounded-lg border border-red-100 hover:shadow-md p-4 gap-2">
                     <div className="flex-shrink-0 ml-4">{item.icon}</div>
                     <div className="flex-1">
                       <h3 className="font-bold text-lg mb-2 text-red-700">{item.title}</h3>
@@ -133,7 +133,7 @@ const MethodAdvantages = () => {
                   </div>
                 ))
               : solutions.map((item, index) => (
-                  <div key={index} className="flex space-x-4 space-x-reverse p-5 bg-green-50 rounded-lg border border-green-100 transition-transform hover:scale-102 hover:shadow-md p-4 gap-2">
+                  <div key={index} className="flex space-x-4 space-x-reverse p-5 bg-green-50 rounded-lg border border-green-100 hover:shadow-md p-4 gap-2">
                     <div className="flex-shrink-0 ml-4">{item.icon}</div>
                     <div className="flex-1">
                       <h3 className="font-bold text-lg mb-2 text-green-700">{item.title}</h3>
@@ -145,7 +145,7 @@ const MethodAdvantages = () => {
         </div>
 
         {activeTab === 'solutions' && (
-          <div className="p-8 text-white text-center bg-green-600">
+          <div className="p-8 text-white text-center bg-green-600 ">
             <h2 className="text-2xl font-bold mb-4">רוצה לשבור את מחסום השפה?</h2>
             <p className="mb-6">הצטרף עכשיו ותהנה מחווית לימוד אחרת!</p>
             <Link href="/registration"

@@ -1,16 +1,30 @@
 'use server'
-import { createClient } from '@supabase/supabase-js'
+
 import { redirect } from 'next/navigation'
+import { createServerClient } from '@/lib/db/supabase'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 
 export async function getPreviousWord(userId, currentIndex) {
   if (!userId) throw new Error('User ID is required')
+  
+  // קבלת מידע על הסשן מהשרת
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.accessToken || !session?.user?.id) {
+    throw new Error('Authentication required')
+  }
+  
+  // וידוא שהמשתמש מנסה לגשת למידע שלו בלבד
+  if (session.user.id !== userId) {
+    throw new Error('Unauthorized access')
+  }
+  
+  // יצירת לקוח Supabase עם הטוקן של המשתמש
+  // הטוקן כבר אמור להיות מחודש אוטומטית על ידי NextAuth
+  const supabaseClient = createServerClient(session.accessToken)
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-  )
-
-  const { data: userData, error: userError } = await supabase
+  const { data: userData, error: userError } = await supabaseClient
     .from('users')
     .select('last_position')
     .eq('id', userId)

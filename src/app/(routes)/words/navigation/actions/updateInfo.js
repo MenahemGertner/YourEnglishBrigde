@@ -1,6 +1,9 @@
 'use server'
-import { createClient } from '@supabase/supabase-js'
+
 import { intervals } from '../helpers/reviewHelperFunctions';
+import { createServerClient } from '@/lib/db/supabase';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function updateInfo(userId, wordId, level, category, word, inf) {
   try {
@@ -10,13 +13,23 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
       throw new Error('רמת קושי לא תקינה');
     }
 
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
+    // קבלת מידע על הסשן מהשרת
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.accessToken || !session?.user?.id) {
+      throw new Error('נדרש אימות');
+    }
+    
+    // וידוא שהמשתמש מנסה לגשת למידע שלו בלבד
+    if (session.user.id !== userId) {
+      throw new Error('גישה לא מורשית');
+    }
+    
+    // יצירת לקוח Supabase עם הטוקן של המשתמש
+    const supabaseClient = createServerClient(session.accessToken);
 
     // בדיקה האם המילה קיימת
-    const { data: existingWord, error: checkError } = await supabase
+    const { data: existingWord, error: checkError } = await supabaseClient
       .from('user_words')
       .select('*')
       .match({ user_id: userId, word_id: wordId })
@@ -25,7 +38,7 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
     if (checkError && checkError.code !== 'PGRST116') throw checkError;
 
     // קבלת נתוני המשתמש הנוכחיים
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await supabaseClient
       .from('users')
       .select('practice_counter, last_position')
       .eq('id', userId)
@@ -36,7 +49,7 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
     // טיפול ברמה 1 - מחיקה
     if (level === 1) {
       if (existingWord) {
-        await supabase
+        await supabaseClient
           .from('user_words')
           .delete()
           .match({ user_id: userId, word_id: wordId });
@@ -48,11 +61,11 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
         learning_sequence_pointer: userData.last_position?.learning_sequence_pointer || 0
       };
 
-      if (wordId - 1 == (userData.last_position?.learning_sequence_pointer || 0)) {
+      if (wordId - 1 == (userData.last_position?.learning_sequence_pointer || 0) || userData.last_position === null) {
         updatedLastPosition.learning_sequence_pointer = wordId;
       }
 
-      await supabase
+      await supabaseClient
         .from('users')
         .update({
           last_position: updatedLastPosition
@@ -67,7 +80,7 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
     if (existingWord) {
       const nextReview = existingWord.next_review + intervals[level];
       
-      const { data: updateData, error: updateError } = await supabase
+      const { data: updateData, error: updateError } = await supabaseClient
         .from('user_words')
         .update({
           level,
@@ -87,7 +100,7 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
         inflactions: inf
       };
 
-      const { data: createData, error: createError } = await supabase
+      const { data: createData, error: createError } = await supabaseClient
         .from('user_words')
         .insert([{
           user_id: userId,
@@ -108,11 +121,11 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
       learning_sequence_pointer: userData.last_position?.learning_sequence_pointer || 0
     };
 
-    if (wordId > (userData.last_position?.learning_sequence_pointer || 0)) {
+    if (wordId - 1 == (userData.last_position?.learning_sequence_pointer || 0)|| userData.last_position === null) {
       updatedLastPosition.learning_sequence_pointer = wordId;
     }
 
-    await supabase
+    await supabaseClient
       .from('users')
       .update({
         last_position: updatedLastPosition,

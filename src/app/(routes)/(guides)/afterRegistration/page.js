@@ -6,17 +6,17 @@ import Link from 'next/link';
 const AfterRegistration = () => {
 
   const programs = [
-    { name: 'מתחילים מהבסיס', href: '/beginners' },
+    { name: 'מתחילים מהבסיס', href: '/underConstruction' },
     { name: 'רמה 1', href: '/startLearn?level=1' },
     { name: 'רמה 2', href: '/startLearn?level=2' },
-    { name: 'רמה 3', href: '/startLearn?level=3' },
-    { name: 'רמה 4', href: '/startLearn?level=4' },
-    { name: 'רמה 5', href: '/startLearn?level=5' },
-    { name: 'מתקדמים', href: '/advanced' }
+    { name: 'רמה 3', href: '/underConstruction' },
+    { name: 'רמה 4', href: '/underConstruction' },
+    { name: 'רמה 5', href: '/underConstruction' },
+    { name: 'מתקדמים', href: '/underConstruction' }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center justify-center p-8">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center justify-center p-8 my-8">
       <div className="text-center max-w-3xl mx-auto space-y-12">
         <h2 className="text-3xl font-bold text-blue-900 mb-56 animate-fade-in">
           נרשמת בהצלחה!
@@ -44,7 +44,7 @@ const AfterRegistration = () => {
         </div>
 
         <div className="space-y-4 pt-16">
-          <p className="text-lg text-gray-600">כבר בדקת את רמת האנגלית שלך?</p>
+          <p className="text-lg text-gray-600">כבר יודע את רמת האנגלית שלך?</p>
         </div>
 
         {/* תוכניות לימוד */}
