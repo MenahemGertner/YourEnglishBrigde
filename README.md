@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Your English Bridge 🌉
 
-## Getting Started
+<img width="934" alt="image" src="https://github.com/user-attachments/assets/0e5dd899-46fe-4eab-b039-40702948dc04" />
 
-First, run the development server:
+## מבוא
+פרויקט Your English Bridge הוא המשך של Learn English Project - פרויקט אישי שפתחתי בפייתון. הפרויקט מציע גישה חדשנית וייחודית ללימוד השפה האנגלית, עם דגש על למידה אפקטיבית ומותאמת אישית.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🎯 מטרת הפרויקט
+פיתוח פלטפורמה חדשנית ללימוד אנגלית המתמקדת ב-2,500 המילים השימושיות ביותר, תוך שילוב טכנולוגיות מתקדמות ושיטות למידה חדשניות.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🏗️ עקרונות הפיתוח
+- **מוכנות לפרודקשן**: שימוש בכלים ותשתיות מודרניים
+- **חווית משתמש במרכז**: תכנון וביצוע ממוקד משתמש
+- **חדשנות**: פתרונות יצירתיים מבוססי מחקר מעמיק
+- **אינטגרציה**: גישה הוליסטית המשלבת את כל הכלים למערכת אחודה
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## 💡 יתרונות המערכת
+- מיקוד במטרות ברורות
+- התאמה אישית למשתמש
+- הטמעה בהקשר נרחב
+- דגש על מוטיבציה
+- חיזוק זיכרון לטווח ארוך
+- מעקב התקדמות מפורט
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ טכנולוגיות
+- **Frontend**: React, Next.js
+- **Backend**: Next.js
+- **Styling**: Tailwind CSS
+- **Database**: 
+  - MongoDB (מידע כללי)
+  - Supabase (נתוני משתמשים)
+- **Authentication**: next-auth, Google Authenticator
 
-## Learn More
+## 📚 מבנה האתר
 
-To learn more about Next.js, take a look at the following resources:
+### פותח במלואו
+- עמוד הצגת ושינון מילים ראשי
+- רשימות מילים שימושיות
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### בתהליך פיתוח
+- דף הבית
+- דפי שירות (אודות, צור קשר)
+- דפים אינפורמטיביים
+- עמוד הרשמה
+- עמוד חזרה והטמעה
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### בפיתוח עתידי
+- בדיקת רמה
+- אנגלית למתחילים
+- אנגלית למתקדמים
 
-## Deploy on Vercel
+## ✨ פיצ'רים קיימים
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### כרטיס מילה מתקדם
+- הטיות ונגזרות
+- משפטי דוגמה עם הדגשה
+- תרגומים
+- הגייה קולית
+- מידע דקדוקי מורחב
+- ביטויים ומילים נרדפות
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### מערכת למידה חכמה
+- ניווט לפי אינדקס
+- דירוג מילים ב-4 רמות
+- שמירת התקדמות אוטומטית
+- התאמת קצב אישית
+- מעקב אחר מילים מאתגרות
+
+### כלי תרגול והטמעה
+- קריאה: סיפורים מותאמים אישית
+- שמיעה: הקראה באמצעות AI
+- כתיבה: תרגילי השלמה
+- דיבור: הקלטה ומעקב עצמי
+
+## 🚀 פיצ'רים עתידיים
+- משוב AI בזמן אמת
+- ניתוח התקדמות מתקדם
+- מסגרת זמנים דינמית
+- חיפוש מתקדם
+- פלטפורמה חברתית ללומדים
+
+## 📊 סטטוס הפרויקט
+- **פיתוח פיצ'רים**: מתעדכן באופן שוטף
+- **עיצוב**: 50% הושלם
+- **רספונסיביות**: 80% הושלם
+
+
+---
+*הפרויקט נמצא בפיתוח פעיל. אני אשמח לקבל משוב מהקהילה!*
