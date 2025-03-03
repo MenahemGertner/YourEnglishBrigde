@@ -58,7 +58,7 @@ export default function RegistrationPage() {
       
       await signIn('google', { 
         redirect: true,
-        callbackUrl: '/afterRegistration'
+        callbackUrl: '/levelSelection?showWelcome=true'
       });
   
     } catch (err) {
@@ -180,7 +180,7 @@ export default function RegistrationPage() {
   
         {isLoading && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-lg">
+            <div className="bg-white p-6 rounded">
               <p className="text-lg">מעבד את בקשתך...</p>
             </div>
           </div>

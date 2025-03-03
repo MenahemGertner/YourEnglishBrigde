@@ -44,7 +44,7 @@ const StoppingPoint = () => {
     }, [])
 
     if (!session || pathname === '/words' || pathname === '/practiceSpace' ||
-         pathname === '/afterRegistration'|| pathname === '/startLearn' || pathname === '/checkYourLevel') {
+         pathname === '/levelSelection'|| pathname === '/startLearn' || pathname === '/checkYourLevel') {
       return null
     }
 

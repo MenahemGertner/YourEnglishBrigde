@@ -2,13 +2,33 @@
 
 import { Cat } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-const AfterRegistration = () => {
-
+const LevelSelection = () => {
+  const searchParams = useSearchParams();
+  const [showWelcome, setShowWelcome] = useState(false);
+  
+  useEffect(() => {
+    // בדוק אם יש פרמטר showWelcome ב-URL
+    const shouldShowWelcome = searchParams.get('showWelcome') === 'true';
+    
+    if (shouldShowWelcome) {
+      setShowWelcome(true);
+      
+      // הסר את ההודעה אחרי 3 שניות
+      const timer = setTimeout(() => {
+        setShowWelcome(false);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [searchParams]);
+  
   const programs = [
     { name: 'מתחילים מהבסיס', href: '/underConstruction' },
-    { name: 'רמה 1', href: '/startLearn?level=1' },
-    { name: 'רמה 2', href: '/startLearn?level=2' },
+    { name: 'רמה 1', href: '/words?index=1&category=500' },
+    { name: 'רמה 2', href: '/words?index=501&category=1000' },
     { name: 'רמה 3', href: '/underConstruction' },
     { name: 'רמה 4', href: '/underConstruction' },
     { name: 'רמה 5', href: '/underConstruction' },
@@ -16,11 +36,15 @@ const AfterRegistration = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col items-center justify-center p-8 my-8">
+    <div className="min-h-screen bg-gradient-to-t from-blue-50 to-white flex flex-col items-center justify-center p-8 my-48">
+      {showWelcome && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-xl text-center">
+            <h2 className="text-2xl font-bold">ברוך הבא!</h2>
+          </div>
+        </div>
+      )}
       <div className="text-center max-w-3xl mx-auto space-y-12">
-        <h2 className="text-3xl font-bold text-blue-900 mb-56 animate-fade-in">
-          נרשמת בהצלחה!
-        </h2>
 
         {/* סקשן החתול והטקסט */}
         <div className="relative inline-block mb-16">
@@ -29,7 +53,7 @@ const AfterRegistration = () => {
             className="group block relative transition-all duration-300 hover:scale-110"
           >
             <Cat
-              className="h-32 w-32 transition-all duration-300 text-blue-900 group-hover:text-blue-700"
+              className="h-32 w-32 transition-all duration-300 text-indigo-900 group-hover:text-indigo-700"
             />
             <div className="
               absolute bg-white border-2 border-blue-100 rounded-xl p-6
@@ -37,13 +61,13 @@ const AfterRegistration = () => {
               whitespace-normal w-64 md:w-80
               transition-all duration-300
              ">
-              לחיצה עלי, כדי שנדע את רמת האנגלית שלך, ושכבר נתחיל במסלול הלימוד האישי שלך!
+              בכדי שהלימוד יהיה יעיל ואפקטיבי, יש לבחור את רמת הלימוד המתאימה. לבדיקת רמה לחץ כאן
               <div className="absolute -bottom-3 right-8 w-6 h-6 bg-white border-r-2 border-b-2 border-blue-100 transform rotate-45" />
             </div>
           </Link>
         </div>
 
-        <div className="space-y-4 pt-16">
+        <div className="space-y-4">
           <p className="text-lg text-gray-600">כבר יודע את רמת האנגלית שלך?</p>
         </div>
 
@@ -71,4 +95,4 @@ const AfterRegistration = () => {
   );
 };
 
-export default AfterRegistration;
+export default LevelSelection;

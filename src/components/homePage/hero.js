@@ -14,7 +14,7 @@ const Hero = () => {
                 לשבור את מחסום השפה
               </h2>
               <p className="max-w-2xl mx-auto text-xl text-gray-600 mb-8">
-                הדרך החכמה והיעילה ללמוד אנגלית. 
+                לימוד אנגלית בדרך יעילה ואפקטיבית. 
                 מותאם אישית, שיטה יחודית ופורצת דרך, פשוט עובד!
               </p>
               {/* <div className="flex justify-center gap-4">

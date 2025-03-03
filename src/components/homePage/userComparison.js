@@ -261,7 +261,7 @@ const UserComparison = () => {
           בין אם תבחרו להתחיל כמשתמשים רגילים או לשדרג מיד למשתמשים רשומים - אנחנו כאן ללוות אתכם בדרך להצלחה באנגלית
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/words?index=1&category=500" className="bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-blue-50 transition-colors">
+          <Link href="/levelSelection" className="bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-blue-50 transition-colors">
             התחילו כמשתמש רגיל
           </Link>
           <Link href="/registration" className="bg-gradient-to-r from-indigo-700 via-blue-600 to-indigo-700 text-white py-3 px-6 rounded-lg font-medium hover:shadow-lg transition-shadow">
