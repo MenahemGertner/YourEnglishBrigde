@@ -8,7 +8,7 @@ import PartOfSpeech, {partOfSpeechMap} from "../helpers/partOfSpeech.js";
 import partOfSpeechInflection from '../helpers/partOfSpeechInflection.js';
 import WindowMode from "../helpers/windowMode";
 import Link from "next/link";
-import { useWindowContext } from '@/app/providers/WindowContext';
+import { useWindowContext } from '@/app/(routes)/words/card/providers/WindowContext.js';
 import MoreOrLess from "@/components/features/MoreOrLess"
 import underLine from "@/components/features/UnderLine";
 

@@ -36,7 +36,7 @@ const LevelSelection = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-t from-blue-50 to-white flex flex-col items-center justify-center p-8 my-48">
+    <div className="min-h-screen bg-gradient-to-t from-blue-50 to-white flex flex-col items-center justify-center p-8 my-28">
       {showWelcome && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-lg shadow-xl text-center">
@@ -47,7 +47,7 @@ const LevelSelection = () => {
       <div className="text-center max-w-3xl mx-auto space-y-12">
 
         {/* סקשן החתול והטקסט */}
-        <div className="relative inline-block mb-16">
+        <div className="relative inline-block mb-4">
           <Link
             href="/checkYourLevel"
             className="group block relative transition-all duration-300 hover:scale-110"

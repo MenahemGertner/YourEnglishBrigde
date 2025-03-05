@@ -7,6 +7,8 @@ import GuestContent from '@/components/auth/GuestContent';
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import SequenceReset from './navigation/personalGuide/components/sequenceReset'
+import { ColorProvider } from './navigation/components/colorContext';
+import { WindowProvider } from './card/providers/WindowContext'
 
 
 async function getWordData(index, category = '500') {
@@ -47,8 +49,10 @@ export default async function Word({ searchParams }) {
 
   return (
     <div className="min-h-screen flex items-center justify-center flex-col py-8">
+      <ColorProvider>
+      <WindowProvider>
       <MainCard word={data.word} index={data.index} tr={data.tr}
-                ps={data.ps} inf={data.inf} sen={data.sen}/>
+                ps={data.ps} inf={data.inf} sen={data.sen}/>               
       <div className="mb-4 mt-8">
       <ExtractInfo infl={data.infl} der={data.der} ex={data.ex}
                     syn={data.synonyms} con={data.confused}/>
@@ -61,6 +65,8 @@ export default async function Word({ searchParams }) {
       <GuestContent>
       <NextAndPrevious index={data.index} categorySize={categorySize} />
       </GuestContent>
+      </WindowProvider>
+      </ColorProvider>
     </div>
   );
 }
