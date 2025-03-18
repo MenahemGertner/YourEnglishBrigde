@@ -24,7 +24,7 @@ const UnderConstruction = () => {
           העמוד בבנייה{dots}
         </h1>
         
-        <p className="text-xl text-gray-600 mb-8">
+        <p className="text-xl text-gray-600 mb-8" dir='ltr'>
           !אנחנו עובדים במרץ כדי להביא לכם את התוכן הטוב ביותר
         </p>
         

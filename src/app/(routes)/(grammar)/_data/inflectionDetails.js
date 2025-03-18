@@ -66,6 +66,11 @@ export const InflectionDetails = {
             translation: 'שם עצם לא ספירתי',
             explanation: 'שם עצם שלא ניתן למנות באופן ישיר',
             example: 'water, sand, information'
+        },
+        'Gerund': {
+            translation: 'שם הפועל',
+            explanation: 'צורת פועל בסיומת ing המשמשת כשם עצם',
+            example: 'Smoking is harmful'
         }
     }},
     verbs: {
@@ -130,11 +135,6 @@ export const InflectionDetails = {
           explanation: 'הטיית הפועל לגוף שלישי יחיד בזמן הווה',
           example: 'He walks, She sings'
       },
-      'Gerund': {
-            translation: 'שם הפועל',
-            explanation: 'צורת פועל בסיומת ing המשמשת כשם עצם',
-            example: 'Smoking is harmful'
-        },
     }},
     adjectives: {
         fullName: 'Adjectives - תארים',
@@ -192,7 +192,12 @@ export const InflectionDetails = {
             translation: 'תואר כמותי',
             explanation: 'תואר המציין כמות או מספר',
             example: 'many books, few friends, several cars'
-        }
+        },
+        'Derived adjective': {
+    translation: 'תואר נגזר',
+    explanation: 'תואר שנוצר משם עצם או מילה אחרת בתוספת סיומת, מציין תכונה הקשורה למילת הבסיס',
+    example: 'watery, powerful, musical, childish'
+}
     }},
     functionWords: {
         fullName: 'Function Words - מילות פונקציה',

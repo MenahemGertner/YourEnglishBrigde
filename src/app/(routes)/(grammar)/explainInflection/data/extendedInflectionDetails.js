@@ -317,6 +317,31 @@ export const ExtendedInflectionDetails = {
             ],
             commonMistakes: 'טעויות נפוצות כוללות שימוש בצורת רבים, שימוש ב-a/an, או ניסיון למנות ישירות.',
             usageTips: 'השתמשו במילים כמו some, much, little. אם צריך למנות, השתמשו ביחידות מידה (two cups of water).'
+        },
+        'Gerund': {
+            detailedExplanation: `צורת ה-gerund באנגלית נוצרת על ידי הוספת ing לפועל. משמשת כשם עצם ויכולה לתפקד כנושא, מושא, או אחרי מילות יחס. חלק מהפעלים באנגלית דורשים אחריהם gerund.`,
+            examples: [
+                {
+                    english: 'smoking',
+                    hebrew: 'עישון',
+                    inSentence: {
+                        english: 'Smoking is dangerous to your health',
+                        hebrew: 'עישון מסוכן לבריאותך',
+                        explanation: 'gerund כנושא המשפט'
+                    }
+                },
+                {
+                    english: 'enjoys reading',
+                    hebrew: 'נהנה מקריאה',
+                    inSentence: {
+                        english: 'She enjoys reading novels',
+                        hebrew: 'היא נהנית מקריאת רומנים',
+                        explanation: 'gerund אחרי הפועל enjoy'
+                    }
+                }
+            ],
+            commonMistakes: 'שימוש בצורת המקור (to + verb) במקום gerund, שגיאות בכתיב בעת הוספת ing.',
+            usageTips: 'למדו אילו פעלים דורשים אחריהם gerund: enjoy, finish, practice, suggest, recommend.'
         }
             
     },
@@ -596,31 +621,6 @@ export const ExtendedInflectionDetails = {
             ],
             commonMistakes: 'שכחת הוספת s/es, טעויות בכללי ההוספה (במיוחד עם y).',
             usageTips: 'זכרו את הכללים המיוחדים: y הופך ל-ies, הוספת es אחרי צלילי שריקה.'
-        },
-        'Gerund': {
-            detailedExplanation: `צורת ה-gerund באנגלית נוצרת על ידי הוספת ing לפועל. משמשת כשם עצם ויכולה לתפקד כנושא, מושא, או אחרי מילות יחס. חלק מהפעלים באנגלית דורשים אחריהם gerund.`,
-            examples: [
-                {
-                    english: 'smoking',
-                    hebrew: 'עישון',
-                    inSentence: {
-                        english: 'Smoking is dangerous to your health',
-                        hebrew: 'עישון מסוכן לבריאותך',
-                        explanation: 'gerund כנושא המשפט'
-                    }
-                },
-                {
-                    english: 'enjoys reading',
-                    hebrew: 'נהנה מקריאה',
-                    inSentence: {
-                        english: 'She enjoys reading novels',
-                        hebrew: 'היא נהנית מקריאת רומנים',
-                        explanation: 'gerund אחרי הפועל enjoy'
-                    }
-                }
-            ],
-            commonMistakes: 'שימוש בצורת המקור (to + verb) במקום gerund, שגיאות בכתיב בעת הוספת ing.',
-            usageTips: 'למדו אילו פעלים דורשים אחריהם gerund: enjoy, finish, practice, suggest, recommend.'
         }
         },
         adjectives:{
@@ -774,6 +774,31 @@ export const ExtendedInflectionDetails = {
         commonMistakes: 'טעויות נפוצות כוללות הצבת התואר אחרי שם העצם (בדומה לעברית) או סדר לא נכון כאשר יש מספר תארים.',
         usageTips: 'כשיש מספר תארים, יש סדר קבוע: גודל, צורה, גיל, צבע, מוצא.'
     },
+    'Derived adjective': {
+    detailedExplanation: `תואר נגזר באנגלית הוא תואר שנוצר משם עצם, פועל, או מילה אחרת בתוספת סיומת. תארים הנגזרים משמות עצם (Denominative adjectives) לרוב נוצרים באמצעות סיומות כמו -y, -ful, -al, -ous, -ic, ועוד. הם מבטאים תכונה, מאפיין או קשר למילת הבסיס.`,
+    examples: [
+        {
+            english: 'watery',
+            hebrew: 'מימי',
+            inSentence: {
+                english: 'The soup was too watery',
+                hebrew: 'המרק היה מימי מדי',
+                explanation: 'תואר המתאר משהו שמכיל מים רבים או דומה למים, נגזר מהמילה water בתוספת הסיומת -y'
+            }
+        },
+        {
+            english: 'powerful',
+            hebrew: 'רב-עוצמה',
+            inSentence: {
+                english: 'She gave a powerful speech',
+                hebrew: 'היא נשאה נאום רב-עוצמה',
+                explanation: 'תואר המתאר משהו בעל כוח או השפעה, נגזר מהמילה power בתוספת הסיומת -ful'
+            }
+        }
+    ],
+    commonMistakes: 'טעויות נפוצות כוללות בלבול בין תארים נגזרים לבין שמות עצם מורכבים, או שימוש לא נכון בסיומות.',
+    usageTips: 'שים לב לשינויי איות שעשויים להתרחש כשמוסיפים סיומת לשם עצם, כמו השמטת e אחרונה או הכפלת אות.'
+},
     'Predicative': {
         detailedExplanation: `תואר מנבא מופיע אחרי פועל קישור (be, seem, look, feel, etc.) ומתייחס לנושא המשפט. בניגוד לתואר מייחס, הוא אינו מופיע צמוד לשם העצם.`,
         examples: [

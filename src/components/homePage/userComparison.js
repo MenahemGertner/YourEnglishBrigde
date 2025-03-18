@@ -132,7 +132,7 @@ const UserComparison = () => {
                 <p className="text-gray-700 mb-4">הרשמו כמשתמשים ותיהנו מכל היתרונות המתקדמים שיש לנו להציע</p>
                 <button 
                   onClick={() => setSelectedTab('premium')}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-3 px-8 rounded-lg font-medium hover:shadow-lg transition-all"
+                  className="bg-gradient-to-r from-indigo-700 via-blue-600 to-indigo-700 text-white py-3 px-8 rounded-lg font-medium hover:shadow-lg transition-all"
                 >
                   גלו את יתרונות המשתמש הרשום
                 </button>

@@ -8,7 +8,9 @@ const INFLECTIONS_MAP = {
             'Verbal Noun',
             'Uncountable Noun',
             'Countable Noun',
-            'Concrete Noun'
+            'Concrete Noun',
+            'Gerund',
+            'Agent Noun'
         ]
     },
     verbs: {
@@ -23,8 +25,7 @@ const INFLECTIONS_MAP = {
             'Past Perfect',
             'Modal Auxiliary Verb',
             'Verb Infinitive',
-            'Third Person Singular Present',
-            'Gerund'
+            'Third Person Singular Present'
         ]
     },
     adjectives: {
@@ -36,7 +37,8 @@ const INFLECTIONS_MAP = {
             'Attributive',
             'Predicative',
             'Possessive',
-            'Qualitative'
+            'Qualitative',
+            'Derived adjective'
         ]
     },
     functionWords: {

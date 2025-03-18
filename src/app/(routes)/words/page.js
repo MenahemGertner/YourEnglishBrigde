@@ -14,7 +14,7 @@ import { WindowProvider } from './card/providers/WindowContext'
 async function getWordData(index, category = '500') {
   try {
     const headersList = await headers();
-    const domain = await headersList.get('host');
+    const domain = headersList.get('host');
     const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
     
     const response = await fetch(
