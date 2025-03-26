@@ -14,9 +14,32 @@ const CheckYourLevel = () => {
     currentQuestion,
     questionNumber,
     userLevel,
+    levelSuccesses,
+    levelFailures,
     handleStartTest,
     handleAnswerSelection
   } = useQuizEngine(quizData);
+
+  // חישוב אחוז ההתקדמות המתוקן
+  const calculateProgress = () => {
+    // נמצא את מספר ההצלחות וכשלונות המקסימליים באותה רמה
+    let maxSuccessesInAnyLevel = 0;
+    let maxFailuresInAnyLevel = 0;
+    
+    for (let level = 1; level <= 6; level++) {
+      maxSuccessesInAnyLevel = Math.max(maxSuccessesInAnyLevel, levelSuccesses[level]);
+      maxFailuresInAnyLevel = Math.max(maxFailuresInAnyLevel, levelFailures[level]);
+    }
+    
+    // חישוב אחוזים בהתאם ללוגיקה שהסברת
+    // 5 הצלחות = 100%, כל הצלחה שווה 20%
+    // 4 כשלונות = 100%, כל כשלון שווה 25%
+    const successProgress = Math.min(maxSuccessesInAnyLevel * 20, 100);
+    const failureProgress = Math.min(maxFailuresInAnyLevel * 25, 100);
+    
+    // לוקח את הערך הגבוה מבין השניים (לא מצטבר)
+    return Math.max(successProgress, failureProgress);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-blue-50 items-center justify-center space-y-6 text-center p-4 my-8">
@@ -37,11 +60,16 @@ const CheckYourLevel = () => {
       {testActive && currentQuestion && (
         <div className="w-full max-w-2xl space-y-6 bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-gray-600">שאלה {questionNumber} </span>
-            <span className="text-gray-600">רמה {currentQuestion.level}</span>
+            {/* החלפת מספר השאלה במד ההתקדמות - רק המד בלי האחוז */}
+            <div className="w-24 bg-gray-200 rounded-full h-2.5">
+              <div 
+                className="bg-gradient-to-r from-blue-600 to-purple-700 h-2.5 rounded-full transition-all duration-500 ease-in-out" 
+                style={{ width: `${calculateProgress()}%` }}
+              ></div>
+            </div>
+            {/* <span className="text-gray-600">רמה {currentQuestion.level}</span> */}
           </div>
           
-          {/* כאן השינוי - השתמש בפונקצית העיצוב במקום להציג ישירות את השאלה */}
           <h2 className="text-xl font-semibold mb-4 text-left" dir="ltr">
             {formatQuestionText(currentQuestion.question)}
           </h2>

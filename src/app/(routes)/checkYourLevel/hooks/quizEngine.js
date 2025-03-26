@@ -18,6 +18,9 @@ export const useQuizEngine = (quizData) => {
   // Track success and failure counts for each level
   const [levelSuccesses, setLevelSuccesses] = useState({1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0});
   const [levelFailures, setLevelFailures] = useState({1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0});
+  
+  // Track max level based on failures
+  const [maxLevelAllowed, setMaxLevelAllowed] = useState(6);
 
   // Start the test
   const handleStartTest = () => {
@@ -28,7 +31,10 @@ export const useQuizEngine = (quizData) => {
 
   // Get a new question based on current level
   const getNextQuestion = (level = currentLevel) => {
-    const levelKey = `level${level}`;
+    // Ensure we don't exceed the maximum allowed level
+    let adjustedLevel = Math.min(level, maxLevelAllowed);
+    
+    const levelKey = `level${adjustedLevel}`;
     const questionsAtLevel = quizData[levelKey];
     
     // Filter out questions that have already been asked
@@ -54,7 +60,7 @@ export const useQuizEngine = (quizData) => {
     // Set the current question
     setCurrentQuestion({
       ...questionsAtLevel[questionIndex],
-      level: level,
+      level: adjustedLevel,
       questionId: `${levelKey}-${questionIndex}`
     });
     
@@ -63,7 +69,7 @@ export const useQuizEngine = (quizData) => {
 
   // Check if test should end based on the new criteria
   const checkTestCompletion = (updatedSuccesses, updatedFailures) => {
-    // Check if any level has 3 successes
+    // Check if any level has 5 successes
     for (let level = 1; level <= 6; level++) {
       if (updatedSuccesses[level] >= 5) {
         setUserLevel(level);
@@ -87,6 +93,29 @@ export const useQuizEngine = (quizData) => {
     return false; // Test should continue
   };
 
+  // Update max level allowed based on failure pattern - dynamic version
+  const updateMaxLevelAllowed = (updatedFailures) => {
+    // התחל ברמה המקסימלית
+    let maxLevel = 6;
+    
+    // עבור כל רמה (מהנמוכה לגבוהה)
+    for (let level = 1; level <= 6; level++) {
+      // ספור כשלונות מצטברים עד רמה זו
+      let cumulativeFailures = 0;
+      for (let i = 1; i <= level; i++) {
+        cumulativeFailures += updatedFailures[i];
+      }
+      
+      // אם יש 2+ כשלונות מצטברים עד רמה זו
+      if (cumulativeFailures >= 2) {
+        maxLevel = level; // הגבל לרמה זו
+        break; // צא מהלולאה כשמצאת את ההגבלה הראשונה
+      }
+    }
+    
+    setMaxLevelAllowed(maxLevel);
+  };
+
   // Handle when user selects an answer
   const handleAnswerSelection = (selectedIndex) => {
     // Check if answer is correct
@@ -104,6 +133,9 @@ export const useQuizEngine = (quizData) => {
     } else {
       updatedFailures[questionLevel] = updatedFailures[questionLevel] + 1;
       setLevelFailures(updatedFailures);
+      
+      // Update max level allowed based on the new failure pattern
+      updateMaxLevelAllowed(updatedFailures);
     }
     
     // Check if test should end based on criteria BEFORE changing the level
@@ -117,8 +149,8 @@ export const useQuizEngine = (quizData) => {
     // Calculate the new level for the next question based on the answer
     let newLevel = questionLevel;
     if (isCorrect) {
-      // If correct, move to higher level (unless at max)
-      if (questionLevel < 6) {
+      // If correct, move to higher level (unless at max or restricted)
+      if (questionLevel < 6 && questionLevel < maxLevelAllowed) {
         newLevel = questionLevel + 1;
       }
     } else {
@@ -143,6 +175,9 @@ export const useQuizEngine = (quizData) => {
     questionNumber,
     userLevel,
     currentLevel,
+    maxLevelAllowed, // Expose this if needed for UI or debugging
+    levelSuccesses, // חשוף את הצלחות הרמה לחישוב ההתקדמות
+    levelFailures, // חשוף את כישלונות הרמה לחישוב ההתקדמות
     handleStartTest,
     handleAnswerSelection
   };
