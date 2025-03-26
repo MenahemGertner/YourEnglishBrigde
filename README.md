@@ -1,6 +1,6 @@
 # Your English Bridge 🌉
 
-<img width="934" alt="image" src="https://github.com/user-attachments/assets/0e5dd899-46fe-4eab-b039-40702948dc04" />
+<img width="934" alt="image" src="public/example.png" />
 
 ## מבוא
 פרויקט Your English Bridge הוא המשך של Learn English Project - פרויקט אישי שפתחתי בפייתון. הפרויקט מציע גישה חדשנית וייחודית ללימוד השפה האנגלית, עם דגש על למידה אפקטיבית ומותאמת אישית.
