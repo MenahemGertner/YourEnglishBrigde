@@ -1,5 +1,5 @@
 import MainCard from "./card/components/mainCard";
-import ExtractInfo from "./card/components/additionalInfo";
+// import ExtractInfo from "./card/components/additionalInfo";
 import NextAndPrevious from "./navigation/components/nextAndPrevious";
 import StatusIcons from './navigation/components/statusIcons';
 import ProContent from '@/components/auth/ProContent';
@@ -52,10 +52,11 @@ export default async function Word({ searchParams }) {
       <ColorProvider>
       <WindowProvider>
       <MainCard word={data.word} index={data.index} tr={data.tr}
-                ps={data.ps} inf={data.inf} sen={data.sen}/>               
+                ps={data.ps} inf={data.inf} infl={data.infl} ex={data.ex}
+                syn={data.synonyms} con={data.confused}/>               
       <div className="mb-4 mt-8">
-      <ExtractInfo infl={data.infl} der={data.der} ex={data.ex}
-                    syn={data.synonyms} con={data.confused}/>
+      {/* <ExtractInfo infl={data.infl} der={data.der} ex={data.ex}
+                    syn={data.synonyms} con={data.confused}/> */}
       </div>
       <ProContent>
         <StatusIcons word={data.word} index={data.index}

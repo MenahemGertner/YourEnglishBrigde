@@ -18,7 +18,7 @@ const MainWord = ({ word, tr, ps }) => {
                 <PartOfSpeech ps={ps}/>
             </div>
             <Tooltip content={tr}>
-                <h2 className={`${textSizeClass} font-medium duration-300 hover:scale-110`}>{word}</h2>
+                <h2 className={`${textSizeClass} font-medium duration-300 hover:scale-105`}>{word}</h2>
             </Tooltip>                         
             <AudioButton text={word}/>
         </div>

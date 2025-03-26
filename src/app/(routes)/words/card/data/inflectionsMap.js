@@ -10,7 +10,8 @@ const INFLECTIONS_MAP = {
             'Countable Noun',
             'Concrete Noun',
             'Gerund',
-            'Agent Noun'
+            'Agent Noun',
+            'Common Noun'
         ]
     },
     verbs: {
@@ -38,7 +39,10 @@ const INFLECTIONS_MAP = {
             'Predicative',
             'Possessive',
             'Qualitative',
-            'Derived adjective'
+            'Derived adjective',
+            'Property Adjective',
+            'Manner Adverb',
+            'Adverb Form'
         ]
     },
     functionWords: {

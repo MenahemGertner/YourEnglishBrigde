@@ -8,13 +8,13 @@ export const partOfSpeechMap = {
         explain: 'משמשים לביטוי של פעולות בזמנים שונים. \n לכל פועל צורות שונות \nהמראות מתי הפעולה מתרחשת.\n הזמנים הבסיסיים: עבר, הווה או עתיד.',
         colors: {
             default: {
-                color: 'bg-amber-900  shadow-inner shadow-amber-700 hover:shadow-amber-800',
+                color: 'bg-pink-600 shadow-inner shadow-pink-500 hover:shadow-pink-700',
                 textColor: 'text-white',
-                fill: '#78350f'    // צבע בסיסי
+                fill: '#db2777'    // pink-600
             },
             compact: {
-                color: 'bg-amber-600',
-                textColor: 'text-gray-600'
+                color: 'bg-pink-400',  // ורוד בהיר ויזואלי יותר
+                textColor: 'text-white'
             }
         }
     },
@@ -24,13 +24,13 @@ export const partOfSpeechMap = {
         explain: 'משמשות ליצוג של עצמים. \n יכולות להופיע בשתי צורות:\n יחיד או רבים.',
         colors: {
             default: {
-                color: 'bg-blue-900 shadow-inner shadow-blue-500 hover:shadow-blue-600',
+                color: 'bg-sky-600 shadow-inner shadow-sky-500 hover:shadow-sky-700',
                 textColor: 'text-white',
-                fill: '#1e3a8a'    // צבע בסיסי
+                fill: '#0284c7'    // sky-600
             },
             compact: {
-                color: 'bg-blue-300',
-                textColor: 'text-gray-600'
+                color: 'bg-sky-400',  // תכלת בהיר
+                textColor: 'text-white'
             }
         }
     },
@@ -40,13 +40,13 @@ export const partOfSpeechMap = {
         explain: 'משמשות לתיאור של תכונות.\nיכולות להופיע בשלוש צורות:\nרגיל, יותר (השוואה), והכי (הטוב ביותר).',
         colors: {
             default: {
-                color: 'bg-gray-600 shadow-inner shadow-gray-400 hover:shadow-gray-500',
+                color: 'bg-purple-800 shadow-inner shadow-purple-700 hover:shadow-purple-900',
                 textColor: 'text-white',
-                fill: '#4b5563'    // צבע בסיסי
+                fill: '#6b21a8'    // purple-800
             },
             compact: {
-                color: 'bg-gray-300',
-                textColor: 'text-gray-600'
+                color: 'bg-purple-500',  // שומר על אותו גוון, רק בהיר יותר
+                textColor: 'text-white'
             }
         }
     },
@@ -56,13 +56,13 @@ export const partOfSpeechMap = {
         explain: 'משמשות ליצירת חיבור והקשר במשפט. \n לרוב, למילים אלו אין הטיות.',
         colors: {
             default: {
-                color: 'bg-purple-900 shadow-inner shadow-purple-400 hover:shadow-purple-500',
+                color: 'bg-slate-500 shadow-inner shadow-slate-400 hover:shadow-slate-600',
                 textColor: 'text-white',
-                fill: '#581c87'    // צבע בסיסי
+                fill: '#64748b'    // slate-500
             },
             compact: {
-                color: 'bg-purple-300',
-                textColor: 'text-gray-600'
+                color: 'bg-slate-300',  // גוון כסוף בהיר
+                textColor: 'text-slate-700'  // טקסט כהה יותר לקריאות טובה על רקע בהיר
             }
         }
     }
@@ -261,11 +261,19 @@ const PartOfSpeech = ({
         // אם זה variant='compact', נשמר את הגרסה המקורית של האייקון הקטן
         const href = `/inflections?type=${partOfSpeechInfo.type}`;
         return (
-            <Link href={href}>
-                <div className={`flex items-center justify-center h-4 w-4 rounded-full ${currentColor.color} ${currentColor.textColor} font-semibold text-xs hover:text-gray-500`}>
+            <Tooltip content={
+                <div className="flex flex-col text-center">
+                    <span className='font-bold mb-1'>{partOfSpeechInfo.fullName} </span>
+                    {partOfSpeechInfo.explain}
+                    <Link href={href} className='underline text-blue-700 hover:text-blue-500 mt-1'>
+                        ללמוד יותר
+                    </Link>
+                </div>
+            }>
+                <div className={`flex items-center justify-center h-4 w-4 rounded-full ${currentColor.color} ${currentColor.textColor} font-semibold text-xs hover:text-gray-200`}>
                     {ps}
                 </div>
-            </Link>
+            </Tooltip>
         );
     };
 

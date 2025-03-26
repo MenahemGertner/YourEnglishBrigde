@@ -30,7 +30,7 @@ export default function Navbar() {
             <Link href="/checkYourLevel" className="hover:text-blue-900 transition-colors">בדיקת רמה</Link>
           </div>
 
-          <Link href="/" className="hidden md:block text-2xl font-bold text-indigo-900">
+          <Link href="/" className="hidden md:block text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
             Your English Bridge
           </Link>
 
@@ -40,7 +40,7 @@ export default function Navbar() {
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
             
-            <Link href="/" className="text-xl font-bold text-indigo-900">
+            <Link href="/" className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
               Your English Bridge
             </Link>
           </div>

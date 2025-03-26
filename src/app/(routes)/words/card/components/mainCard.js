@@ -4,9 +4,10 @@ import ConditionalRender from '@/components/features/ConditionalRender';
 import Inflections from './inflections';
 import MainWord from './mainWord';
 import Sentences from './sentences';
+import Information from './info'; // יבוא הקומפוננטה החדשה
 import { ColorContext } from '../../navigation/components/colorContext';
 
-const MainCard = ({ word, index, tr, ps, inf, sen }) => {
+const MainCard = ({ word, index, tr, ps, inf, sen, infl, ex, syn, con }) => { // הוספת הפרמטרים החדשים
   const { selectedColor } = useContext(ColorContext);
   const [isAnimating, setIsAnimating] = useState(false);
   
@@ -22,7 +23,7 @@ const MainCard = ({ word, index, tr, ps, inf, sen }) => {
 
   return (
     <div
-      className={`bg-gradient-to-r from-blue-50 via-white to-purple-50 rounded-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] hover:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]
+      className={`bg-gradient-to-r from-blue-50 via-white to-purple-50 rounded-lg shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] hover:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]
         w-80 min-w-[250px]
         md:w-96 lg:w-[450px]
         min-h-32 md:min-h-40 lg:min-h-48
@@ -42,25 +43,34 @@ const MainCard = ({ word, index, tr, ps, inf, sen }) => {
         <div className="text-blue-400/70 text-sm mb-1">
           {index}
         </div>
-        <div className="mb-2">
+        <div className="mb-6">
           <MainWord 
             word={word}
             tr={tr}
             ps={ps}
           />
         </div>
-        <ConditionalRender data={inf}>
+        {/* <ConditionalRender data={inf}> */}
           <Inflections
+            word={word}
             inf={inf}
+            infl={infl}
           />
-        </ConditionalRender>
-        <div className="mt-6">
-          <Sentences
+        {/* </ConditionalRender> */}
+        <div className="mt-">
+          {/* <Sentences
             sen={sen}
             inf={inf}
             word={word}
-          />
+          /> */}
         </div>
+        
+        {/* קומפוננטת המידע הנוסף */}
+        <Information
+          ex={ex}
+          syn={syn}
+          con={con}
+        />
       </div>
     </div>
   );
