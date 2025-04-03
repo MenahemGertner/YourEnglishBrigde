@@ -47,6 +47,16 @@ export const InflectionDetails = {
             explanation: 'שם עצם הנגזר מפועל והמתאר פעולה',
             example: 'arrival, destruction, completion'
         },
+        'State Noun': {
+translation: 'שם עצם מצבי',
+explanation: 'שם עצם המתאר מצב, סטטוס או תנאי מתמשך',
+example: 'peace, silence, health, loneliness'
+},
+'Action Noun': {
+translation: 'שם עצם פעולה',
+explanation: 'שם עצם המציין פעולה או תהליך',
+example: 'running, construction, investigation, development'
+},
         'Genitive Case': {
             translation: 'צורת השייכות',
             explanation: 'צורת שם עצם המציינת בעלות או זיקה',
@@ -71,7 +81,12 @@ export const InflectionDetails = {
             translation: 'שם הפועל',
             explanation: 'צורת פועל בסיומת ing המשמשת כשם עצם',
             example: 'Smoking is harmful'
-        }
+        },
+        'Agent Noun': {
+    translation: 'שם פועל',
+    explanation: 'שם עצם המציין את מבצע הפעולה, לרוב נוצר על-ידי הוספת הסיומת -er או -or לפועל',
+    example: 'teacher, writer, actor, supervisor'
+}
     }},
     verbs: {
         fullName: 'Verbs - פעלים',
@@ -110,7 +125,7 @@ export const InflectionDetails = {
           explanation: 'זמן הווה המתאר פעולה המתרחשת כרגע',
           example: 'I am studying for my exam.'
       },
-      'Past Continuous': {
+      'Past Progressive': {
           translation: 'עבר מתמשך',
           explanation: 'זמן עבר המתאר פעולה שהתרחשה באופן רציף בעבר',
           example: 'I was reading a book when he called.'
@@ -157,6 +172,11 @@ export const InflectionDetails = {
             translation: 'תואר פועלי',
             explanation: 'תואר הנוצר מפועל והמתאר מצב או פעולה',
             example: 'running water, broken glass'
+        },
+        'Positive': {
+            translation: 'צורה רגילה',
+            explanation: 'צורת הבסיס של תואר השם, ללא השוואה',
+            example: 'big, smart, beautiful'
         },
         'Comparative': {
             translation: 'צורת ההשוואה',

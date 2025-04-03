@@ -4,14 +4,10 @@ const INFLECTIONS_MAP = {
                 patterns: [
             'Singular',
             'Plural',
-            'Abstract Noun',
-            'Verbal Noun',
-            'Uncountable Noun',
-            'Countable Noun',
-            'Concrete Noun',
+            'State Noun',
+            'Action Noun',
             'Gerund',
-            'Agent Noun',
-            'Common Noun'
+            'Agent Noun'
         ]
     },
     verbs: {
@@ -19,28 +15,25 @@ const INFLECTIONS_MAP = {
            patterns: [
             'Present Simple',
             'Past Simple',
-            'Present Perfect',
             'Future Simple',
             'Present Progressive',
-            'Past Continuous',
+            'Past Progressive',
+            'Present Perfect',
             'Past Perfect',
-            'Modal Auxiliary Verb',
             'Verb Infinitive',
-            'Third Person Singular Present'
+            'Third Person Singular'
         ]
     },
     adjectives: {
         abbreviation: 'A',
           patterns: [
-            'Descriptive',
+            'Positive',
             'Comparative',
             'Superlative',
-            'Attributive',
             'Predicative',
             'Possessive',
-            'Qualitative',
-            'Derived adjective',
             'Property Adjective',
+            'Adjectival Participle',
             'Manner Adverb',
             'Adverb Form'
         ]
@@ -53,7 +46,9 @@ const INFLECTIONS_MAP = {
             'Conjunction',
             'Article',
             'Determiner',
-            'Interjection'
+            'Interjection',
+            'Auxiliary Verb',
+            'Modal Particle'
         ]
     }
  };

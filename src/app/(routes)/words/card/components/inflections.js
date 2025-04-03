@@ -6,7 +6,7 @@ import InflectionSentences from './inflectionSentences';
 import useOpenWindow from '@/app/(routes)/words/card/hooks/openWindow';
 import { ColorContext } from '../../navigation/components/colorContext';
 
-const Inflections = ({ inf = [], word = '', infl = null, der = null }) => {
+const Inflections = ({ inf = [], word = '', infl = null }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [slideDirection, setSlideDirection] = useState(null);
@@ -70,7 +70,7 @@ const Inflections = ({ inf = [], word = '', infl = null, der = null }) => {
     `animate-slide-${slideDirection}` : '';
 
   const handleOpenWindow = () => {
-    if (infl || der) {
+    if (infl) {
       toggleSection(INFLECTION_SECTION_TITLE);
     }
   };

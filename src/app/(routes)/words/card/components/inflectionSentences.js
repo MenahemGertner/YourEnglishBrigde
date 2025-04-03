@@ -73,12 +73,9 @@ const InflectionSentences = ({
           {activeSentenceId === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>
         <span className="font-medium text-gray-800 truncate max-w-[150px]">{item.word}</span>
-        <AudioButton text={item.word}>
-          <Volume2 size={16} className="text-blue-600 hover:text-blue-800" />
-        </AudioButton>
-        <div className="flex items-center">
-          <PartOfSpeech ps={item.inflec} variant="compact" /> 
-        </div>
+        <AudioButton text={item.word}/>
+        <PartOfSpeech ps={item.inflec} variant="compact" />
+        <span className="text-gray-300 text-xs">{item.Inflections}</span> 
       </div>
   
       {activeSentenceId === item.id ? (
@@ -116,9 +113,7 @@ const InflectionSentences = ({
           <div className="p-2 bg-white rounded border border-gray-200">
             <p className="mb-1">{underLine(item.sentence, [item.word], item.inflec)}</p>
             <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-              <AudioButton text={item.sentence}>
-                <Volume2 size={14} className="text-blue-600 hover:text-blue-800" />
-              </AudioButton>
+              <AudioButton text={item.sentence}/>               
               <p>{item.translateSentence}</p>
             </div>
           </div>
@@ -144,19 +139,15 @@ const InflectionSentences = ({
       <div className="flex justify-between items-center mb-2">
         <div className="flex items-center gap-2">
           <span className="font-medium text-gray-700">{item.word}</span>
+          <AudioButton text={item.word}/>
           <PartOfSpeech ps={item.inflec} variant="compact" />
         </div>
-        <AudioButton text={item.word}>
-          <Volume2 size={16} className="text-blue-600 hover:text-blue-800" />
-        </AudioButton>
       </div>
       
       <div className="p-3 bg-gray-50 rounded">
         <p className="mb-2 text-lg">{underLine(item.sentence, [item.word], item.inflec)}</p>
         <div className="flex items-center gap-2 text-gray-600">
-          <AudioButton text={item.sentence}>
-            <Volume2 size={14} className="text-blue-600 hover:text-blue-800" />
-          </AudioButton>
+          <AudioButton text={item.sentence}/>
           <p>{item.translateSentence}</p>
         </div>
       </div>

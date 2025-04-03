@@ -342,7 +342,82 @@ export const ExtendedInflectionDetails = {
             ],
             commonMistakes: 'שימוש בצורת המקור (to + verb) במקום gerund, שגיאות בכתיב בעת הוספת ing.',
             usageTips: 'למדו אילו פעלים דורשים אחריהם gerund: enjoy, finish, practice, suggest, recommend.'
+        },
+        'Agent Noun': {
+    detailedExplanation: `שם פועל באנגלית הוא שם עצם המציין את מבצע הפעולה. לרוב נוצר על-ידי הוספת הסיומות -er או -or לפועל הבסיסי. שם הפועל מתאר את האדם, בעל החיים או החפץ שמבצע את הפעולה המתוארת בפועל.`,
+    examples: [
+        {
+            english: 'teacher',
+            hebrew: 'מורה',
+            inSentence: {
+                english: 'Our teacher explains the lesson clearly',
+                hebrew: 'המורה שלנו מסביר את השיעור בבהירות',
+                explanation: 'נגזר מהפועל teach בתוספת הסיומת -er'
+            }
+        },
+        {
+            english: 'actor',
+            hebrew: 'שחקן',
+            inSentence: {
+                english: 'The actor performed brilliantly in the film',
+                hebrew: 'השחקן הופיע באופן מבריק בסרט',
+                explanation: 'נגזר מהפועל act בתוספת הסיומת -or'
+            }
         }
+    ],
+    commonMistakes: 'טעויות נפוצות כוללות בחירה שגויה בין הסיומות -er ו-or, או יצירת שמות פועל לא קיימים. לא כל פועל יכול להפוך לשם פועל תקני על ידי הוספת סיומת.',
+    usageTips: 'בדרך כלל משתמשים בסיומת -er, אך פעלים שמסתיימים ב-ate לרוב מקבלים -or (כמו creator). חלק משמות הפועל אינם עוקבים אחרי כללים רגילים ויש ללמוד אותם בנפרד.'
+},
+'State Noun': {
+detailedExplanation: 'שם עצם מצבי באנגלית מתאר מצב, תנאי או סטטוס מתמשך. לרוב הוא נמנה על שמות עצם מופשטים, אך מתמקד במצבים ספציפיים ולא תכונות כלליות. שמות עצם מצביים רבים הם בלתי ספירים, אך לא כולם.',
+examples: [
+{
+english: 'peace',
+hebrew: 'שלום',
+inSentence: {
+english: 'The country has enjoyed peace for decades',
+hebrew: 'המדינה נהנתה משלום במשך עשורים',
+explanation: 'מתאר מצב של העדר מלחמה או קונפליקט'
+}
+},
+{
+english: 'health',
+hebrew: 'בריאות',
+inSentence: {
+english: 'Good health is essential for a happy life',
+hebrew: 'בריאות טובה היא חיונית לחיים מאושרים',
+explanation: 'מתאר את המצב הפיזי והנפשי של אדם'
+}
+}
+],
+commonMistakes: 'טעויות נפוצות כוללות בלבול בין שמות עצם מצביים לבין תארים (healthy במקום health), או בלבול בין מצב לבין פעולה.',
+usageTips: 'שמות עצם מצביים משמשים לעתים קרובות בביטויים כמו "in a state of" או "in good/bad health". רבים מהם בלתי ספירים ודורשים מבנה דקדוקי התואם לכך.'
+},
+'Action Noun': {
+detailedExplanation: 'שם עצם פעולה באנגלית מתאר פעולה או תהליך שמתבצע. לרוב נוצר מפעלים ומקבל סיומות כמו -tion, -sion, -ment, -ance, -al וכדומה. שם עצם פעולה מאפשר להתייחס לפעולה כאל עצם או מושג, ולא כפעולה מתבצעת.',
+examples: [
+{
+english: 'construction',
+hebrew: 'בנייה',
+inSentence: {
+english: 'The construction of the new bridge will take two years',
+hebrew: 'בניית הגשר החדש תימשך שנתיים',
+explanation: 'נגזר מהפועל construct בתוספת הסיומת -ion'
+}
+},
+{
+english: 'development',
+hebrew: 'פיתוח',
+inSentence: {
+english: 'The development of new technologies continues rapidly',
+hebrew: 'פיתוח טכנולוגיות חדשות ממשיך במהירות',
+explanation: 'נגזר מהפועל develop בתוספת הסיומת -ment'
+}
+}
+],
+commonMistakes: 'טעויות נפוצות כוללות בלבול בין שמות עצם פעולה לבין צורות gerund, או שימוש בפועל במקום בשם העצם המתאים בהקשרים המחייבים שם עצם.',
+usageTips: 'שמות עצם פעולה יכולים להופיע כנושא או מושא במשפט. הם שונים מ-gerund בכך שהם עברו שינוי מורפולוגי מהפועל, בעוד ש-gerund נוצר על ידי הוספת ing בלבד. לעיתים מוסיפים "the" לפני שם עצם פעולה כאשר מתייחסים לפעולה ספציפית.'
+}
             
     },
 
@@ -497,7 +572,7 @@ export const ExtendedInflectionDetails = {
                 commonMistakes: 'שכחת am/is/are, שגיאות בתוספת ing, שימוש בזמן זה עם פעלים שלא מקבלים צורה מתמשכת.',
                 usageTips: 'השתמשו במילים כמו: now, at the moment, currently, these days.'
             },
-            'Past Continuous': {
+            'Past Progressive': {
             detailedExplanation: `העבר המתמשך באנגלית מורכב מ-was/were + פועל בצורת ing. משמש לתיאור פעולה שהתרחשה באופן מתמשך בנקודת זמן מסוימת בעבר, או כרקע לפעולה אחרת שקטעה אותה.`,
             examples: [
                 {
@@ -699,6 +774,31 @@ export const ExtendedInflectionDetails = {
                 commonMistakes: 'טעויות נפוצות כוללות שימוש לא נכון בצורת ing- או ed-, או בלבול בין פעיל לסביל.',
                 usageTips: 'השתמשו ב-ing כשמתארים משהו שמבצע את הפעולה, וב-ed כשמתארים משהו שהפעולה נעשתה עליו.'
             },
+            'Positive': {
+    detailedExplanation: `הצורה הרגילה (Positive) היא צורת הבסיס של תואר השם באנגלית, ללא השוואה לדברים אחרים. זוהי צורת התואר הבסיסית המופיעה במילון. משתמשים בה לתיאור תכונה של דבר מסוים באופן עצמאי, ללא יחס לדברים אחרים.`,
+    examples: [
+        {
+            english: 'big',
+            hebrew: 'גדול',
+            inSentence: {
+                english: 'This is a big house',
+                hebrew: 'זה בית גדול',
+                explanation: 'שימוש בתואר בצורתו הרגילה לתיאור תכונה'
+            }
+        },
+        {
+            english: 'beautiful',
+            hebrew: 'יפה',
+            inSentence: {
+                english: 'She has a beautiful garden',
+                hebrew: 'יש לה גינה יפה',
+                explanation: 'שימוש בתואר ארוך בצורתו הרגילה'
+            }
+        }
+    ],
+    commonMistakes: 'טעות נפוצה היא לחשוב שצורת הבסיס חייבת להיות מילה קצרה. גם תארים ארוכים יכולים להיות בצורה רגילה כמו: interesting, complicated.',
+    usageTips: 'השתמשו בצורה הרגילה כאשר אתם מתארים משהו ללא השוואה לדברים אחרים. ניתן להשתמש במילים כמו very או quite לפני התואר כדי להדגיש את עוצמתו: "very big", "quite interesting".'
+    },
             'Comparative': {
                 detailedExplanation: `צורת ההשוואה באנגלית משמשת להשוואה בין שני דברים. נוצרת על ידי הוספת er- לתארים קצרים או more לתארים ארוכים. תמיד משתמשים במילה than אחרי התואר ההשוואתי.`,
                 examples: [
