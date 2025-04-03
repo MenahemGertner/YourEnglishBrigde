@@ -1,89 +1,88 @@
-# Your English Bridge 🌉
+# Your English Bridge 🌉 
 
-<img width="934" alt="image" src="public/example.png" />
+<img width="934" alt="image" src="public/example.png" />  
 
-## מבוא
-פרויקט Your English Bridge הוא המשך של Learn English Project - פרויקט אישי שפתחתי בפייתון. הפרויקט מציע גישה חדשנית וייחודית ללימוד השפה האנגלית, עם דגש על למידה אפקטיבית ומותאמת אישית.
+## Introduction
+Your English Bridge is a continuation of 'Learn English Project' - a personal project I developed in Python. The project offers an innovative and unique approach to learning the English language, with emphasis on effective and personalized learning.  
 
-## 🎯 מטרת הפרויקט
-פיתוח פלטפורמה חדשנית ללימוד אנגלית המתמקדת ב-2,500 המילים השימושיות ביותר, תוך שילוב טכנולוגיות מתקדמות ושיטות למידה חדשניות.
+## 🎯 Project Goal
+Developing an innovative platform for learning English focusing on the 2,500 most useful words, while incorporating advanced technologies and innovative learning methods.  
 
-## 🏗️ עקרונות הפיתוח
-- **מוכנות לפרודקשן**: שימוש בכלים ותשתיות מודרניים
-- **חווית משתמש במרכז**: תכנון וביצוע ממוקד משתמש
-- **חדשנות**: פתרונות יצירתיים מבוססי מחקר מעמיק
-- **אינטגרציה**: גישה הוליסטית המשלבת את כל הכלים למערכת אחודה
+## 🏗️ Development Principles
+- **Production Ready**: Using modern tools and infrastructure
+- **User-Centered Experience**: User-focused design and implementation
+- **Innovation**: Creative solutions based on in-depth research
+- **Integration**: Holistic approach combining all tools into a unified system  
 
-## 💡 יתרונות המערכת
-- מיקוד במטרות ברורות
-- התאמה אישית למשתמש
-- הטמעה בהקשר נרחב
-- דגש על מוטיבציה
-- חיזוק זיכרון לטווח ארוך
-- מעקב התקדמות מפורט
+## 💡 System Advantages
+- Focus on clear goals
+- Personal customization for users
+- Implementation in a broad context
+- Emphasis on motivation
+- Strengthening long-term memory
+- Detailed progress tracking  
 
-## 🛠️ טכנולוגיות
+## 🛠️ Technologies
 - **Frontend**: React, Next.js
 - **Backend**: Next.js
 - **Styling**: Tailwind CSS
-- **Database**: 
-  - MongoDB (מידע כללי)
-  - Supabase (נתוני משתמשים)
-- **Authentication**: next-auth, Google Authenticator
+- **Database**:  
+  - MongoDB (general information)  
+  - Supabase (user data)
+- **Authentication**: next-auth, Google Authenticator  
 
-## 📚 מבנה האתר
+## 📚 Site Structure  
 
-### פותח במלואו
-- עמוד הצגת ושינון מילים ראשי
-- רשימות מילים שימושיות
-- בדיקת רמה
-- דפי שירות (אודות, צור קשר)
+### Fully Developed
+- Main word presentation and memorization page
+- Useful word lists
+- Level assessment
+- Service pages (about, contact)  
 
-### בתהליך פיתוח
-- דף הבית
-- דפים אינפורמטיביים
-- עמוד הרשמה
-- עמוד חזרה והטמעה
+### In Development
+- Homepage
+- Informational pages
+- Registration page
+- Review and implementation page  
 
-### בפיתוח עתידי
-- אנגלית למתחילים
-- אנגלית למתקדמים
+### Future Development
+- English for beginners
+- English for advanced learners  
 
-## ✨ פיצ'רים קיימים
+## ✨ Existing Features  
 
-### כרטיס מילה מתקדם
-- הטיות ונגזרות
-- משפטי דוגמה עם הדגשה
-- תרגומים
-- הגייה קולית
-- מידע דקדוקי מורחב
-- ביטויים ומילים נרדפות
+### Advanced Word Card
+- Inflections and derivatives
+- Example sentences with highlighting
+- Translations
+- Voice pronunciation
+- Extended grammatical information
+- Expressions and synonyms  
 
-### מערכת למידה חכמה
-- ניווט לפי אינדקס
-- דירוג מילים ב-4 רמות
-- שמירת התקדמות אוטומטית
-- התאמת קצב אישית
-- מעקב אחר מילים מאתגרות
+### Smart Learning System
+- Navigation by index
+- Rating words in 4 levels
+- Automatic progress saving
+- Personalized pace adjustment
+- Tracking challenging words  
 
-### כלי תרגול והטמעה
-- קריאה: סיפורים מותאמים אישית
-- שמיעה: הקראה באמצעות AI
-- כתיבה: תרגילי השלמה
-- דיבור: הקלטה ומעקב עצמי
+### Practice and Implementation Tools
+- Reading: Personalized stories
+- Listening: AI-powered reading aloud
+- Writing: Completion exercises
+- Speaking: Self-recording and monitoring  
 
-## 🚀 פיצ'רים עתידיים
-- משוב AI בזמן אמת
-- ניתוח התקדמות מתקדם
-- מסגרת זמנים דינמית
-- חיפוש מתקדם
-- פלטפורמה חברתית ללומדים
+## 🚀 Future Features
+- Real-time AI feedback
+- Advanced progress analysis
+- Dynamic timeframe
+- Advanced search
+- Social platform for learners  
 
-## 📊 סטטוס הפרויקט
-- **פיתוח פיצ'רים**: מתעדכן באופן שוטף
-- **עיצוב**: 50% הושלם
-- **רספונסיביות**: 80% הושלם
-
+## 📊 Project Status
+- **Feature Development**: Continuously updating
+- **Design**: 50% completed
+- **Responsiveness**: 80% completed  
 
 ---
-*הפרויקט נמצא בפיתוח פעיל. אני אשמח לקבל משוב מהקהילה!*
+*The project is in active development. I would appreciate feedback from the community!*
