@@ -13,7 +13,7 @@ export const partOfSpeechMap = {
                 fill: '#db2777'    // pink-600
             },
             compact: {
-                color: 'bg-pink-400',  // ורוד בהיר ויזואלי יותר
+                color: 'bg-pink-400',
                 textColor: 'text-white'
             }
         }
@@ -29,7 +29,7 @@ export const partOfSpeechMap = {
                 fill: '#0284c7'    // sky-600
             },
             compact: {
-                color: 'bg-sky-400',  // תכלת בהיר
+                color: 'bg-sky-400',
                 textColor: 'text-white'
             }
         }
@@ -37,7 +37,7 @@ export const partOfSpeechMap = {
     'A': {
         fullName: 'שמות תואר - Adjectives',
         type: 'adjectives',
-        explain: 'משמשות לתיאור של תכונות.\nיכולות להופיע בשלוש צורות:\nרגיל, יותר (השוואה), והכי (הטוב ביותר).',
+        explain: 'משמשות לתיאור של תכונות ומאפיינים של שמות עצם.\nיכולות להופיע בשלוש צורות:\nרגיל, יותר (השוואה), והכי (הטוב ביותר).',
         colors: {
             default: {
                 color: 'bg-purple-800 shadow-inner shadow-purple-700 hover:shadow-purple-900',
@@ -45,7 +45,23 @@ export const partOfSpeechMap = {
                 fill: '#6b21a8'    // purple-800
             },
             compact: {
-                color: 'bg-purple-500',  // שומר על אותו גוון, רק בהיר יותר
+                color: 'bg-purple-500',
+                textColor: 'text-white'
+            }
+        }
+    },
+    'D': {  // שימוש ב-D כקיצור ל-Adverbs
+        fullName: 'תוארי פועל - Adverbs',
+        type: 'adverbs',
+        explain: 'משמשות לתיאור פעלים, תארים או תוארי פועל אחרים.\nמספקות מידע על אופן, זמן, מקום או תדירות של פעולה.',
+        colors: {
+            default: {
+                color: 'bg-green-700 shadow-inner shadow-green-600 hover:shadow-green-800',
+                textColor: 'text-white',
+                fill: '#15803d'    // green-700
+            },
+            compact: {
+                color: 'bg-green-500',
                 textColor: 'text-white'
             }
         }
@@ -61,8 +77,8 @@ export const partOfSpeechMap = {
                 fill: '#64748b'    // slate-500
             },
             compact: {
-                color: 'bg-slate-300',  // גוון כסוף בהיר
-                textColor: 'text-slate-700'  // טקסט כהה יותר לקריאות טובה על רקע בהיר
+                color: 'bg-slate-300',
+                textColor: 'text-slate-700'
             }
         }
     }
@@ -96,7 +112,10 @@ const PartOfSpeech = ({
         const centerX = radius;
         const centerY = radius;
         
-        // חישוב נקודות על המעגל בהתאם לזוויות החדשות (במעלות)
+        // זווית כל חלק בחלוקה ל-5 (72 מעלות)
+        const sectionAngle = 360 / 5;
+        
+        // חישוב נקודות על המעגל לפי זווית במעלות
         const getPointOnCircle = (angleDegrees) => {
             const angleRadians = (angleDegrees * Math.PI) / 180;
             return {
@@ -105,36 +124,40 @@ const PartOfSpeech = ({
             };
         };
         
-        // נקודות קצה של כל רבע עם זוויות חדשות
-        const point45 = getPointOnCircle(45);   // נקודה בזווית 45 מעלות
-        const point135 = getPointOnCircle(135); // נקודה בזווית 135 מעלות
-        const point225 = getPointOnCircle(225); // נקודה בזווית 225 מעלות
-        const point315 = getPointOnCircle(315); // נקודה בזווית 315 מעלות
+        // חישוב 5 נקודות על המעגל בזוויות של 72 מעלות
+        const point0 = getPointOnCircle(90);      // עליון (90 מעלות)
+        const point72 = getPointOnCircle(90 + 72); // שמאלי עליון (162 מעלות)
+        const point144 = getPointOnCircle(90 + 144); // שמאלי תחתון (234 מעלות)
+        const point216 = getPointOnCircle(90 + 216); // ימני תחתון (306 מעלות)
+        const point288 = getPointOnCircle(90 + 288); // ימני עליון (378/18 מעלות)
         
-        // חישוב נקודות מרכזיות לכל רבע עבור הטקסט (באמצע כל רבע)
-        // רבעים הם: 45-135, 135-225, 225-315, 315-45
-        // מרכזי הרבעים הם: 90, 180, 270, 0
-        const textDistanceFactor = 0.6; // מרחק מהמרכז (יחסית לרדיוס)
+        // חישוב נקודות אמצע של כל חלק לטקסט (באמצע כל סקטור)
+        const textDistanceFactor = 0.62; // מרחק מהמרכז (יחסית לרדיוס)
         
-        // חישוב נקודות מרכזיות עבור הטקסט בכל רבע (לפי הזוויות המדויקות)
+        // חישוב נקודות לטקסט בכל חלק
         const textN = {
-            x: centerX + (radius * textDistanceFactor) * Math.cos(90 * Math.PI / 180),  // 90 מעלות (צפון)
-            y: centerY + (radius * textDistanceFactor) * Math.sin(90 * Math.PI / 180)   // מרכז בין 45-135
+            x: centerX + (radius * textDistanceFactor) * Math.cos(55 * Math.PI / 180),
+            y: centerY + (radius * textDistanceFactor) * Math.sin(55 * Math.PI / 180)
+        };
+        
+        const textD = { // D עבור Adverb במקום Adv
+            x: centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 4) * Math.PI / 180),
+            y: centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 4) * Math.PI / 180)
         };
         
         const textV = {
-            x: centerX + (radius * textDistanceFactor) * Math.cos(0),                  // 0 מעלות (מזרח) 
-            y: centerY + (radius * textDistanceFactor) * Math.sin(0)                   // מרכז בין 315-45
-        };
-        
-        const textA = {
-            x: centerX + (radius * textDistanceFactor) * Math.cos(270 * Math.PI / 180), // 270 מעלות (דרום)
-            y: centerY + (radius * textDistanceFactor) * Math.sin(270 * Math.PI / 180)  // מרכז בין 225-315
+            x: centerX + (radius * textDistanceFactor) * Math.cos((55 + 72) * Math.PI / 180),
+            y: centerY + (radius * textDistanceFactor) * Math.sin((55 + 72) * Math.PI / 180)
         };
         
         const textF = {
-            x: centerX + (radius * textDistanceFactor) * Math.cos(180 * Math.PI / 180), // 180 מעלות (מערב)
-            y: centerY + (radius * textDistanceFactor) * Math.sin(180 * Math.PI / 180)  // מרכז בין 135-225
+            x: centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 2) * Math.PI / 180),
+            y: centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 2) * Math.PI / 180)
+        };
+        
+        const textA = {
+            x: centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 3) * Math.PI / 180),
+            y: centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 3) * Math.PI / 180)
         };
         
         return (
@@ -146,10 +169,10 @@ const PartOfSpeech = ({
                 </defs>
                 
                 <g clipPath="url(#circleClip)">
-                    {/* N - רבע עליון (45-135 מעלות) */}
+                    {/* N - חלק עליון */}
                     <g className={ps === 'N' ? "cursor-pointer" : "cursor-default"}>
                         <path 
-                            d={`M${centerX} ${centerY} L${point45.x} ${point45.y} A${radius} ${radius} 0 0 1 ${point135.x} ${point135.y} Z`} 
+                            d={`M${centerX} ${centerY} L${point288.x} ${point288.y} A${radius} ${radius} 0 0 1 ${point0.x} ${point0.y} Z`} 
                             fill={partOfSpeechMap['N'].colors.default.fill} 
                             opacity={ps === 'N' ? 1 : 0.3}
                         />
@@ -167,10 +190,10 @@ const PartOfSpeech = ({
                         </text>
                     </g>
                     
-                    {/* V - רבע ימני (315-45 מעלות) */}
+                    {/* V - חלק שמאלי עליון */}
                     <g className={ps === 'V' ? "cursor-pointer" : "cursor-default"}>
                         <path 
-                            d={`M${centerX} ${centerY} L${point315.x} ${point315.y} A${radius} ${radius} 0 0 1 ${point45.x} ${point45.y} Z`} 
+                            d={`M${centerX} ${centerY} L${point0.x} ${point0.y} A${radius} ${radius} 0 0 1 ${point72.x} ${point72.y} Z`} 
                             fill={partOfSpeechMap['V'].colors.default.fill}
                             opacity={ps === 'V' ? 1 : 0.3}
                         />
@@ -188,10 +211,31 @@ const PartOfSpeech = ({
                         </text>
                     </g>
                     
-                    {/* A - רבע תחתון (225-315 מעלות) */}
+                    {/* F - חלק שמאלי תחתון */}
+                    <g className={ps === 'F' ? "cursor-pointer" : "cursor-default"}>
+                        <path 
+                            d={`M${centerX} ${centerY} L${point72.x} ${point72.y} A${radius} ${radius} 0 0 1 ${point144.x} ${point144.y} Z`} 
+                            fill={partOfSpeechMap['F'].colors.default.fill}
+                            opacity={ps === 'F' ? 1 : 0.3}
+                        />
+                        <text 
+                            x={textF.x} 
+                            y={textF.y} 
+                            fontFamily="Arial, sans-serif" 
+                            fontSize="10" 
+                            fontWeight="bold" 
+                            fill="white" 
+                            textAnchor="middle" 
+                            dominantBaseline="middle"
+                        >
+                            F
+                        </text>
+                    </g>
+                    
+                    {/* A - חלק ימני תחתון */}
                     <g className={ps === 'A' ? "cursor-pointer" : "cursor-default"}>
                         <path 
-                            d={`M${centerX} ${centerY} L${point225.x} ${point225.y} A${radius} ${radius} 0 0 1 ${point315.x} ${point315.y} Z`} 
+                            d={`M${centerX} ${centerY} L${point144.x} ${point144.y} A${radius} ${radius} 0 0 1 ${point216.x} ${point216.y} Z`} 
                             fill={partOfSpeechMap['A'].colors.default.fill}
                             opacity={ps === 'A' ? 1 : 0.3}
                         />
@@ -209,16 +253,16 @@ const PartOfSpeech = ({
                         </text>
                     </g>
                     
-                    {/* F - רבע שמאלי (135-225 מעלות) */}
-                    <g className={ps === 'F' ? "cursor-pointer" : "cursor-default"}>
+                    {/* D - חלק ימני עליון (עבור Adverb) */}
+                    <g className={ps === 'D' ? "cursor-pointer" : "cursor-default"}>
                         <path 
-                            d={`M${centerX} ${centerY} L${point135.x} ${point135.y} A${radius} ${radius} 0 0 1 ${point225.x} ${point225.y} Z`} 
-                            fill={partOfSpeechMap['F'].colors.default.fill}
-                            opacity={ps === 'F' ? 1 : 0.3}
+                            d={`M${centerX} ${centerY} L${point216.x} ${point216.y} A${radius} ${radius} 0 0 1 ${point288.x} ${point288.y} Z`} 
+                            fill={partOfSpeechMap['D'].colors.default.fill}
+                            opacity={ps === 'D' ? 1 : 0.3}
                         />
                         <text 
-                            x={textF.x} 
-                            y={textF.y} 
+                            x={textD.x} 
+                            y={textD.y} 
                             fontFamily="Arial, sans-serif" 
                             fontSize="10" 
                             fontWeight="bold" 
@@ -226,7 +270,7 @@ const PartOfSpeech = ({
                             textAnchor="middle" 
                             dominantBaseline="middle"
                         >
-                            F
+                            D
                         </text>
                     </g>
                 </g>

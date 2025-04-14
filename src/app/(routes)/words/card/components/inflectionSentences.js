@@ -25,16 +25,23 @@ const InflectionSentences = ({
   const generateItemsFromData = (data) => {
     if (!data) return [];
     
-    return Object.entries(data).map(([word, details], index) => ({
-      id: `infl-${index}`,
-      word,
-      inflec: partOfSpeechInflection(details.ps).abbreviation,
-      translateInflection: details.tr,
-      Inflections: details.ps,
-      sentence: details.sen,
-      translateSentence: details.trn,
-      type: partOfSpeechInflection(details.ps).type
-    }));
+    return Object.entries(data).map(([word, details], index) => {
+      // קבל את פרטי ההטיה כולל התיאור
+      const inflectionDetails = partOfSpeechInflection(details.ps);
+      
+      return {
+        id: `infl-${index}`,
+        word,
+        inflec: inflectionDetails.abbreviation,
+        translateInflection: details.tr,
+        Inflections: details.ps,
+        sentence: details.sen,
+        translateSentence: details.trn,
+        type: inflectionDetails.type,
+        // שמור את תיאור ההטיה
+        inflectionDescription: inflectionDetails.description
+      };
+    });
   };
 
   const inflItems = generateItemsFromData(infl);
@@ -97,16 +104,15 @@ const InflectionSentences = ({
           {showExplanation && (
             <div className="mb-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 text-sm rounded border border-blue-100">
               <p className="text-gray-700" dir="rtl">
-                הצורה <strong>grew</strong> היא צורת העבר הפשוט (Past Simple) של הפועל <strong>grow</strong>. 
-                משתמשים בה לתיאור פעולות שהתרחשו והסתיימו בעבר.
-                <Link 
-                  href={`/explainInflection?type=${partOfSpeechMap[item.inflec]?.type || 'other'}&inflection=${item.Inflections}`}
-                  className="mr-1 text-blue-600 hover:underline inline-flex items-center gap-1"
-                >
-                  <span>למידע נוסף</span>
-                  <ChevronDown size={12} />
-                </Link>
+                {item.inflectionDescription}
               </p>
+              <Link 
+                href={`/explainInflection?type=${item.type || 'other'}&inflection=${item.Inflections}`}
+                className="mr-1 text-blue-600 hover:underline inline-flex items-center gap-1"
+              >
+                <span>למידע נוסף</span>
+                <ChevronDown size={12} />
+              </Link>
             </div>
           )}
           

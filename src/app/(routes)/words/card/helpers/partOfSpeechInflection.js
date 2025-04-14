@@ -5,15 +5,20 @@ const partOfSpeechInflection = (posFullName) => {
     if (config.patterns.some(pattern => 
       posFullName.toLowerCase() === pattern.toLowerCase()
     )) {
+      // קבל את התיאור של ההטיה אם הוא קיים
+      const description = config.descriptions?.[posFullName] || null;
+      
       return {
         abbreviation: config.abbreviation,
-        type: type
+        type: type,
+        description: description  // התוספת החדשה - מחזיר את התיאור
       };
     }
   }
   return {
     abbreviation: 'F',
-    type: 'functionWords'
+    type: 'functionWords',
+    description: null
   };
 };
 
