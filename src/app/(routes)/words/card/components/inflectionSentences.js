@@ -1,8 +1,8 @@
 'use client'
 import React, { useState } from "react"
-import { ChevronDown, ChevronUp, Volume2, CircleHelp, Book, PlayCircle, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, CircleHelp, Book, PlayCircle, ArrowLeft } from 'lucide-react';
 import AudioButton from "@/components/features/AudioButton";
-import PartOfSpeech, {partOfSpeechMap} from "../helpers/partOfSpeech.js";
+import PartOfSpeech from "../helpers/partOfSpeech.js";
 import partOfSpeechInflection from '../helpers/partOfSpeechInflection.js';
 import Link from "next/link";
 import underLine from "@/components/features/UnderLine";
@@ -13,39 +13,46 @@ const InflectionSentences = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSentenceId, setActiveSentenceId] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [viewMode, setViewMode] = useState('default'); // 'default' או 'practice'
+  const [viewMode, setViewMode] = useState('default'); // Changed to 'default' as the default mode
   const maxItems = 5;
 
-  const hasInflData = infl && Object.keys(infl).length > 0;
+  // בדיקה שיש נתונים בפורמט החדש (מערך)
+  const hasInflData = infl && Array.isArray(infl) && infl.length > 0;
   
   if (!hasInflData) {
     return null;
   }
 
   const generateItemsFromData = (data) => {
-    if (!data) return [];
+    if (!data || !Array.isArray(data)) return [];
     
-    return Object.entries(data).map(([word, details], index) => {
+    return data.map((item, index) => {
       // קבל את פרטי ההטיה כולל התיאור
-      const inflectionDetails = partOfSpeechInflection(details.ps);
+      const inflectionDetails = partOfSpeechInflection(item.ps);
       
       return {
         id: `infl-${index}`,
-        word,
+        word: item.form,
         inflec: inflectionDetails.abbreviation,
-        translateInflection: details.tr,
-        Inflections: details.ps,
-        sentence: details.sen,
-        translateSentence: details.trn,
+        translateInflection: item.tr,
+        Inflections: item.ps,
+        // קח את המשפט הראשון מרשימת הדוגמאות אם קיים
+        sentence: item.examples && item.examples.length > 0 ? item.examples[0].sen : '',
+        translateSentence: item.examples && item.examples.length > 0 ? item.examples[0].trn : '',
         type: inflectionDetails.type,
         // שמור את תיאור ההטיה
-        inflectionDescription: inflectionDetails.description
+        inflectionDescription: inflectionDetails.description,
+        // שמור את כל הדוגמאות
+        examples: item.examples || []
       };
     });
   };
 
   const inflItems = generateItemsFromData(infl);
   const hasMore = inflItems.length > maxItems;
+  
+  const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
+  const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
   
   const toggleSentence = (id) => {
     setActiveSentenceId(activeSentenceId === id ? null : id);
@@ -55,13 +62,34 @@ const InflectionSentences = ({
     setViewMode(viewMode === 'default' ? 'practice' : 'default');
   };
 
+  const loadMoreDefaultItems = () => {
+    setVisibleDefaultItems(prev => Math.min(prev + maxItems, inflItems.length));
+  };
+
+  const loadMorePracticeItems = () => {
+    setVisiblePracticeItems(prev => Math.min(prev + maxItems, inflItems.length));
+  };
+
   const goToNextInflection = () => {
     const currentIndex = inflItems.findIndex(item => item.id === activeSentenceId);
+    
+    // Check if the next item would be outside currently visible items
+    if (currentIndex + 1 >= visibleDefaultItems && currentIndex + 1 < inflItems.length) {
+      // Load more items before proceeding to next one
+      loadMoreDefaultItems();
+    }
+    
     if (currentIndex < inflItems.length - 1) {
       setActiveSentenceId(inflItems[currentIndex + 1].id);
     } else {
       setActiveSentenceId(inflItems[0].id);
     }
+  };
+
+  // Function to check if current inflection is the last one
+  const isLastInflection = () => {
+    const currentIndex = inflItems.findIndex(item => item.id === activeSentenceId);
+    return currentIndex === inflItems.length - 1;
   };
 
   const renderDefaultItem = (item) => (
@@ -71,16 +99,20 @@ const InflectionSentences = ({
         activeSentenceId === item.id ? 'bg-gradient-to-r from-blue-50 to-purple-50 p-3' : 'hover:bg-gray-50 p-2'
       }`}
     >
-      <div className="flex items-center gap-2 mb-1">
-        <button 
-          onClick={() => toggleSentence(item.id)}
+      <div 
+        className="flex items-center gap-2 mb-1 cursor-pointer"
+        onClick={() => toggleSentence(item.id)}
+      >
+        <div 
           className="text-blue-600 hover:text-blue-800"
           aria-label={activeSentenceId === item.id ? "Hide details" : "Show details"}
         >
           {activeSentenceId === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
+        </div>
         <span className="font-medium text-gray-800 truncate max-w-[150px]">{item.word}</span>
-        <AudioButton text={item.word}/>
+        <span onClick={(e) => e.stopPropagation()}>
+          <AudioButton text={item.word}/>
+        </span>
         <PartOfSpeech ps={item.inflec} variant="compact" />
         <span className="text-gray-300 text-xs">{item.Inflections}</span> 
       </div>
@@ -110,31 +142,36 @@ const InflectionSentences = ({
                 href={`/explainInflection?type=${item.type || 'other'}&inflection=${item.Inflections}`}
                 className="mr-1 text-blue-600 hover:underline inline-flex items-center gap-1"
               >
-                <span>למידע נוסף</span>
-                <ChevronDown size={12} />
+                <span>למידע נוסף</span>                
               </Link>
             </div>
           )}
           
-          <div className="p-2 bg-white rounded border border-gray-200">
-            <p className="mb-1">{underLine(item.sentence, [item.word], item.inflec)}</p>
-            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-              <AudioButton text={item.sentence}/>               
-              <p>{item.translateSentence}</p>
+          {/* במצב הטיות - הצג רק את המשפט הראשון */}
+          {item.examples && item.examples.length > 0 && (
+            <div className="p-2 bg-white rounded border border-gray-200 mb-2">
+              <p className="mb-1">{underLine(item.examples[0].sen, [item.word], item.inflec)}</p>
+              <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                <AudioButton text={item.examples[0].sen}/>               
+                <p>{item.examples[0].trn}</p>
+              </div>
             </div>
-          </div>
+          )}
           
-          <button 
-            onClick={goToNextInflection}
-            className="mt-3 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
-          >
-            <ArrowLeft size={14} />
-            <span>המשך לתרגול הבא</span>
-          </button>
+          {/* Only show "Continue to next practice" button if it's not the last inflection */}
+          {!isLastInflection() && (
+            <button 
+              onClick={goToNextInflection}
+              className="mt-3 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
+            >
+              <ArrowLeft size={14} />
+              <span>המשך לתרגול הבא</span>
+            </button>
+          )}
         </div>
       ) : (
         <div className="text-sm text-gray-600 pl-6 max-w-full">
-          {underLine(item.sentence, [item.word], item.inflec)}
+          {item.sentence && underLine(item.sentence, [item.word], item.inflec)}
         </div>
       )}
     </div>
@@ -150,26 +187,18 @@ const InflectionSentences = ({
         </div>
       </div>
       
-      <div className="p-3 bg-gray-50 rounded">
-        <p className="mb-2 text-lg">{underLine(item.sentence, [item.word], item.inflec)}</p>
-        <div className="flex items-center gap-2 text-gray-600">
-          <AudioButton text={item.sentence}/>
-          <p>{item.translateSentence}</p>
+      {/* במצב תרגול רציף - הצג את כל הדוגמאות */}
+      {item.examples.map((example, exIndex) => (
+        <div key={`${item.id}-practice-${exIndex}`} className="p-3 bg-gray-50 rounded mb-2">
+          <p className="mb-2 text-lg">{underLine(example.sen, [item.word], item.inflec)}</p>
+          <div className="flex items-center gap-2 text-gray-600">
+            <AudioButton text={example.sen}/>
+            <p>{example.trn}</p>
+          </div>
         </div>
-      </div>
+      ))}
     </div>
   );
-
-  const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
-  const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
-
-  const loadMoreDefaultItems = () => {
-    setVisibleDefaultItems(prev => Math.min(prev + maxItems, inflItems.length));
-  };
-
-  const loadMorePracticeItems = () => {
-    setVisiblePracticeItems(prev => Math.min(prev + maxItems, inflItems.length));
-  };
 
   return (
     <div 
@@ -184,31 +213,31 @@ const InflectionSentences = ({
         <div className="flex items-center bg-white/20 rounded-lg">
           <button 
             onClick={() => setViewMode('practice')}
-            className={`px-2 py-1 text-sm rounded-r-md transition ${
+            className={`px-2 py-1 text-sm rounded-l-md transition ${
               viewMode === 'practice' ? 'bg-white text-blue-700' : 'text-white'
             }`}
           >
             <div className="flex items-center gap-1">
               <PlayCircle size={14} />
-              <span>תרגול רציף</span>
+              <span>תרגול משפטים</span>
             </div>
           </button>
           <button 
             onClick={() => setViewMode('default')}
-            className={`px-2 py-1 text-sm rounded-l-md transition ${
+            className={`px-2 py-1 text-sm rounded-r-md transition ${
               viewMode === 'default' ? 'bg-white text-blue-700' : 'text-white'
             }`}
           >
             <div className="flex items-center gap-1">
               <Book size={14} />
-              <span>הטיות</span>
+              <span>לימוד והבנה</span>
             </div>
           </button>
         </div>
         <p className="font-semibold text-lg text-white" dir="rtl">משפטי תרגול</p>
       </div>
-      <p className="text-white text-sm text-center bg-gradient-to-r from-blue-400 to-purple-400 pb-2" dir="rtl">
-        משפטים עם צורות השימוש השונות של המילה להטמעה מיטבית
+      <p className="text-white text-sm text-center bg-gradient-to-r from-blue-400 to-purple-400 py-3" dir="rtl">
+        תרגל לפחות 3 משפטים!
       </p>
 
       {viewMode === 'default' ? (

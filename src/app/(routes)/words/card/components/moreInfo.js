@@ -4,7 +4,7 @@ import { ChevronDown } from 'lucide-react';
 import useOpenWindow from '@/app/(routes)/words/card/hooks/openWindow';
 import AdditionalWordInfo from './additionalWordInfo';
 
-const Information = ({ ex, syn, con }) => {
+const MoreInfo = ({ ex, syn, con }) => {
   const { isOpen, toggleSection } = useOpenWindow('additionalInfo');
   
   const hasAdditionalData = 
@@ -37,4 +37,4 @@ const Information = ({ ex, syn, con }) => {
   );
 };
 
-export default Information;
+export default MoreInfo;

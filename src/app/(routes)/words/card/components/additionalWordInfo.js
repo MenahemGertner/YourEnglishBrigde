@@ -46,9 +46,9 @@ const AdditionalWordInfo = ({
       <div className="flex flex-col md:flex-row gap-6">
         {hasExData && (
           <div className="md:w-60 relative flex flex-col rounded-lg shadow-md overflow-hidden" dir="ltr">
-            <div className="bg-gradient-to-r from-blue-400 to-purple-400 p-4 h-28 flex flex-col justify-center">
-              <p className="font-semibold text-white text-xl text-center">ביטויים</p>
-              <p className="text-blue-100 text-sm text-center mt-2">ביטויים נפוצים שעשויים לשנות את המשמעות הבסיסית של המילה</p>
+            <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-24 flex flex-col justify-center">
+              <p className="font-semibold text-white text-xl text-center p-2 border-b border-blue-100/30">ביטויים</p>
+              <p className="text-blue-100 text-sm text-center my-2">ביטויים נפוצים שעשויים לשנות את המשמעות הבסיסית של המילה</p>
             </div>
             <div className="p-4 bg-white flex-grow">
               <MoreOrLess
@@ -70,9 +70,9 @@ const AdditionalWordInfo = ({
         
         {hasSynData && (
           <div className="md:w-60 relative flex flex-col rounded-lg shadow-md overflow-hidden" dir="ltr">
-            <div className="bg-gradient-to-r from-blue-400 to-purple-400 p-4 h-28 flex flex-col justify-center">
-              <p className="font-semibold text-white text-xl text-center">מילים נרדפות</p>
-              <p className="text-blue-100 text-sm text-center mt-2">מילים חלופיות עם משמעות דומה</p>
+            <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-24 flex flex-col justify-center">
+              <p className="font-semibold text-white text-xl text-center p-2 border-b border-blue-100/30">מילים נרדפות</p>
+              <p className="text-blue-100 text-sm text-center my-2">מילים חלופיות עם משמעות דומה</p>
             </div>
             <div className="p-4 bg-white flex-grow">
               <MoreOrLess
@@ -100,9 +100,9 @@ const AdditionalWordInfo = ({
 
         {hasConData && (
           <div className="md:w-60 relative flex flex-col rounded-lg shadow-md overflow-hidden" dir="ltr">
-            <div className="bg-gradient-to-r from-blue-400 to-purple-400 p-4 h-28 flex flex-col justify-center">
-              <p className="font-semibold text-white text-xl text-center">מילים דומות</p>
-              <p className="text-blue-100 text-sm text-center mt-2">מילים זרות שקל להתבלבל ביניהן</p>
+            <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-24 flex flex-col justify-center">
+              <p className="font-semibold text-white text-xl text-center p-2 border-b border-blue-100/30">מילים דומות</p>
+              <p className="text-blue-100 text-sm text-center my-2">מילים שונות שקל להתבלבל ביניהן</p>
             </div>
             <div className="p-4 bg-white flex-grow">
               <MoreOrLess

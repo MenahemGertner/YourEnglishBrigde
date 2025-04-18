@@ -5,7 +5,7 @@ export const partOfSpeechMap = {
     'V': {
         fullName: 'פעלים - Verbs',
         type: 'verbs',
-        explain: 'משמשים לביטוי של פעולות בזמנים שונים. \n לכל פועל צורות שונות \nהמראות מתי הפעולה מתרחשת.\n הזמנים הבסיסיים: עבר, הווה או עתיד.',
+        explain: 'מילים שמתארות פעולות או מה שקורה.\nלדוגמה: לרוץ, לאכול, לחשוב.\nמשתנות לפי זמן: עבר, הווה, עתיד.',
         colors: {
             default: {
                 color: 'bg-pink-600 shadow-inner shadow-pink-500 hover:shadow-pink-700',
@@ -21,7 +21,7 @@ export const partOfSpeechMap = {
     'N': {
         fullName: 'שמות עצם - Nouns',
         type: 'nouns',
-        explain: 'משמשות ליצוג של עצמים. \n יכולות להופיע בשתי צורות:\n יחיד או רבים.',
+        explain: 'מילים שמציינות אנשים, מקומות או דברים.\nלדוגמה: ילד, בית, שולחן.\nיכולות להופיע ביחיד או ברבים.',
         colors: {
             default: {
                 color: 'bg-sky-600 shadow-inner shadow-sky-500 hover:shadow-sky-700',
@@ -37,7 +37,7 @@ export const partOfSpeechMap = {
     'A': {
         fullName: 'שמות תואר - Adjectives',
         type: 'adjectives',
-        explain: 'משמשות לתיאור של תכונות ומאפיינים של שמות עצם.\nיכולות להופיע בשלוש צורות:\nרגיל, יותר (השוואה), והכי (הטוב ביותר).',
+        explain: 'מילים שמתארות איך משהו נראה או מרגיש.\nלדוגמה: גדול, יפה, מהיר.\nיכולות להשוות: גדול, יותר גדול, הכי גדול.',
         colors: {
             default: {
                 color: 'bg-purple-800 shadow-inner shadow-purple-700 hover:shadow-purple-900',
@@ -50,10 +50,10 @@ export const partOfSpeechMap = {
             }
         }
     },
-    'D': {  // שימוש ב-D כקיצור ל-Adverbs
+    'D': {
         fullName: 'תוארי פועל - Adverbs',
         type: 'adverbs',
-        explain: 'משמשות לתיאור פעלים, תארים או תוארי פועל אחרים.\nמספקות מידע על אופן, זמן, מקום או תדירות של פעולה.',
+        explain: 'מילים שמתארות איך, מתי או איפה קורה משהו.\nלדוגמה: מהר, אתמול, בחוץ.',
         colors: {
             default: {
                 color: 'bg-green-700 shadow-inner shadow-green-600 hover:shadow-green-800',
@@ -69,7 +69,7 @@ export const partOfSpeechMap = {
     'F': {
         fullName: 'מילות תפקוד - Function Words',
         type: 'functionWords',
-        explain: 'משמשות ליצירת חיבור והקשר במשפט. \n לרוב, למילים אלו אין הטיות.',
+        explain: 'מילים קטנות שמחברות בין חלקי המשפט.\nלדוגמה: ב-, ו-, אני, את, הוא.\nעוזרות לבנות משפטים שלמים.',
         colors: {
             default: {
                 color: 'bg-slate-500 shadow-inner shadow-slate-400 hover:shadow-slate-600',

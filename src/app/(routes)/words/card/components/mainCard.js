@@ -1,13 +1,11 @@
 'use client'
 import { useContext, useEffect, useState } from 'react';
-import ConditionalRender from '@/components/features/ConditionalRender';
 import Inflections from './inflections';
 import MainWord from './mainWord';
-import Sentences from './sentences';
-import Information from './info'; // יבוא הקומפוננטה החדשה
+import MoreInfo from './moreInfo';
 import { ColorContext } from '../../navigation/components/colorContext';
 
-const MainCard = ({ word, index, tr, ps, inf, sen, infl, ex, syn, con }) => { // הוספת הפרמטרים החדשים
+const MainCard = ({ word, index, tr, ps, inf, infl, ex, syn, con }) => { 
   const { selectedColor } = useContext(ColorContext);
   const [isAnimating, setIsAnimating] = useState(false);
   
@@ -18,8 +16,6 @@ const MainCard = ({ word, index, tr, ps, inf, sen, infl, ex, syn, con }) => { //
       return () => clearTimeout(timer);
     }
   }, [selectedColor]);
-
-  if (!inf) return <ConditionalRender/>;
 
   return (
     <div
@@ -50,23 +46,14 @@ const MainCard = ({ word, index, tr, ps, inf, sen, infl, ex, syn, con }) => { //
             ps={ps}
           />
         </div>
-        {/* <ConditionalRender data={inf}> */}
+
           <Inflections
             word={word}
             inf={inf}
             infl={infl}
           />
-        {/* </ConditionalRender> */}
-        <div className="mt-">
-          {/* <Sentences
-            sen={sen}
-            inf={inf}
-            word={word}
-          /> */}
-        </div>
-        
-        {/* קומפוננטת המידע הנוסף */}
-        <Information
+
+        <MoreInfo
           ex={ex}
           syn={syn}
           con={con}

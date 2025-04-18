@@ -7,12 +7,12 @@ export default function NextAndPrevious({ index, categorySize }) {
   const nextIndex = getAdjacentIndex(currentIndex, 'next', categorySize);
   const prevIndex = getAdjacentIndex(currentIndex, 'prev', categorySize);
   
-  const buttonClasses = `bg-gradient-to-r from-blue-200 to-purple-200 
+  const buttonClasses = `bg-gradient-to-r from-blue-100 to-purple-100 
                           px-6 py-3 duration-300 hover:scale-110 rounded
                            w-24 text-center`;
   
   return (
-    <div className="w-80 min-w-[250px] sm:w-80 mx-2 sm:mx-auto border-t p-4 flex justify-between md:w-96 lg:w-[550px]">
+    <div className="w-80 min-w-[250px] sm:w-80 mx-2 sm:mx-auto border-t p-4 flex justify-between md:w-96 lg:w-[500px]">
       <Link
         href={prevIndex ? `/words?index=${prevIndex}` : '#'}
         className={`
