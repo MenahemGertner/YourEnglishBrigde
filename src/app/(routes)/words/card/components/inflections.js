@@ -30,7 +30,7 @@ const Inflections = ({ inf = [], word = '', infl = null }) => {
         setCurrentIndex(0);
       }
     }
-  }, [inf, word]);
+  }, [inf, word, currentIndex]);
 
   const handleTransition = (direction, indexUpdater) => {
     if (isTransitioning || !wordsList.length) return;

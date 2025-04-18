@@ -7,14 +7,15 @@ import partOfSpeechInflection from '../helpers/partOfSpeechInflection.js';
 import Link from "next/link";
 import underLine from "@/components/features/UnderLine";
 
-const InflectionSentences = ({ 
-  infl, // הטיות
-}) => {
+const InflectionSentences = ({ infl }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSentenceId, setActiveSentenceId] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [viewMode, setViewMode] = useState('default'); // Changed to 'default' as the default mode
+  const [viewMode, setViewMode] = useState('default');
   const maxItems = 5;
+  const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
+  const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
+
 
   // בדיקה שיש נתונים בפורמט החדש (מערך)
   const hasInflData = infl && Array.isArray(infl) && infl.length > 0;
@@ -50,9 +51,6 @@ const InflectionSentences = ({
 
   const inflItems = generateItemsFromData(infl);
   const hasMore = inflItems.length > maxItems;
-  
-  const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
-  const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
   
   const toggleSentence = (id) => {
     setActiveSentenceId(activeSentenceId === id ? null : id);

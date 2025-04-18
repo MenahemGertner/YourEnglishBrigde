@@ -75,7 +75,7 @@ const formatQuestionText = (text) => {
     // רינדור החלקים עם עיצוב מתאים
     return finalParts.map((part, index) => (
       part.isQuote ? 
-        <span key={index} className="italic font-medium px-1 rounded mx-1">'{part.text}'</span> :
+      <span key={index} className="italic font-medium px-1 rounded mx-1">&lsquo;{part.text}&rsquo;</span> :
         <span key={index}>{part.text}</span>
     ));
   };
