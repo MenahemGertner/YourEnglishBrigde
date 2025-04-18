@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/db/supabase'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth';
 
 export async function getPreviousWord(userId, currentIndex) {
   if (!userId) throw new Error('User ID is required')

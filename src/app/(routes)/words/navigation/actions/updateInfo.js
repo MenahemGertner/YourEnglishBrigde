@@ -3,7 +3,7 @@
 import { intervals } from '../helpers/reviewHelperFunctions';
 import { createServerClient } from '@/lib/db/supabase';
 import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 
 export async function updateInfo(userId, wordId, level, category, word, inf) {
   try {
