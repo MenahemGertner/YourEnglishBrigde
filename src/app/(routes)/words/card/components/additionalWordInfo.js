@@ -42,8 +42,7 @@ const AdditionalWordInfo = ({
   const exItems = generateExpressionsItems(ex);
 
   return (
-    <div className="max-h-[80vh] window-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-lg shadow-xl p-6 overflow-auto">
-      <div className="flex flex-col md:flex-row gap-6">
+<div className="max-h-[80vh] w-[70vw] md:w-auto window-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white rounded-lg shadow-xl p-6 overflow-auto">      <div className="flex flex-col md:flex-row gap-6">
         {hasExData && (
           <div className="md:w-60 relative flex flex-col rounded-lg shadow-md overflow-hidden" dir="ltr">
             <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-24 flex flex-col justify-center">

@@ -37,7 +37,7 @@ export async function getNextWord(userId) {
     if (userError) throw userError
 
     // Check if practice threshold reached
-    // בדיקת התרגול רק במצב ייצור, דילוג עליה במצב פיתוח
+    // בדיקת התרגול רק במצב פיתוח, דילוג עליה במצב ייצור
 if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTICE_THRESHOLD) {
   // Reset practice counter
   await supabase

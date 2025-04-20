@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Cat } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { updateSequencePosition } from '../actions/updateSequencePosition';
 import { getStartingIndexForCategory } from '../../helpers/reviewHelperFunctions';
 import { ResetDialog, PositionDialog } from './sequenceDialogs';
+import GradientCat from './GradientCat';
 
 function SequenceReset() {
   const router = useRouter();
@@ -128,9 +128,9 @@ function SequenceReset() {
           className="relative cursor-pointer"
           title='לעדכן מיקום'
         >
-          <Cat 
+          <GradientCat 
             size={56}
-            className={`transition-all duration-300 text-blue-900 hover:text-blue-700
+            className={`transition-all duration-300 hover:text-blue-700
               ${isOpen ? 'scale-150' : ''}`}
           />
         </div>

@@ -9,8 +9,8 @@ const MainWord = ({ word, tr, ps }) => {
     }
     // קביעת גודל הטקסט בהתאם לאורך המילה
     const textSizeClass = word.length > 8 
-        ? "lg:text-7xl text-5xl" 
-        : "lg:text-7xl text-6xl";
+        ? "lg:text-7xl text-4xl" 
+        : "lg:text-7xl text-5xl";
 
     return(
         <div className="flex items-center gap-2">

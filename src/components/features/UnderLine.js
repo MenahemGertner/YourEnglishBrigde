@@ -22,6 +22,7 @@ const underLine = (text, wordForms, partOfSpeech = null) => {
       else if (psType === 'N') borderColor = "border-sky-400";
       else if (psType === 'A') borderColor = "border-purple-500";
       else if (psType === 'F') borderColor = "border-slate-300";
+      else if (psType === 'D') borderColor = "border-green-400";
     }
   }
   

@@ -1,11 +1,8 @@
 'use client'
 import React, { useState } from "react"
-import { ChevronDown, ChevronUp, CircleHelp, Book, PlayCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import AudioButton from "@/components/features/AudioButton";
-import PartOfSpeech from "../helpers/partOfSpeech.js";
+import { ChevronDown, Book, PlayCircle } from 'lucide-react';
+import InflectionRenderer from "./InflectionRenderer";
 import partOfSpeechInflection from '../helpers/partOfSpeechInflection.js';
-import Link from "next/link";
-import underLine from "@/components/features/UnderLine";
 
 const InflectionSentences = ({ infl }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -15,9 +12,7 @@ const InflectionSentences = ({ infl }) => {
   const maxItems = 5;
   const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
   const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
-  // State for tracking which translations are shown (unblurred)
   const [visibleTranslations, setVisibleTranslations] = useState({});
-
 
   // בדיקה שיש נתונים בפורמט החדש (מערך)
   const hasInflData = infl && Array.isArray(infl) && infl.length > 0;
@@ -58,10 +53,6 @@ const InflectionSentences = ({ infl }) => {
     setActiveSentenceId(activeSentenceId === id ? null : id);
   };
 
-  const toggleViewMode = () => {
-    setViewMode(viewMode === 'default' ? 'practice' : 'default');
-  };
-
   const loadMoreDefaultItems = () => {
     setVisibleDefaultItems(prev => Math.min(prev + maxItems, inflItems.length));
   };
@@ -100,162 +91,12 @@ const InflectionSentences = ({ infl }) => {
     }));
   };
 
-  const renderDefaultItem = (item) => (
-    <div 
-      key={item.id} 
-      className={`mb-4 rounded-lg transition-all duration-300 ${
-        activeSentenceId === item.id ? 'bg-gradient-to-r from-blue-50 to-purple-50 p-3' : 'hover:bg-gray-50 p-2'
-      }`}
-    >
-      <div 
-        className="flex items-center gap-2 mb-1 cursor-pointer"
-        onClick={() => toggleSentence(item.id)}
-      >
-        <div 
-          className="text-blue-600 hover:text-blue-800"
-          aria-label={activeSentenceId === item.id ? "Hide details" : "Show details"}
-        >
-          {activeSentenceId === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </div>
-        <span className="font-medium text-gray-800 truncate max-w-[150px]">{item.word}</span>
-        <span onClick={(e) => e.stopPropagation()}>
-          <AudioButton text={item.word}/>
-        </span>
-        <PartOfSpeech ps={item.inflec} variant="compact" />
-        <span className="text-gray-300 text-xs">{item.Inflections}</span> 
-      </div>
-  
-      {activeSentenceId === item.id ? (
-        <div className="mt-2 pl-6 border-l-2 border-blue-200">
-          <div className="mb-2 text-sm text-gray-600 flex justify-between items-center" dir="rtl">
-            <span>{item.translateInflection}</span>
-            <div className="flex items-center gap-2">
-              <span>{item.Inflections}</span>
-              <button 
-                onClick={() => setShowExplanation(prev => !prev)}
-                className="text-blue-500 hover:text-blue-700 rounded-full w-4 h-4 flex items-center justify-center"
-                aria-label="הסבר על הטיה"
-              >
-                <CircleHelp size={14} />
-              </button>
-            </div>
-          </div>
-          
-          {showExplanation && (
-            <div className="mb-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 text-sm rounded border border-blue-100">
-              <p className="text-gray-700" dir="rtl">
-                {item.inflectionDescription}
-              </p>
-              <Link 
-                href={`/explainInflection?type=${item.type || 'other'}&inflection=${item.Inflections}`}
-                className="mr-1 text-blue-600 hover:underline inline-flex items-center gap-1"
-              >
-                <span>למידע נוסף</span>                
-              </Link>
-            </div>
-          )}
-          
-          {/* במצב הטיות - הצג רק את המשפט הראשון */}
-          {item.examples && item.examples.length > 0 && (
-            <div className="p-2 bg-white rounded border border-gray-200 mb-2">
-              <p className="mb-1">{underLine(item.examples[0].sen, [item.word], item.inflec)}</p>
-              <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                <AudioButton text={item.examples[0].sen}/>
-                <div className="relative flex items-center flex-grow">
-                  <p 
-                    className={`transition-all duration-300 ${
-                      visibleTranslations[`${item.id}-default-0`] ? '' : 'blur select-none'
-                    }`}
-                  >
-                    {item.examples[0].trn}
-                  </p>
-                  <button 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleTranslation(`${item.id}-default-0`);
-                    }}
-                    className="ml-2 text-blue-600 hover:text-blue-800"
-                    aria-label={visibleTranslations[`${item.id}-default-0`] ? "הסתר תרגום" : "הצג תרגום"}
-                  >
-                    {visibleTranslations[`${item.id}-default-0`] ? 
-                      <EyeOff size={16} /> : 
-                      <Eye size={16} />
-                    }
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Only show "Continue to next practice" button if it's not the last inflection */}
-          {!isLastInflection() && (
-            <button 
-              onClick={goToNextInflection}
-              className="mt-3 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
-            >
-              <ArrowLeft size={14} />
-              <span>המשך לתרגול הבא</span>
-            </button>
-          )}
-        </div>
-      ) : (
-        <div className="text-sm text-gray-600 pl-6 max-w-full">
-          {item.sentence && underLine(item.sentence, [item.word], item.inflec)}
-        </div>
-      )}
-    </div>
-  );
-
-  const renderPracticeItem = (item, index) => (
-    <div key={item.id} className="mb-6 p-3 bg-white rounded-lg shadow-sm border border-gray-200">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-700">{item.word}</span>
-          <AudioButton text={item.word}/>
-          <PartOfSpeech ps={item.inflec} variant="compact" />
-        </div>
-      </div>
-      
-      {/* במצב תרגול רציף - הצג את כל הדוגמאות */}
-      {item.examples.map((example, exIndex) => (
-        <div key={`${item.id}-practice-${exIndex}`} className="p-3 bg-gray-50 rounded mb-2">
-          <p className="mb-2 text-lg">{underLine(example.sen, [item.word], item.inflec)}</p>
-          <div className="flex items-center gap-2 text-gray-600">
-            <AudioButton text={example.sen}/>
-            <div className="relative flex items-center flex-grow">
-              <p 
-                className={`transition-all duration-300 ${
-                  visibleTranslations[`${item.id}-practice-${exIndex}`] ? '' : 'blur select-none'
-                }`}
-              >
-                {example.trn}
-              </p>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleTranslation(`${item.id}-practice-${exIndex}`);
-                }}
-                className="ml-2 text-blue-600 hover:text-blue-800"
-                aria-label={visibleTranslations[`${item.id}-practice-${exIndex}`] ? "הסתר תרגום" : "הצג תרגום"}
-              >
-                {visibleTranslations[`${item.id}-practice-${exIndex}`] ? 
-                  <EyeOff size={16} /> : 
-                  <Eye size={16} />
-                }
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
   return (
     <div 
       className={`max-h-[75vh] window-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 rounded-lg bg-white shadow-xl overflow-auto ${
         viewMode === 'default' 
-          ? 'w-[85%] md:w-[380px]'  // Mobile-friendly width for default view
-          : 'w-[85%] md:w-[380px]'  // Consistent width for both mobile and desktop
+          ? 'w-[85%] md:w-[280px]'  // Mobile-friendly width for default view
+          : 'w-[85%] md:w-[280px]'  // Consistent width for both mobile and desktop
       }`}
       dir="ltr"
     >
@@ -294,7 +135,18 @@ const InflectionSentences = ({ infl }) => {
         // מצב ברירת מחדל - הטיות עם משפטים
         <div className="p-4 relative" dir="ltr">
           <div>
-            {inflItems.slice(0, visibleDefaultItems).map(renderDefaultItem)}
+            <InflectionRenderer
+              viewMode={viewMode}
+              items={inflItems.slice(0, visibleDefaultItems)}
+              activeSentenceId={activeSentenceId}
+              toggleSentence={toggleSentence}
+              showExplanation={showExplanation}
+              setShowExplanation={setShowExplanation}
+              visibleTranslations={visibleTranslations}
+              toggleTranslation={toggleTranslation}
+              isLastInflection={isLastInflection}
+              goToNextInflection={goToNextInflection}
+            />
             
             {visibleDefaultItems < inflItems.length && (
               <button
@@ -310,7 +162,18 @@ const InflectionSentences = ({ infl }) => {
       ) : (
         // מצב תרגול - רק משפטים ברצף
         <div className="p-4 max-w-2xl mx-auto">
-          {inflItems.slice(0, visiblePracticeItems).map((item, index) => renderPracticeItem(item, index))}
+          <InflectionRenderer
+            viewMode={viewMode}
+            items={inflItems.slice(0, visiblePracticeItems)}
+            activeSentenceId={activeSentenceId}
+            toggleSentence={toggleSentence}
+            showExplanation={showExplanation}
+            setShowExplanation={setShowExplanation}
+            visibleTranslations={visibleTranslations}
+            toggleTranslation={toggleTranslation}
+            isLastInflection={isLastInflection}
+            goToNextInflection={goToNextInflection}
+          />
           
           {visiblePracticeItems < inflItems.length && (
             <button

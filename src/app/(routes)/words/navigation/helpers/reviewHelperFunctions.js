@@ -1,7 +1,7 @@
 export const intervals = { 
-      2: 15,
-      3: 6, 
-      4: 3 
+      2: 35,
+      3: 15, 
+      4: 7 
     };
     
 export const categories = ['500', '1000', '1500', '2000', '2500']

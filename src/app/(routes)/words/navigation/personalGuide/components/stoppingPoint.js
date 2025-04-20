@@ -1,10 +1,10 @@
 'use client'
 
-import { Cat } from 'lucide-react'
 import { useSession } from "next-auth/react"
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { getNextWord } from '../../actions/getNextWord'
+import GradientCat from './GradientCat'
 
 const StoppingPoint = () => {
   const { data: session } = useSession()
@@ -56,9 +56,10 @@ const StoppingPoint = () => {
           className={`${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
         >
           <div className="relative">
-            <div className="animate-bounce">
-              <Cat 
-                className="h-14 w-14 transition-colors duration-200 text-blue-900 hover:text-blue-700"
+            <div>
+              <GradientCat 
+                isAnimated={true}
+                className="transition-transform duration-200 hover:scale-110"
               />
             </div>
             
