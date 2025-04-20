@@ -129,7 +129,6 @@ const AudioButton = ({ text }) => {
   const [voice, setVoice] = useState(null);
   const [playbackState, setPlaybackState] = useState('normal');
   const [debugLog, setDebugLog] = useState([]);
-  const utteranceRef = useRef(null);
   const isAndroidRef = useRef(false);
 
   const logMessage = (msg) => {
@@ -150,22 +149,13 @@ const AudioButton = ({ text }) => {
         logMessage(`Voices loaded: ${voices.length}`);
         
         if (voices.length > 0 && isMounted) {
-          // אם זה אנדרואיד, ננסה למצוא קול מקומי
-          if (isAndroidRef.current) {
-            // ננסה למצוא קול מקומי או ברירת מחדל
-            const localVoice = voices.find(v => !v.localService === false) || voices[0];
-            setVoice(localVoice);
-            logMessage(`Android voice: ${localVoice?.name || 'None'}`);
-          } else {
-            // אם לא אנדרואיד, נמשיך עם הלוגיקה הקודמת
-            const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-            const bestVoice = englishVoices.find(v => 
-              v.name.includes('Enhanced') || v.name.includes('Neural')
-            ) || englishVoices[0];
-            
-            setVoice(bestVoice);
-            logMessage(`Selected voice: ${bestVoice?.name || 'None'}`);
-          }
+          const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+          const bestVoice = englishVoices.find(v => 
+            v.name.includes('Enhanced') || v.name.includes('Neural')
+          ) || englishVoices[0];
+          
+          setVoice(bestVoice);
+          logMessage(`Selected voice: ${bestVoice?.name || 'None'}`);
         }
       } catch (err) {
         logMessage(`Error loading voices: ${err.message}`);
@@ -185,8 +175,6 @@ const AudioButton = ({ text }) => {
       return () => {
         isMounted = false;
         window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
-        
-        // נקה כל פעילות סינתזה כשהקומפוננטה מתפרקת
         if (window.speechSynthesis) {
           window.speechSynthesis.cancel();
         }
@@ -196,25 +184,10 @@ const AudioButton = ({ text }) => {
     }
   }, []);
 
-  // לא צריך את הרענון באנדרואיד, הוא גורם לבעיה
+  // לא משתמשים במנגנון הרענון (גורם להפרעות באנדרואיד)
+  // useEffect לריק במקום המנגנון הקודם
   useEffect(() => {
-    let intervalId;
-    
-    if (isPlaying && window.speechSynthesis && !isAndroidRef.current) {
-      intervalId = setInterval(() => {
-        try {
-          window.speechSynthesis.pause();
-          window.speechSynthesis.resume();
-          logMessage("Refreshing speech synthesis");
-        } catch (err) {
-          logMessage(`Refresh error: ${err.message}`);
-        }
-      }, 5000);
-    }
-    
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
+    // לא עושים רענון - מסירים את הרענון שהיה קודם
   }, [isPlaying]);
 
   const speak = () => {
@@ -230,10 +203,9 @@ const AudioButton = ({ text }) => {
       return;
     }
 
-    // נקה כל דיבור נוכחי
     window.speechSynthesis.cancel();
     
-    // מעדכן את מצב הניגון לפי הלוגיקה הקיימת
+    // שומר על הלוגיקה המקורית של מצבי ההשמעה
     setPlaybackState(current => {
       switch(current) {
         case 'normal': return 'slow';
@@ -243,28 +215,22 @@ const AudioButton = ({ text }) => {
       }
     });
     
-    // אם הוא במצב השתקה, פשוט צא
+    // אם במצב השתק - לא מנגנים
     if (playbackState === 'mute') {
       logMessage("Mute state - not playing");
       setIsPlaying(false);
       return;
     }
     
-    // נסה להשתמש בקול הקיים או למצוא חדש
+    // נסה לקבל קול אם אין
     let currentVoice = voice;
     if (!currentVoice) {
       try {
         const voices = window.speechSynthesis.getVoices();
-        
-        if (isAndroidRef.current) {
-          // באנדרואיד ננסה למצוא קול מקומי
-          currentVoice = voices.find(v => !v.localService === false) || voices[0];
-        } else {
-          const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-          currentVoice = englishVoices.find(v => 
-            v.name.includes('Enhanced') || v.name.includes('Neural')
-          ) || englishVoices[0] || voices[0];
-        }
+        const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+        currentVoice = englishVoices.find(v => 
+          v.name.includes('Enhanced') || v.name.includes('Neural')
+        ) || englishVoices[0] || voices[0];
         
         if (currentVoice) {
           setVoice(currentVoice);
@@ -278,72 +244,46 @@ const AudioButton = ({ text }) => {
     }
 
     try {
-      // אם אנדרואיד, נשתמש בגישה קצת שונה
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      if (currentVoice) {
+        utterance.voice = currentVoice;
+      }
+      
+      utterance.rate = playbackState === 'slow' ? 0.6 : 1;
+      utterance.pitch = 1;
+      
+      // טיפול שונה לאנדרואיד לעומת מכשירים אחרים
       if (isAndroidRef.current) {
-        logMessage("Using Android-specific approach");
+        logMessage("Using Android approach");
+        // במקום להשתמש באירוע onend, משתמשים בטיימר מבוסס-אורך-טקסט
+        const estimatedDuration = (text.length / 5) * 1000; // משוער - 5 תווים לשנייה
         
-        // ניצור אובייקט חדש כל פעם
-        const utterance = new SpeechSynthesisUtterance(text);
-        utteranceRef.current = utterance;
-        
-        if (currentVoice) {
-          utterance.voice = currentVoice;
-        }
-        
-        utterance.rate = playbackState === 'slow' ? 0.6 : 1;
-        utterance.pitch = 1;
-        utterance.volume = 1.0;
-        
-        // לא נשתמש בתכונת onend באנדרואיד (גורמת לבעיות)
-        utterance.onend = null;
-        
+        utterance.onend = null; // מבטל את האירוע המקורי
         utterance.onerror = (e) => {
-          logMessage(`Speech error: ${e.error}`);
+          logMessage(`Android speech error: ${e.error}`);
           setIsPlaying(false);
         };
         
-        setIsPlaying(true);
-        
-        // מריץ בגוש קוד נפרד כדי לא להיתקע בפעולות אסינכרוניות
+        // מגדיר טיימר שיסיים את הנגינה אחרי זמן משוער
         setTimeout(() => {
-          try {
-            window.speechSynthesis.cancel(); // נקה קודם
-            window.speechSynthesis.speak(utterance);
-            logMessage("Android speaking started");
-            
-            // יוצר טיימר כדי לסיים ידנית את הניגון אחרי זמן משוער
-            // מבוסס על אורך הטקסט (הערכה גסה - 5 תווים לשנייה)
-            const estimatedDuration = (text.length / 5) * 1000;
-            setTimeout(() => {
-              if (isPlaying) {
-                setIsPlaying(false);
-                logMessage("Estimated speech end time reached");
-              }
-            }, Math.max(2000, estimatedDuration));
-          } catch (err) {
-            logMessage(`Android speak error: ${err.message}`);
+          if (isPlaying) {
             setIsPlaying(false);
+            logMessage("Android estimated speech end");
+            
+            // עדכון חזרה למצב נורמלי אם היינו במצב איטי
+            if (playbackState === 'slow') {
+              setPlaybackState('normal');
+            }
           }
-        }, 100);
-      } 
-      // גישה רגילה למכשירים שאינם אנדרואיד
-      else {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utteranceRef.current = utterance;
-        
-        if (currentVoice) {
-          utterance.voice = currentVoice;
-        }
-        
-        utterance.rate = playbackState === 'slow' ? 0.6 : 1;
-        utterance.pitch = 1;
-        utterance.volume = 1.0;
-        
+        }, Math.max(2000, estimatedDuration));
+      } else {
+        // התנהגות רגילה למכשירים שאינם אנדרואיד
         utterance.onend = () => {
           logMessage("Speech ended");
           setIsPlaying(false);
           
-          // רק חוזר למהירות רגילה אם היינו במצב איטי
+          // עדכון חזרה למצב נורמלי אם היינו במצב איטי
           if (playbackState === 'slow') {
             setPlaybackState('normal');
           }
@@ -353,11 +293,20 @@ const AudioButton = ({ text }) => {
           logMessage(`Speech error: ${e.error}`);
           setIsPlaying(false);
         };
-        
-        setIsPlaying(true);
-        window.speechSynthesis.speak(utterance);
-        logMessage("Speaking started");
       }
+      
+      setIsPlaying(true);
+      
+      // השהיה קצרה לפני ההשמעה - עוזר במכשירי אנדרואיד
+      setTimeout(() => {
+        try {
+          window.speechSynthesis.speak(utterance);
+          logMessage("Speaking started");
+        } catch (err) {
+          logMessage(`Speak error: ${err.message}`);
+          setIsPlaying(false);
+        }
+      }, 50);
     } catch (err) {
       logMessage(`Utterance error: ${err.message}`);
       setIsPlaying(false);
