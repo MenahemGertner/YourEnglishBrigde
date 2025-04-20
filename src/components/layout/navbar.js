@@ -74,7 +74,7 @@ export default function Navbar() {
               >
                 בדיקת רמה
               </Link>
-              <Link 
+              {/* <Link 
                 href="/rulesAndStructure"
                 className="text-center py-3 hover:text-blue-900 hover:bg-blue-50 rounded"
                 onClick={toggleMenu}
@@ -94,7 +94,7 @@ export default function Navbar() {
                 onClick={toggleMenu}
               >
                 <span className='flex justify-center gap-2'>המדריך האישי <Cat/></span>
-              </Link>
+              </Link> */}
               
               {/* Login Button at the bottom with separator */}
               <div className="flex justify-center mt-4 pt-4 border-t border-gray-200">

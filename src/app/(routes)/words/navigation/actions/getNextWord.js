@@ -37,20 +37,21 @@ export async function getNextWord(userId) {
     if (userError) throw userError
 
     // Check if practice threshold reached
-    if (userData.practice_counter >= PRACTICE_THRESHOLD) {
-      // Reset practice counter
-      await supabase
-        .from('users')
-        .update({ practice_counter: 0 })
-        .eq('id', userId)
+    // בדיקת התרגול רק במצב ייצור, דילוג עליה במצב פיתוח
+if (process.env.NODE_ENV !== 'development' && userData.practice_counter >= PRACTICE_THRESHOLD) {
+  // Reset practice counter
+  await supabase
+    .from('users')
+    .update({ practice_counter: 0 })
+    .eq('id', userId)
 
-      return {
-        found: false,
-        status: 'PRACTICE_NEEDED',
-        lastPosition: userData.last_position,
-        currentCategory: userData.current_category
-      }
-    }
+  return {
+    found: false,
+    status: 'PRACTICE_NEEDED',
+    lastPosition: userData.last_position,
+    currentCategory: userData.current_category
+  }
+}
 
     const learningSequencePointer = userData.last_position?.learning_sequence_pointer || 0
     const currentCategory = userData.last_position?.category || '500'

@@ -269,7 +269,7 @@ const InflectionSentences = ({ infl }) => {
           >
             <div className="flex items-center gap-1">
               <PlayCircle size={14} />
-              <span>תרגול משפטים</span>
+              <span>משפטים ברצף</span>
             </div>
           </button>
           <button 
