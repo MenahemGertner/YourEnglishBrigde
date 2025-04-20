@@ -95,8 +95,8 @@ const InflectionSentences = ({ infl }) => {
     <div 
       className={`max-h-[75vh] window-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 rounded-lg bg-white shadow-xl overflow-auto ${
         viewMode === 'default' 
-          ? 'w-[85%] md:w-[280px]'  // Mobile-friendly width for default view
-          : 'w-[85%] md:w-[280px]'  // Consistent width for both mobile and desktop
+          ? 'w-[85%] md:w-[380px]'  // Mobile-friendly width for default view
+          : 'w-[85%] md:w-[380px]'  // Consistent width for both mobile and desktop
       }`}
       dir="ltr"
     >
