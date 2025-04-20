@@ -417,6 +417,161 @@ explanation: 'נגזר מהפועל develop בתוספת הסיומת -ment'
 ],
 commonMistakes: 'טעויות נפוצות כוללות בלבול בין שמות עצם פעולה לבין צורות gerund, או שימוש בפועל במקום בשם העצם המתאים בהקשרים המחייבים שם עצם.',
 usageTips: 'שמות עצם פעולה יכולים להופיע כנושא או מושא במשפט. הם שונים מ-gerund בכך שהם עברו שינוי מורפולוגי מהפועל, בעוד ש-gerund נוצר על ידי הוספת ing בלבד. לעיתים מוסיפים "the" לפני שם עצם פעולה כאשר מתייחסים לפעולה ספציפית.'
+},
+'Process-Result Noun': {
+    detailedExplanation: `שם עצם תהליך-תוצאה באנגלית מתאר הן את התהליך והן את התוצאה של פעולה מסוימת. המילה יכולה לציין את הפעולה עצמה או את התוצר הסופי שלה, לפי ההקשר.`,
+    examples: [
+        {
+            english: 'construction',
+            hebrew: 'בנייה/מבנה',
+            inSentence: {
+                english: 'The construction of the building took three years',
+                hebrew: 'בניית המבנה ארכה שלוש שנים',
+                explanation: 'מתייחס לתהליך הבנייה עצמו'
+            }
+        },
+        {
+            english: 'creation',
+            hebrew: 'יצירה',
+            inSentence: {
+                english: 'Her latest creation won an award at the art show',
+                hebrew: 'היצירה האחרונה שלה זכתה בפרס בתערוכת האמנות',
+                explanation: 'מתייחס לתוצר הסופי של תהליך היצירה'
+            }
+        }
+    ],
+    commonMistakes: 'טעות נפוצה היא אי-הבחנה בין שימוש המילה כתהליך או כתוצאה, מה שעלול להוביל לשימוש לא מדויק במשפט או לבלבול בהקשר.',
+    usageTips: 'שימו לב להקשר כדי להבין אם מדובר בתהליך או בתוצאה. מילות עזר כמו "during the" רומזות על תהליך, בעוד ביטויים כמו "the final" מרמזים על תוצאה.'
+},
+
+'Quality Noun': {
+    detailedExplanation: `שם עצם איכות באנגלית מתאר תכונה, מאפיין או איכות של דבר מה או מישהו. אלו בדרך כלל שמות עצם מופשטים שנגזרים לרוב מתארים על ידי הוספת סיומות כמו -ness, -ity, -hood, או -ship.`,
+    examples: [
+        {
+            english: 'kindness',
+            hebrew: 'טוב לב',
+            inSentence: {
+                english: 'Her kindness to strangers was remarkable',
+                hebrew: 'טוב הלב שלה כלפי זרים היה מרשים',
+                explanation: 'נגזר מהתואר kind בתוספת הסיומת -ness'
+            }
+        },
+        {
+            english: 'reliability',
+            hebrew: 'אמינות',
+            inSentence: {
+                english: 'The reliability of this car makes it worth the price',
+                hebrew: 'האמינות של המכונית הזאת הופכת אותה לשווה את המחיר',
+                explanation: 'נגזר מהתואר reliable בתוספת הסיומת -ity'
+            }
+        }
+    ],
+    commonMistakes: 'טעויות נפוצות כוללות שימוש בתואר במקום בשם העצם האיכותי, או בחירה שגויה של סיומת.',
+    usageTips: 'שמות עצם איכותיים הם לרוב בלתי ספירים. הם משמשים להבעת רעיונות מופשטים ותכונות, ולכן חשובים לשיח אקדמי, פילוסופי או רגשי.'
+},
+
+'Recipient Noun': {
+    detailedExplanation: `שם עצם מקבל באנגלית מציין את האדם, הקבוצה או הישות שמקבלת משהו - פעולה, מתנה, שירות, או הטבה. בניגוד לשם פועל (agent noun) המתאר את מבצע הפעולה, שם עצם מקבל מתמקד במי שמושפע מהפעולה או מקבל אותה.`,
+    examples: [
+        {
+            english: 'recipient',
+            hebrew: 'מקבל/ת',
+            inSentence: {
+                english: 'The recipient of the award gave a short speech',
+                hebrew: 'מקבל הפרס נשא נאום קצר',
+                explanation: 'מתאר את האדם שקיבל את הפרס'
+            }
+        },
+        {
+            english: 'beneficiary',
+            hebrew: 'מוטב/ת',
+            inSentence: {
+                english: 'She is the main beneficiary of her grandmother\'s will',
+                hebrew: 'היא המוטב העיקרי בצוואה של סבתה',
+                explanation: 'מציין את האדם שמקבל את ההטבה מהצוואה'
+            }
+        }
+    ],
+    commonMistakes: 'טעות נפוצה היא בלבול בין שמות עצם מקבלים לבין שמות פועל, או שימוש בשם פעולה במקום בשם המתאר את המקבל.',
+    usageTips: 'שמות עצם מקבלים משמשים בהקשרים משפטיים, עסקיים וחברתיים. הם חשובים במיוחד בחוזים, טפסים רשמיים וטקסטים שעוסקים בהעברת משאבים או זכויות.'
+},
+
+'Action Performer Noun': {
+    detailedExplanation: `שם עצם מבצע פעולה באנגלית מתאר ישות (אדם, חיה או אפילו מכשיר) שמבצעת פעולה ספציפית. בניגוד לשם פועל רגיל (agent noun), שם עצם מבצע פעולה מתאר לרוב תפקיד או מקצוע שמתמקד בביצוע הפעולה באופן מתמשך או כחלק מהגדרת התפקיד.`,
+    examples: [
+        {
+            english: 'firefighter',
+            hebrew: 'כבאי/ת',
+            inSentence: {
+                english: 'The firefighters arrived quickly to extinguish the flames',
+                hebrew: 'הכבאים הגיעו במהירות כדי לכבות את הלהבות',
+                explanation: 'מתאר אדם שתפקידו לכבות אש'
+            }
+        },
+        {
+            english: 'caretaker',
+            hebrew: 'מטפל/ת',
+            inSentence: {
+                english: 'The caretaker ensures the building is well-maintained',
+                hebrew: 'המטפל מוודא שהבניין מתוחזק היטב',
+                explanation: 'מציין אדם שתפקידו לדאוג או לטפל במשהו'
+            }
+        }
+    ],
+    commonMistakes: 'טעויות נפוצות כוללות יצירת שמות לא סטנדרטיים באמצעות הוספת -er לכל פועל, כאשר לפעמים יש מונח ספציפי יותר או מבנה שונה.',
+    usageTips: 'שמות עצם מבצעי פעולה הם בדרך כלל ספירים ויכולים להופיע בצורת יחיד או רבים. הם משמשים רבות בתיאורי תפקידים, מקצועות, ובאינטראקציות חברתיות.'
+},
+
+'Purpose Noun': {
+    detailedExplanation: `שם עצם מטרה באנגלית מתאר חפץ, כלי, שירות או מקום שנועד למטרה מסוימת. אלו שמות עצם שהשימוש או הייעוד שלהם מובנה בהגדרתם, והם משמשים לתיאור דברים על פי התכלית שלהם.`,
+    examples: [
+        {
+            english: 'calculator',
+            hebrew: 'מחשבון',
+            inSentence: {
+                english: 'I need a calculator to solve this complex equation',
+                hebrew: 'אני צריך מחשבון כדי לפתור את המשוואה המורכבת הזו',
+                explanation: 'מתאר מכשיר שמטרתו לבצע חישובים'
+            }
+        },
+        {
+            english: 'library',
+            hebrew: 'ספרייה',
+            inSentence: {
+                english: 'The library provides resources for research and study',
+                hebrew: 'הספרייה מספקת משאבים למחקר ולימוד',
+                explanation: 'מציין מקום שמטרתו לאחסן ולהנגיש ספרים וחומרי קריאה'
+            }
+        }
+    ],
+    commonMistakes: 'טעות נפוצה היא להתמקד במבנה הפיזי או במראה של הדבר במקום במטרה שלו, מה שעלול להוביל לבחירת מילה שגויה.',
+    usageTips: 'שמות עצם מטרה הם שימושיים כאשר מתארים חפצים או מקומות לפי השימוש שלהם. הם עוזרים להבהיר את התפקיד של דברים בחיי היומיום.'
+},
+
+'Size Modifier Noun': {
+    detailedExplanation: `שם עצם מתאר גודל באנגלית משמש כדי לציין את המימדים, הנפח או ההיקף של אובייקט אחר. שמות עצם אלה יכולים לשמש כמתאר (modifier) לפני שם עצם אחר או בתוך מבנים דקדוקיים שמציינים גודל.`,
+    examples: [
+        {
+            english: 'giant',
+            hebrew: 'ענק',
+            inSentence: {
+                english: 'They discovered a giant cave in the mountains',
+                hebrew: 'הם גילו מערה ענקית בהרים',
+                explanation: 'משמש כמתאר לשם העצם cave כדי לציין את גודלה החריג'
+            }
+        },
+        {
+            english: 'miniature',
+            hebrew: 'זעיר/מיניאטורי',
+            inSentence: {
+                english: 'She collects miniature furniture for her dollhouse',
+                hebrew: 'היא אוספת רהיטים מיניאטוריים לבית הבובות שלה',
+                explanation: 'מתאר את הרהיטים כקטנים מאוד ביחס לגודל הרגיל שלהם'
+            }
+        }
+    ],
+    commonMistakes: 'טעות נפוצה היא שימוש לא מדויק בשמות עצם מתארי גודל שעלול להוביל להגזמה או להמעטה בתיאור. כמו כן, לפעמים נעשה שימוש בשם עצם במקום בתואר המתאים.',
+    usageTips: 'שמות עצם מתארי גודל יכולים לשמש בתפקיד תארים כאשר הם מקדימים שם עצם אחר. הם מוסיפים משמעות מדויקת יותר מתארים כלליים כמו "big" או "small".'
 }
             
     },
@@ -998,7 +1153,85 @@ usageTips: 'שמות עצם פעולה יכולים להופיע כנושא או
         ],
         commonMistakes: 'טעויות נפוצות כוללות שימוש ב-many עם שמות עצם לא ספירים או much עם שמות עצם ספירים.',
         usageTips: 'זכרו: many/few לספירים, much/little ללא ספירים, some/any לשניהם.'
-    }
+    },
+    'Feature Adjective': {
+    detailedExplanation: `תואר תכונה באנגלית מתאר מאפיין או תכונה מהותית של שם עצם. הוא מציין איכות, מצב או תכונה קבועה יחסית שמאפיינת את הדבר או האדם שאליו מתייחסים. תארי תכונה שונים מתארי מצב בכך שהם נוטים להיות יותר קבועים ופחות זמניים.`,
+    examples: [
+        {
+            english: 'intelligent',
+            hebrew: 'אינטליגנטי',
+            inSentence: {
+                english: 'She is an intelligent student who solves problems quickly',
+                hebrew: 'היא תלמידה אינטליגנטית שפותרת בעיות במהירות',
+                explanation: 'מתאר תכונה קוגניטיבית מהותית של התלמידה'
+            }
+        },
+        {
+            english: 'wooden',
+            hebrew: 'עשוי מעץ',
+            inSentence: {
+                english: 'They built a wooden bridge across the stream',
+                hebrew: 'הם בנו גשר עץ מעל הנחל',
+                explanation: 'מתאר את החומר המהותי ממנו עשוי הגשר'
+            }
+        }
+    ],
+    commonMistakes: 'טעות נפוצה היא בלבול בין תארי תכונה לבין תארי מצב זמניים. למשל, אמירה כמו "he is intelligent" (תכונה קבועה) לעומת "he is tired" (מצב זמני).',
+    usageTips: 'תארי תכונה מופיעים לעתים קרובות לפני שם העצם שהם מתארים, אך יכולים גם להופיע אחרי פעלים כמו be, seem, appear. רבים מתארי התכונה יכולים להשתנות בדרגות השוואה (intelligent, more intelligent, most intelligent).'
+}
+        },
+        adverbs:{
+            'Adverb Form': {
+    detailedExplanation: `צורת תואר הפועל באנגלית היא קטגוריה דקדוקית המתארת איך, מתי, היכן או באיזו מידה מתבצעת פעולה. רוב תוארי הפועל נוצרים מתארים בתוספת הסיומת -ly, אך ישנם גם תוארי פועל שאינם עוקבים אחר כלל זה. תוארי פועל יכולים לתאר פעלים, תארים או תוארי פועל אחרים.`,
+    examples: [
+        {
+            english: 'quickly',
+            hebrew: 'במהירות',
+            inSentence: {
+                english: 'The athlete ran quickly across the finish line',
+                hebrew: 'האתלט רץ במהירות אל קו הסיום',
+                explanation: 'נוצר מהתואר quick בתוספת -ly, מתאר את אופן הריצה'
+            }
+        },
+        {
+            english: 'well',
+            hebrew: 'היטב',
+            inSentence: {
+                english: 'She speaks English well despite not being a native speaker',
+                hebrew: 'היא מדברת אנגלית היטב למרות שאינה דוברת ילידית',
+                explanation: 'תואר פועל לא רגולרי (לא נגמר ב-ly), מתאר את אופן הדיבור'
+            }
+        }
+    ],
+    commonMistakes: 'טעות נפוצה היא שימוש בתואר במקום בתואר פועל (he speaks slow במקום he speaks slowly). טעות נוספת היא מיקום לא נכון של תואר הפועל במשפט.',
+    usageTips: 'תוארי פועל הם גמישים במיקומם במשפט, אך המיקום משפיע על המשמעות. לרוב, תוארי פועל המתארים אופן מופיעים אחרי הפועל או בסוף המשפט. חלק מהתארים והתוארי פועל החשובים ביותר אינם עוקבים אחר כלל ה-ly, כגון fast, hard, well.'
+},
+
+'Description Adverb': {
+    detailedExplanation: `תואר פועל תיאורי באנגלית הוא סוג ספציפי של תואר פועל המתאר את האופן שבו מתבצעת פעולה. הוא עונה על השאלה "איך?" ומוסיף מידע על הסגנון, הטון, המהירות, העוצמה או התחושה של הפעולה המתוארת. תוארי פועל תיאוריים הם הקבוצה הנפוצה ביותר של תוארי פועל.`,
+    examples: [
+        {
+            english: 'carefully',
+            hebrew: 'בזהירות',
+            inSentence: {
+                english: 'The surgeon operated carefully on the patient',
+                hebrew: 'המנתח ניתח את המטופל בזהירות',
+                explanation: 'מתאר את האופן הזהיר והדייקני שבו בוצע הניתוח'
+            }
+        },
+        {
+            english: 'loudly',
+            hebrew: 'בקול רם',
+            inSentence: {
+                english: 'The children laughed loudly at the clown\'s antics',
+                hebrew: 'הילדים צחקו בקול רם למעשי הליצן',
+                explanation: 'מתאר את עוצמת הצחוק של הילדים'
+            }
+        }
+    ],
+    commonMistakes: 'טעות נפוצה היא ערבוב בין תוארי פועל תיאוריים לבין סוגים אחרים של תוארי פועל, כמו תוארי פועל של זמן או מקום. לעתים יש בלבול עם תארים שמתארים את הנושא במקום את הפעולה.',
+    usageTips: 'תוארי פועל תיאוריים הם כלי חשוב להעשרת השפה ולהוספת גוון וחיים לתיאור פעולות. כדאי למקם אותם קרוב לפועל שהם מתארים כדי להבהיר את הקשר ביניהם. בכתיבה יצירתית, תוארי פועל תיאוריים יכולים להמחיש תמונה חיה יותר, אך יש להיזהר משימוש יתר.'
+}
         },
     functionWords:{
         'Pronoun': {
@@ -1200,7 +1433,32 @@ usageTips: 'שמות עצם פעולה יכולים להופיע כנושא או
         ],
         commonMistakes: 'טעויות נפוצות כוללות שימוש במילות קריאה בכתיבה פורמלית או שימוש יתר בסימני קריאה.',
         usageTips: 'השתמשו במילות קריאה בעיקר בשיחה יומיומית ובכתיבה לא פורמלית.'
-    }
+    },
+    'Negative Forms': {
+    detailedExplanation: `צורות שלילה באנגלית הן מבנים דקדוקיים המשמשים להפוך משפט או ביטוי מחיובי לשלילי. קיימות מספר דרכים ליצור שלילה, כולל שימוש ב-not עם פעלי עזר, שימוש במילות שלילה כמו no, never, nowhere, וכן שימוש בתחיליות שליליות כמו un-, in-, dis-.`,
+    examples: [
+        {
+            english: 'not going',
+            hebrew: 'לא הולך',
+            inSentence: {
+                english: 'I am not going to the party tonight',
+                hebrew: 'אני לא הולך למסיבה הערב',
+                explanation: 'שלילה באמצעות not עם פועל העזר am'
+            }
+        },
+        {
+            english: 'unhappy',
+            hebrew: 'לא מאושר',
+            inSentence: {
+                english: 'She seemed unhappy with the results',
+                hebrew: 'היא נראתה לא מאושרת מהתוצאות',
+                explanation: 'שלילה באמצעות התחילית un- לתואר happy'
+            }
+        }
+    ],
+    commonMistakes: 'טעויות נפוצות כוללות שימוש כפול בשלילה (double negatives) שבאנגלית תקנית נחשב לשגוי, שימוש בתחילית שלילה לא מתאימה, או השמטת פועל העזר בשלילה.',
+    usageTips: 'בחרו בצורת השלילה המתאימה לפי הקשר המשפט. זכרו שבאנגלית תקנית, רק מילת שלילה אחת מותרת במשפט. שימו לב שלתחיליות שליליות שונות יש העדפות לסוגים שונים של מילים (un- לרוב עם תארים, dis- לעתים קרובות עם פעלים).'
+}
     }
            
 };

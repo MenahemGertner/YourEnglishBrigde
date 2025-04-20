@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from "react"
-import { ChevronDown, ChevronUp, CircleHelp, Book, PlayCircle, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, CircleHelp, Book, PlayCircle, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import AudioButton from "@/components/features/AudioButton";
 import PartOfSpeech from "../helpers/partOfSpeech.js";
 import partOfSpeechInflection from '../helpers/partOfSpeechInflection.js';
@@ -15,6 +15,8 @@ const InflectionSentences = ({ infl }) => {
   const maxItems = 5;
   const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
   const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
+  // State for tracking which translations are shown (unblurred)
+  const [visibleTranslations, setVisibleTranslations] = useState({});
 
 
   // בדיקה שיש נתונים בפורמט החדש (מערך)
@@ -90,6 +92,14 @@ const InflectionSentences = ({ infl }) => {
     return currentIndex === inflItems.length - 1;
   };
 
+  // Function to toggle translation visibility
+  const toggleTranslation = (translationId) => {
+    setVisibleTranslations(prev => ({
+      ...prev,
+      [translationId]: !prev[translationId]
+    }));
+  };
+
   const renderDefaultItem = (item) => (
     <div 
       key={item.id} 
@@ -150,8 +160,29 @@ const InflectionSentences = ({ infl }) => {
             <div className="p-2 bg-white rounded border border-gray-200 mb-2">
               <p className="mb-1">{underLine(item.examples[0].sen, [item.word], item.inflec)}</p>
               <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-                <AudioButton text={item.examples[0].sen}/>               
-                <p>{item.examples[0].trn}</p>
+                <AudioButton text={item.examples[0].sen}/>
+                <div className="relative flex items-center flex-grow">
+                  <p 
+                    className={`transition-all duration-300 ${
+                      visibleTranslations[`${item.id}-default-0`] ? '' : 'blur select-none'
+                    }`}
+                  >
+                    {item.examples[0].trn}
+                  </p>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleTranslation(`${item.id}-default-0`);
+                    }}
+                    className="ml-2 text-blue-600 hover:text-blue-800"
+                    aria-label={visibleTranslations[`${item.id}-default-0`] ? "הסתר תרגום" : "הצג תרגום"}
+                  >
+                    {visibleTranslations[`${item.id}-default-0`] ? 
+                      <EyeOff size={16} /> : 
+                      <Eye size={16} />
+                    }
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -191,7 +222,28 @@ const InflectionSentences = ({ infl }) => {
           <p className="mb-2 text-lg">{underLine(example.sen, [item.word], item.inflec)}</p>
           <div className="flex items-center gap-2 text-gray-600">
             <AudioButton text={example.sen}/>
-            <p>{example.trn}</p>
+            <div className="relative flex items-center flex-grow">
+              <p 
+                className={`transition-all duration-300 ${
+                  visibleTranslations[`${item.id}-practice-${exIndex}`] ? '' : 'blur select-none'
+                }`}
+              >
+                {example.trn}
+              </p>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleTranslation(`${item.id}-practice-${exIndex}`);
+                }}
+                className="ml-2 text-blue-600 hover:text-blue-800"
+                aria-label={visibleTranslations[`${item.id}-practice-${exIndex}`] ? "הסתר תרגום" : "הצג תרגום"}
+              >
+                {visibleTranslations[`${item.id}-practice-${exIndex}`] ? 
+                  <EyeOff size={16} /> : 
+                  <Eye size={16} />
+                }
+              </button>
+            </div>
           </div>
         </div>
       ))}

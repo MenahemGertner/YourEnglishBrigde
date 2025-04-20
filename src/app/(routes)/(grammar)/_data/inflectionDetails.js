@@ -3,7 +3,7 @@ export const InflectionDetails = {
         fullName: 'Nouns - שמות עצם',
         description: 'שמות עצם מציינים אנשים, מקומות, דברים ורעיונות. לדוגמה: תלמיד, בית, ספר, אהבה.',
         colors: {
-            base: 'bg-blue-100 hover:bg-blue-200'
+            base: 'bg-sky-100 hover:bg-sky-200'
         },
         inflections: {
         'Singular': {
@@ -41,22 +41,21 @@ export const InflectionDetails = {
             explanation: 'צורת פועל הפועלת כשם עצם',
             example: 'swimming is fun, reading is important'
         },
-        
         'Verbal Noun': {
             translation: 'שם פועל',
             explanation: 'שם עצם הנגזר מפועל והמתאר פעולה',
             example: 'arrival, destruction, completion'
         },
         'State Noun': {
-translation: 'שם עצם מצבי',
-explanation: 'שם עצם המתאר מצב, סטטוס או תנאי מתמשך',
-example: 'peace, silence, health, loneliness'
-},
-'Action Noun': {
-translation: 'שם עצם פעולה',
-explanation: 'שם עצם המציין פעולה או תהליך',
-example: 'running, construction, investigation, development'
-},
+            translation: 'שם עצם מצבי',
+            explanation: 'שם עצם המתאר מצב, סטטוס או תנאי מתמשך',
+            example: 'peace, silence, health, loneliness'
+        },
+        'Action Noun': {
+            translation: 'שם עצם פעולה',
+            explanation: 'שם עצם המציין פעולה או תהליך',
+            example: 'running, construction, investigation, development'
+        },
         'Genitive Case': {
             translation: 'צורת השייכות',
             explanation: 'צורת שם עצם המציינת בעלות או זיקה',
@@ -83,79 +82,109 @@ example: 'running, construction, investigation, development'
             example: 'Smoking is harmful'
         },
         'Agent Noun': {
-    translation: 'שם פועל',
-    explanation: 'שם עצם המציין את מבצע הפעולה, לרוב נוצר על-ידי הוספת הסיומת -er או -or לפועל',
-    example: 'teacher, writer, actor, supervisor'
-}
+            translation: 'שם פועל',
+            explanation: 'שם עצם המציין את מבצע הפעולה, לרוב נוצר על-ידי הוספת הסיומת -er או -or לפועל',
+            example: 'teacher, writer, actor, supervisor'
+        },
+        'Process-Result Noun': {
+            translation: 'שם עצם תהליך-תוצאה',
+            explanation: 'שם עצם המתאר הן את התהליך והן את התוצאה של פעולה',
+            example: 'construction, creation, production, discovery'
+        },
+        'Quality Noun': {
+            translation: 'שם עצם איכות',
+            explanation: 'שם עצם המתאר תכונה או איכות',
+            example: 'beauty, strength, intelligence, wisdom'
+        },
+        'Recipient Noun': {
+            translation: 'שם עצם מקבל',
+            explanation: 'שם עצם המציין את מקבל הפעולה',
+            example: 'recipient, addressee, beneficiary'
+        },
+        'Action Performer Noun': {
+            translation: 'שם עצם מבצע פעולה',
+            explanation: 'שם עצם המציין את מי שמבצע את הפעולה',
+            example: 'runner, singer, driver, builder'
+        },
+        'Purpose Noun': {
+            translation: 'שם עצם מטרה',
+            explanation: 'שם עצם המציין את המטרה או הייעוד של דבר',
+            example: 'destination, target, objective, goal'
+        },
+        'Size Modifier Noun': {
+            translation: 'שם עצם מתאר גודל',
+            explanation: 'שם עצם המשמש לציון גודל או מידה',
+            example: 'giant, dwarf, miniature, mammoth'
+        }
     }},
     verbs: {
         fullName: 'Verbs - פעלים',
         description: 'פעלים מבטאים פעולה, מצב או תהליך. לדוגמה: ללמוד, לכתוב, להיות, להרגיש.',
         colors: {
-            base: 'bg-green-100 hover:bg-green-200'
+            base: 'bg-pink-100 hover:bg-pink-200'
         },
         inflections: {
-      'Present Simple': {
-        translation: 'הווה פשוט',
-        explanation: 'זמן הווה הבסיסי המתאר פעולה שקורית באופן קבוע או מצב קיים',
-        example: 'I eat breakfast every morning.'
-      },
-      'Verb Infinitive': {
-        translation: 'צורת השם של הפועל',
-        explanation: 'צורת הפועל הבסיסית ללא הטיה כלשהי',
-        example: 'to go, to run, to sing'
-      },
-      'Past Simple': {
-        translation: 'עבר פשוט',
-        explanation: 'זמן עבר המתאר פעולה שהסתיימה בעבר',
-        example: 'I walked to the store yesterday.'
-      },
-      'Present Perfect': {
-          translation: 'הווה שלם',
-          explanation: 'זמן הווה המתאר פעולה שהחלה בעבר והשפעתה נמשכת עד ההווה',
-          example: 'I have lived here for five years.'
-      },
-      'Future Simple': {
-          translation: 'עתיד פשוט',
-          explanation: 'זמן עתיד המתאר פעולה שתתרחש בעתיד',
-          example: 'I will travel next summer.'
-      },
-      'Present Progressive': {
-          translation: 'הווה מתמשך',
-          explanation: 'זמן הווה המתאר פעולה המתרחשת כרגע',
-          example: 'I am studying for my exam.'
-      },
-      'Past Progressive': {
-          translation: 'עבר מתמשך',
-          explanation: 'זמן עבר המתאר פעולה שהתרחשה באופן רציף בעבר',
-          example: 'I was reading a book when he called.'
-      },
-      'Past Perfect': {
-          translation: 'עבר שלם',
-          explanation: 'זמן עבר המתאר פעולה שהתרחשה לפני פעולה אחרת בעבר',
-          example: 'I had finished my homework before dinner.'
-      },
-      'Verbal Participle': {
-          translation: 'צורת השם הפועלית',
-          explanation: 'צורת פועל המשמשת כתואר או כחלק מזמן מורכב',
-          example: 'Running, he reached the bus.'
-      },
-      'Modal Auxiliary Verb': {
-          translation: 'פועל עזר מודאלי',
-          explanation: 'פועל המביע יכולת, אפשרות, הרשאה או חובה',
-          example: 'I can swim. She must study.'
-      },
-      'Third Person Singular Present': {
-          translation: 'גוף שלישי יחיד בהווה',
-          explanation: 'הטיית הפועל לגוף שלישי יחיד בזמן הווה',
-          example: 'He walks, She sings'
-      },
+        'Verb Infinitive': {
+            translation: 'צורת השם של הפועל',
+            explanation: 'צורת הפועל הבסיסית ללא הטיה כלשהי',
+            example: 'to go, to run, to sing'
+        },
+        'Present Simple': {
+            translation: 'הווה פשוט',
+            explanation: 'זמן הווה הבסיסי המתאר פעולה שקורית באופן קבוע או מצב קיים',
+            example: 'I eat breakfast every morning.'
+        },
+        'Past Simple': {
+            translation: 'עבר פשוט',
+            explanation: 'זמן עבר המתאר פעולה שהסתיימה בעבר',
+            example: 'I walked to the store yesterday.'
+        },
+        'Future Simple': {
+            translation: 'עתיד פשוט',
+            explanation: 'זמן עתיד המתאר פעולה שתתרחש בעתיד',
+            example: 'I will travel next summer.'
+        },
+        'Present Progressive': {
+            translation: 'הווה מתמשך',
+            explanation: 'זמן הווה המתאר פעולה המתרחשת כרגע',
+            example: 'I am studying for my exam.'
+        },
+        'Past Progressive': {
+            translation: 'עבר מתמשך',
+            explanation: 'זמן עבר המתאר פעולה שהתרחשה באופן רציף בעבר',
+            example: 'I was reading a book when he called.'
+        },
+        'Present Perfect': {
+            translation: 'הווה שלם',
+            explanation: 'זמן הווה המתאר פעולה שהחלה בעבר והשפעתה נמשכת עד ההווה',
+            example: 'I have lived here for five years.'
+        },
+        'Past Perfect': {
+            translation: 'עבר שלם',
+            explanation: 'זמן עבר המתאר פעולה שהתרחשה לפני פעולה אחרת בעבר',
+            example: 'I had finished my homework before dinner.'
+        },
+        'Verbal Participle': {
+            translation: 'צורת השם הפועלית',
+            explanation: 'צורת פועל המשמשת כתואר או כחלק מזמן מורכב',
+            example: 'Running, he reached the bus.'
+        },
+        'Modal Auxiliary Verb': {
+            translation: 'פועל עזר מודאלי',
+            explanation: 'פועל המביע יכולת, אפשרות, הרשאה או חובה',
+            example: 'I can swim. She must study.'
+        },
+        'Third Person Singular': {
+            translation: 'גוף שלישי יחיד בהווה',
+            explanation: 'הטיית הפועל לגוף שלישי יחיד בזמן הווה',
+            example: 'He walks, She sings'
+        },
     }},
     adjectives: {
         fullName: 'Adjectives - תארים',
         description: 'תארים מתארים שמות עצם ומספקים מידע נוסף עליהם. לדוגמה: גדול, קטן, יפה, חכם.',
         colors: {
-            base: 'bg-orange-100 hover:bg-orange-200'
+            base: 'bg-purple-100 hover:bg-purple-200'
         },
         inflections: {
         'Descriptive': {
@@ -214,19 +243,42 @@ example: 'running, construction, investigation, development'
             example: 'many books, few friends, several cars'
         },
         'Derived adjective': {
-    translation: 'תואר נגזר',
-    explanation: 'תואר שנוצר משם עצם או מילה אחרת בתוספת סיומת, מציין תכונה הקשורה למילת הבסיס',
-    example: 'watery, powerful, musical, childish'
-}
+            translation: 'תואר נגזר',
+            explanation: 'תואר שנוצר משם עצם או מילה אחרת בתוספת סיומת, מציין תכונה הקשורה למילת הבסיס',
+            example: 'watery, powerful, musical, childish'
+        },
+        'Feature Adjective': {
+            translation: 'תואר מאפיין',
+            explanation: 'תואר המציין תכונה או מאפיין ייחודי של שם העצם',
+            example: 'wooden, metallic, hairy, transparent'
+        }
     }},
+    adverbs: {
+        fullName: 'Adverbs - תוארי פועל',
+        description: 'תוארי פועל מתארים פעלים, תארים או תוארי פועל אחרים. לדוגמה: מהר, לאט, היטב, מאוד.',
+        colors: {
+            base: 'bg-green-100 hover:bg-green-200'
+        },
+        inflections: {
+            'Adverb Form': {
+                translation: 'צורת תואר הפועל',
+                explanation: 'תואר פועל בסיסי המתאר פועל, תואר או תואר פועל אחר',
+                example: 'quickly, slowly, very, really'
+            },
+            'Description Adverb': {
+                translation: 'תואר פועל תיאורי',
+                explanation: 'תואר פועל המתאר כיצד מתבצעת פעולה',
+                example: 'carefully, loudly, gently, well'
+            }
+        }
+    },
     functionWords: {
         fullName: 'Function Words - מילות פונקציה',
         description: 'מילות פונקציה זו הגדרה רחבה שכוללת בתוכה חלקי דיבור רבים. כמו, מילות יחס או מילות חיבור.',
         colors: {
-            base: 'bg-yellow-100 hover:bg-yellow-200'
+            base: 'bg-slate-100 hover:bg-slate-200'
         },
         inflections: {
-        
         'Pronoun': {
             translation: 'כינוי גוף',
             explanation: 'מילה המחליפה שם עצם',
@@ -266,6 +318,11 @@ example: 'running, construction, investigation, development'
             translation: 'פועל יוצא דופן',
             explanation: 'מילה המביעה רגש או תגובה פתאומית',
             example: 'wow!, ouch!, hurray!'
+        },
+        'Negative Forms': {
+            translation: 'צורות שלילה',
+            explanation: 'מילים המשמשות להבעת שלילה או היעדר',
+            example: 'no, not, never, none, nowhere'
         }
     } } 
   };
