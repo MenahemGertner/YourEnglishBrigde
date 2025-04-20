@@ -121,7 +121,7 @@
 // export default AudioButton;
 
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, Volume1, VolumeX } from 'lucide-react';
 
 const AudioButton = ({ text }) => {
@@ -129,12 +129,19 @@ const AudioButton = ({ text }) => {
   const [voice, setVoice] = useState(null);
   const [playbackState, setPlaybackState] = useState('normal');
   const [debugLog, setDebugLog] = useState([]);
+  const utteranceRef = useRef(null);
+  const isAndroidRef = useRef(false);
 
   const logMessage = (msg) => {
     setDebugLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${msg}`].slice(-5));
   };
 
   useEffect(() => {
+    // בדוק אם זה אנדרואיד
+    const userAgent = navigator.userAgent.toLowerCase();
+    isAndroidRef.current = userAgent.includes('android');
+    logMessage(`Platform: ${isAndroidRef.current ? 'Android' : 'Other'}`);
+
     let isMounted = true;
     
     const loadVoice = () => {
@@ -143,13 +150,22 @@ const AudioButton = ({ text }) => {
         logMessage(`Voices loaded: ${voices.length}`);
         
         if (voices.length > 0 && isMounted) {
-          const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-          const bestVoice = englishVoices.find(v => 
-            v.name.includes('Enhanced') || v.name.includes('Neural')
-          ) || englishVoices[0];
-          
-          setVoice(bestVoice);
-          logMessage(`Selected voice: ${bestVoice?.name || 'None'}`);
+          // אם זה אנדרואיד, ננסה למצוא קול מקומי
+          if (isAndroidRef.current) {
+            // ננסה למצוא קול מקומי או ברירת מחדל
+            const localVoice = voices.find(v => !v.localService === false) || voices[0];
+            setVoice(localVoice);
+            logMessage(`Android voice: ${localVoice?.name || 'None'}`);
+          } else {
+            // אם לא אנדרואיד, נמשיך עם הלוגיקה הקודמת
+            const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+            const bestVoice = englishVoices.find(v => 
+              v.name.includes('Enhanced') || v.name.includes('Neural')
+            ) || englishVoices[0];
+            
+            setVoice(bestVoice);
+            logMessage(`Selected voice: ${bestVoice?.name || 'None'}`);
+          }
         }
       } catch (err) {
         logMessage(`Error loading voices: ${err.message}`);
@@ -169,17 +185,22 @@ const AudioButton = ({ text }) => {
       return () => {
         isMounted = false;
         window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+        
+        // נקה כל פעילות סינתזה כשהקומפוננטה מתפרקת
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
       };
     } else {
       logMessage("Speech synthesis not available");
     }
   }, []);
 
-  // Keep synthesis active in the background
+  // לא צריך את הרענון באנדרואיד, הוא גורם לבעיה
   useEffect(() => {
     let intervalId;
     
-    if (isPlaying && window.speechSynthesis) {
+    if (isPlaying && window.speechSynthesis && !isAndroidRef.current) {
       intervalId = setInterval(() => {
         try {
           window.speechSynthesis.pause();
@@ -209,9 +230,10 @@ const AudioButton = ({ text }) => {
       return;
     }
 
+    // נקה כל דיבור נוכחי
     window.speechSynthesis.cancel();
     
-    // Keeping the original playback state logic
+    // מעדכן את מצב הניגון לפי הלוגיקה הקיימת
     setPlaybackState(current => {
       switch(current) {
         case 'normal': return 'slow';
@@ -221,22 +243,28 @@ const AudioButton = ({ text }) => {
       }
     });
     
-    // Updated handling for mute state
+    // אם הוא במצב השתקה, פשוט צא
     if (playbackState === 'mute') {
       logMessage("Mute state - not playing");
       setIsPlaying(false);
       return;
     }
     
-    // Try to get a voice if we don't have one yet
+    // נסה להשתמש בקול הקיים או למצוא חדש
     let currentVoice = voice;
     if (!currentVoice) {
       try {
         const voices = window.speechSynthesis.getVoices();
-        const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-        currentVoice = englishVoices.find(v => 
-          v.name.includes('Enhanced') || v.name.includes('Neural')
-        ) || englishVoices[0] || voices[0];
+        
+        if (isAndroidRef.current) {
+          // באנדרואיד ננסה למצוא קול מקומי
+          currentVoice = voices.find(v => !v.localService === false) || voices[0];
+        } else {
+          const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+          currentVoice = englishVoices.find(v => 
+            v.name.includes('Enhanced') || v.name.includes('Neural')
+          ) || englishVoices[0] || voices[0];
+        }
         
         if (currentVoice) {
           setVoice(currentVoice);
@@ -249,44 +277,87 @@ const AudioButton = ({ text }) => {
       }
     }
 
-    setIsPlaying(true);
-    
     try {
-      const utterance = new SpeechSynthesisUtterance(text);
-      
-      if (currentVoice) {
-        utterance.voice = currentVoice;
-      }
-      
-      utterance.rate = playbackState === 'slow' ? 0.6 : 1;
-      utterance.pitch = 1;
-      utterance.volume = 1.0;
-      
-      utterance.onend = () => {
-        logMessage("Speech ended");
-        setIsPlaying(false);
+      // אם אנדרואיד, נשתמש בגישה קצת שונה
+      if (isAndroidRef.current) {
+        logMessage("Using Android-specific approach");
         
-        // Only reset to normal speed if currently in slow mode
-        if (playbackState === 'slow') {
-          setPlaybackState('normal');
+        // ניצור אובייקט חדש כל פעם
+        const utterance = new SpeechSynthesisUtterance(text);
+        utteranceRef.current = utterance;
+        
+        if (currentVoice) {
+          utterance.voice = currentVoice;
         }
-      };
-      
-      utterance.onerror = (e) => {
-        logMessage(`Speech error: ${e.error}`);
-        setIsPlaying(false);
-      };
-      
-      // Small delay before speaking can help on Android
-      setTimeout(() => {
-        try {
-          window.speechSynthesis.speak(utterance);
-          logMessage("Speaking started");
-        } catch (err) {
-          logMessage(`Speak error: ${err.message}`);
+        
+        utterance.rate = playbackState === 'slow' ? 0.6 : 1;
+        utterance.pitch = 1;
+        utterance.volume = 1.0;
+        
+        // לא נשתמש בתכונת onend באנדרואיד (גורמת לבעיות)
+        utterance.onend = null;
+        
+        utterance.onerror = (e) => {
+          logMessage(`Speech error: ${e.error}`);
           setIsPlaying(false);
+        };
+        
+        setIsPlaying(true);
+        
+        // מריץ בגוש קוד נפרד כדי לא להיתקע בפעולות אסינכרוניות
+        setTimeout(() => {
+          try {
+            window.speechSynthesis.cancel(); // נקה קודם
+            window.speechSynthesis.speak(utterance);
+            logMessage("Android speaking started");
+            
+            // יוצר טיימר כדי לסיים ידנית את הניגון אחרי זמן משוער
+            // מבוסס על אורך הטקסט (הערכה גסה - 5 תווים לשנייה)
+            const estimatedDuration = (text.length / 5) * 1000;
+            setTimeout(() => {
+              if (isPlaying) {
+                setIsPlaying(false);
+                logMessage("Estimated speech end time reached");
+              }
+            }, Math.max(2000, estimatedDuration));
+          } catch (err) {
+            logMessage(`Android speak error: ${err.message}`);
+            setIsPlaying(false);
+          }
+        }, 100);
+      } 
+      // גישה רגילה למכשירים שאינם אנדרואיד
+      else {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utteranceRef.current = utterance;
+        
+        if (currentVoice) {
+          utterance.voice = currentVoice;
         }
-      }, 100);
+        
+        utterance.rate = playbackState === 'slow' ? 0.6 : 1;
+        utterance.pitch = 1;
+        utterance.volume = 1.0;
+        
+        utterance.onend = () => {
+          logMessage("Speech ended");
+          setIsPlaying(false);
+          
+          // רק חוזר למהירות רגילה אם היינו במצב איטי
+          if (playbackState === 'slow') {
+            setPlaybackState('normal');
+          }
+        };
+        
+        utterance.onerror = (e) => {
+          logMessage(`Speech error: ${e.error}`);
+          setIsPlaying(false);
+        };
+        
+        setIsPlaying(true);
+        window.speechSynthesis.speak(utterance);
+        logMessage("Speaking started");
+      }
     } catch (err) {
       logMessage(`Utterance error: ${err.message}`);
       setIsPlaying(false);
