@@ -6,124 +6,219 @@ const AudioButton = ({ text }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [voice, setVoice] = useState(null);
   const [playbackState, setPlaybackState] = useState('normal');
-  const [isSpeechSupported, setIsSpeechSupported] = useState(true);
-  const utteranceRef = useRef(null);
+  // מערך לוגים שיוצג בעמוד
+  const [logs, setLogs] = useState([]);
+  // מידע על API נתמך
+  const [apiInfo, setApiInfo] = useState({
+    speechSynthesisSupported: false,
+    voicesAvailable: 0,
+    userAgent: '',
+    platform: ''
+  });
 
+  // פונקציית עזר להוספת לוג
+  const addLog = (message, type = 'info') => {
+    const timestamp = new Date().toLocaleTimeString();
+    setLogs(prevLogs => [
+      { message, timestamp, type }, 
+      ...prevLogs.slice(0, 19)  // שמור רק 20 לוגים אחרונים
+    ]);
+    console.log(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+  };
+
+  // בדיקת תמיכה ב-API
   useEffect(() => {
-    // בדיקה אם ה-API נתמך
-    if (!('speechSynthesis' in window)) {
-      console.error('Speech synthesis not supported in this browser');
-      setIsSpeechSupported(false);
-      return;
-    }
+    const checkSpeechSupport = () => {
+      const isSpeechSupported = 'speechSynthesis' in window;
+      
+      setApiInfo({
+        speechSynthesisSupported: isSpeechSupported,
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        voicesAvailable: isSpeechSupported ? window.speechSynthesis.getVoices().length : 0
+      });
+
+      if (!isSpeechSupported) {
+        addLog('Speech synthesis API is not supported in this browser!', 'error');
+      } else {
+        addLog('Speech synthesis API is supported', 'success');
+      }
+    };
+
+    checkSpeechSupport();
+  }, []);
+
+  // טעינת קולות ובדיקת מצב
+  useEffect(() => {
+    if (!apiInfo.speechSynthesisSupported) return;
 
     let isMounted = true;
     
-    const loadVoices = () => {
-      // ניסיון לטעון קולות מיד
+    const loadVoice = () => {
       const voices = window.speechSynthesis.getVoices();
+      
       if (voices.length > 0 && isMounted) {
-        console.log('Voices loaded:', voices.length);
-        // נסה להשתמש בקול אנגלי, אחרת בקול ברירת המחדל
-        const preferredVoice = voices.find(v => v.lang.startsWith('en') && 
-          (v.name.includes('Enhanced') || v.name.includes('Neural')));
+        addLog(`Loaded ${voices.length} voices`, 'info');
         
-        // אם לא נמצא קול מועדף, השתמש בקול ברירת מחדל או באחד הקולות הזמינים
-        setVoice(preferredVoice || voices[0]);
+        // חפש קולות באנגלית
+        const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+        addLog(`Found ${englishVoices.length} English voices`, 'info');
+        
+        // חפש את הקול הטוב ביותר
+        const bestVoice = englishVoices.find(v => 
+          v.name.includes('Enhanced') || v.name.includes('Neural')
+        ) || englishVoices[0];
+        
+        if (bestVoice) {
+          setVoice(bestVoice);
+          addLog(`Selected voice: ${bestVoice.name} (${bestVoice.lang})`, 'success');
+        } else if (voices.length > 0) {
+          setVoice(voices[0]);
+          addLog(`No English voice found, using default: ${voices[0].name}`, 'warning');
+        } else {
+          addLog('No voices available despite API being supported', 'error');
+        }
+        
+        // הדפס פרטים על כל הקולות
+        addLog(`Available voices: ${voices.map(v => v.name).join(', ')}`, 'debug');
+      } else {
+        addLog('No voices available yet, waiting...', 'warning');
       }
     };
 
-    // טען קולות מיד (לדפדפנים כמו Firefox)
-    loadVoices();
+    loadVoice();
 
-    // הקשב לאירוע מוכנות הקולות (לדפדפנים כמו Chrome)
+    // הוסף מאזין לאירוע שינוי קולות
     const voicesChangedHandler = () => {
-      loadVoices();
+      addLog('Voices changed event triggered', 'info');
+      loadVoice();
+      
+      // עדכן את מספר הקולות הזמינים
+      setApiInfo(prev => ({
+        ...prev,
+        voicesAvailable: window.speechSynthesis.getVoices().length
+      }));
     };
     
     window.speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler);
-
-    // בדיקה תקופתית (פתרון חלופי למכשירים בעייתיים)
-    const voiceCheckInterval = setInterval(() => {
-      if (!voice && window.speechSynthesis.getVoices().length > 0) {
-        loadVoices();
+    
+    // בדיקה תקופתית לקולות (עבור דפדפנים שלא מפעילים את האירוע)
+    const checkInterval = setInterval(() => {
+      const currentVoices = window.speechSynthesis.getVoices().length;
+      if (currentVoices > 0 && currentVoices !== apiInfo.voicesAvailable) {
+        addLog(`Voices detected outside event: ${currentVoices}`, 'info');
+        loadVoice();
+        setApiInfo(prev => ({ ...prev, voicesAvailable: currentVoices }));
       }
-    }, 500);
+    }, 1000);
 
     return () => {
       isMounted = false;
       window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
-      clearInterval(voiceCheckInterval);
+      clearInterval(checkInterval);
       
-      // נקה את הסינתיסייזר בעת עזיבת הקומפוננטה
-      if (window.speechSynthesis.speaking) {
+      // נקה את התור בעת עזיבת הקומפוננטה
+      if (apiInfo.speechSynthesisSupported && window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
+        addLog('Cleaned up speech synthesis on unmount', 'info');
       }
     };
-  }, [voice]);
+  }, [apiInfo.speechSynthesisSupported]);
 
   const speak = () => {
-    if (!text || !isSpeechSupported) return;
-    
-    // קודם בטל כל דיבור פעיל
+    if (!text || !apiInfo.speechSynthesisSupported) {
+      addLog('Cannot speak: no text or API not supported', 'error');
+      return;
+    }
+
     window.speechSynthesis.cancel();
-    
+    addLog('Canceled any ongoing speech', 'info');
+
     // עדכן את מצב ההשמעה
     setPlaybackState(current => {
-      const nextState = current === 'normal' ? 'slow' : 
-                        current === 'slow' ? 'mute' : 'normal';
+      let nextState;
       
-      // אם המצב הבא הוא השתקה, רק עדכן את המצב ואל תשמיע
+      switch(current) {
+        case 'normal': nextState = 'slow'; break;
+        case 'slow': nextState = 'mute'; break;
+        case 'mute': nextState = 'normal'; break;
+        default: nextState = 'normal';
+      }
+      
+      addLog(`Switching playback state: ${current} -> ${nextState}`, 'info');
+      
       if (nextState === 'mute') {
         setIsPlaying(false);
+        addLog('Muted - not playing audio', 'info');
         return nextState;
       }
       
-      // אחרת, הכן השמעה חדשה
       try {
+        // יצירת אובייקט השמעה חדש
         const utterance = new SpeechSynthesisUtterance(text);
-        utteranceRef.current = utterance;
         
-        // הגדר קול אם יש
+        // הגדרת קול אם זמין
         if (voice) {
           utterance.voice = voice;
+          addLog(`Using voice: ${voice.name}`, 'info');
+        } else {
+          addLog('No voice selected, using browser default', 'warning');
         }
         
-        // הגדר מהירות לפי המצב החדש
+        // הגדרת מהירות ההשמעה
         utterance.rate = nextState === 'slow' ? 0.6 : 1;
         utterance.pitch = 1;
+        addLog(`Speech rate set to: ${utterance.rate}`, 'info');
         
-        // טפל באירועים
+        // טיפול באירועים
+        utterance.onstart = () => {
+          addLog('Speech started', 'success');
+        };
+        
         utterance.onend = () => {
+          addLog('Speech ended normally', 'success');
           setIsPlaying(false);
         };
         
-        utterance.onerror = (e) => {
-          console.error('Speech synthesis error:', e);
+        utterance.onerror = (event) => {
+          addLog(`Speech error: ${event.error}`, 'error');
           setIsPlaying(false);
         };
         
-        // נסה להשמיע
+        utterance.onpause = () => addLog('Speech paused', 'info');
+        utterance.onresume = () => addLog('Speech resumed', 'info');
+        utterance.onboundary = (event) => addLog(`Speech boundary at ${event.charIndex}`, 'debug');
+        
+        // ניסיון להשמיע
+        addLog('Attempting to speak...', 'info');
+        window.speechSynthesis.speak(utterance);
         setIsPlaying(true);
         
-        // פתרון עוקף לבעיית אנדרואיד - הוסף השהייה קצרה
+        // בדוק האם התחיל לדבר
         setTimeout(() => {
-          window.speechSynthesis.speak(utterance);
-          
-          // פתרון עוקף לשמירה על פעילות במכשירי מובייל
-          if (navigator.userAgent.match(/Android/i)) {
-            const keepAlive = setInterval(() => {
-              if (window.speechSynthesis.speaking) {
-                window.speechSynthesis.pause();
-                window.speechSynthesis.resume();
-              } else {
-                clearInterval(keepAlive);
-              }
-            }, 10000); // בדוק כל 10 שניות
+          if (window.speechSynthesis.speaking) {
+            addLog('Confirmed speech is active', 'success');
+          } else {
+            addLog('Speech didn\'t start despite no error', 'warning');
           }
-        }, 100);
+        }, 500);
+        
+        // פתרון עוקף לבעיות דפדפני אנדרואיד - חדש דיבור כל 10 שניות
+        if (/Android/i.test(navigator.userAgent)) {
+          addLog('Android device detected, applying workaround', 'info');
+          
+          const keepAliveInterval = setInterval(() => {
+            if (window.speechSynthesis.speaking) {
+              addLog('Applying Android keep-alive fix', 'debug');
+              window.speechSynthesis.pause();
+              window.speechSynthesis.resume();
+            } else {
+              clearInterval(keepAliveInterval);
+            }
+          }, 10000);
+        }
       } catch (error) {
-        console.error('Speech synthesis failed:', error);
+        addLog(`Exception during speech attempt: ${error.message}`, 'error');
         setIsPlaying(false);
       }
       
@@ -141,8 +236,6 @@ const AudioButton = ({ text }) => {
   };
 
   const getButtonTitle = () => {
-    if (!isSpeechSupported) return 'Speech synthesis not supported';
-    
     switch(playbackState) {
       case 'normal': return 'Click for normal speed';
       case 'slow': return 'Click to slow down';
@@ -151,17 +244,72 @@ const AudioButton = ({ text }) => {
     }
   };
 
+  const clearLogs = () => {
+    setLogs([]);
+    addLog('Logs cleared', 'info');
+  };
+
   return (
-    <button
-      onClick={speak}
-      className={`inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 pt-1 ${
-        playbackState !== 'normal' ? 'bg-gray-100' : ''
-      }`}
-      title={getButtonTitle()}
-      disabled={!isSpeechSupported}
-    >
-      {getIcon()}
-    </button>
+    <div>
+      <div className="mb-4">
+        <button 
+          onClick={speak}
+          className={`inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 pt-1 ${
+            playbackState !== 'normal' ? 'bg-gray-100' : ''
+          }`}
+          title={getButtonTitle()}
+          disabled={!apiInfo.speechSynthesisSupported}
+        >
+          {getIcon()}
+        </button>
+        {isPlaying && <span className="ml-2 text-sm text-green-600">Playing...</span>}
+      </div>
+      
+      {/* חלק עם פרטי API - יוצג תמיד */}
+      <div className="mb-4 p-3 bg-gray-50 rounded-md border border-gray-200 text-sm">
+        <h3 className="font-bold mb-2">Speech API Status:</h3>
+        <ul>
+          <li><span className="font-semibold">API Supported:</span> {apiInfo.speechSynthesisSupported ? '✅ Yes' : '❌ No'}</li>
+          <li><span className="font-semibold">Voices Available:</span> {apiInfo.voicesAvailable}</li>
+          <li><span className="font-semibold">Selected Voice:</span> {voice ? `${voice.name} (${voice.lang})` : 'None'}</li>
+          <li><span className="font-semibold">User Agent:</span> {apiInfo.userAgent}</li>
+          <li><span className="font-semibold">Platform:</span> {apiInfo.platform}</li>
+        </ul>
+      </div>
+      
+      {/* אזור לוגים עם אפשרות ניקוי */}
+      <div className="p-3 bg-gray-50 rounded-md border border-gray-200 max-h-60 overflow-y-auto text-sm">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="font-bold">Debug Logs:</h3>
+          <button 
+            onClick={clearLogs}
+            className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded"
+          >
+            Clear Logs
+          </button>
+        </div>
+        
+        {logs.length === 0 ? (
+          <p className="text-gray-500 italic">No logs yet...</p>
+        ) : (
+          <ul className="space-y-1">
+            {logs.map((log, index) => (
+              <li 
+                key={index} 
+                className={`py-1 border-b border-gray-100 ${
+                  log.type === 'error' ? 'text-red-600' : 
+                  log.type === 'warning' ? 'text-orange-600' : 
+                  log.type === 'success' ? 'text-green-600' : 
+                  log.type === 'debug' ? 'text-purple-600' : 'text-gray-700'
+                }`}
+              >
+                <span className="text-xs text-gray-500">{log.timestamp}</span>: {log.message}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
   );
 };
 
