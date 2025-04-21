@@ -22,7 +22,7 @@ export default function ExplainInflection() {
     const basicDetails = InflectionDetails[partOfSpeechType].inflections[inflectionType]
 
     return (
-        <div className="container mx-auto p-16">
+        <div className="container py-16 px-4 max-w-[700px]">
             <h1 className="text-3xl font-bold mb-6 text-right">
                 {inflectionType} - {basicDetails.translation}
             </h1>
