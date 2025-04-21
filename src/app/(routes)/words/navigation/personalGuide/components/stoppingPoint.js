@@ -7,13 +7,13 @@ import { getNextWord } from '../../actions/getNextWord'
 import GradientCat from './GradientCat'
 
 const StoppingPoint = () => {
-  const { data: session } = useSession()
+  // const { data: session } = useSession()
   const pathname = usePathname()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleCatClick = async () => {
-    if (!session?.user?.id || isLoading) return
+    // if (!session?.user?.id || isLoading) return
     
     try {
       setIsLoading(true)
@@ -43,10 +43,10 @@ const StoppingPoint = () => {
       return () => clearInterval(tooltipInterval)
     }, [])
 
-    if (!session || pathname === '/words' || pathname === '/practiceSpace' ||
-         pathname === '/levelSelection'|| pathname === '/startLearn' || pathname === '/checkYourLevel') {
-      return null
-    }
+    // if (!session || pathname === '/words' || pathname === '/practiceSpace' ||
+    //      pathname === '/levelSelection'|| pathname === '/startLearn' || pathname === '/checkYourLevel') {
+    //   return null
+    // }
 
     return (
       <div className="fixed bottom-4 right-4 z-50">

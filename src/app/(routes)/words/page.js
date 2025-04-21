@@ -54,13 +54,13 @@ export default async function Word({ searchParams }) {
                 ps={data.ps} inf={data.inf} infl={data.infl} ex={data.ex}
                 syn={data.synonyms} con={data.confused}/>   
       <div className="py-6"/>
-      <ProContent>
+      {/* <ProContent> */}
         <StatusIcons word={data.word} index={data.index}
                       category={category} inf={data.inf}/>
         <SequenceReset/>
-      </ProContent>
+      {/* </ProContent> */}
       <GuestContent>
-      <NextAndPrevious index={data.index} categorySize={categorySize} />
+      {/* <NextAndPrevious index={data.index} categorySize={categorySize} /> */}
       </GuestContent>
       </WindowProvider>
       </ColorProvider>
