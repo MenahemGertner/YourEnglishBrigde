@@ -47,7 +47,7 @@ const CheckYourLevel = () => {
       
       {showIntro && !testActive && !showResult && (
         <div className="space-y-6">
-          <p className="text-lg mb-4 px-20">להלן שאלון קצר ומקצועי. השאלון כולל מספר שאלות אמריקאיות, שבסיומן תוכל כבר להתחיל ללמוד ולשפר את האנגלית שלך!</p>
+          <p className="text-lg mb-4 max-w-[600px] px-4">להלן שאלון קצר ומקצועי. השאלון כולל מספר שאלות אמריקאיות, שבסיומן תוכל כבר להתחיל ללמוד ולשפר את האנגלית שלך!</p>
           <button
             onClick={handleStartTest}
             className="bg-gradient-to-r from-indigo-700 via-blue-600 to-indigo-700 hover:shadow-lg text-white font-bold py-4 px-8 rounded-lg text-xl transition-colors"
