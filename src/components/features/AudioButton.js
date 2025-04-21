@@ -1,90 +1,134 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, Volume1, VolumeX } from 'lucide-react';
 
 const AudioButton = ({ text }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [voice, setVoice] = useState(null);
   const [playbackState, setPlaybackState] = useState('normal');
+  const [isSpeechSupported, setIsSpeechSupported] = useState(true);
+  const utteranceRef = useRef(null);
 
   useEffect(() => {
-    let isMounted = true;
+    // בדיקה אם ה-API נתמך
+    if (!('speechSynthesis' in window)) {
+      console.error('Speech synthesis not supported in this browser');
+      setIsSpeechSupported(false);
+      return;
+    }
 
-    const loadVoice = () => {
+    let isMounted = true;
+    
+    const loadVoices = () => {
+      // ניסיון לטעון קולות מיד
       const voices = window.speechSynthesis.getVoices();
       if (voices.length > 0 && isMounted) {
-        const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-        const bestVoice = englishVoices.find(v => 
-          v.name.includes('Enhanced') || v.name.includes('Neural')
-        ) || englishVoices[0];
-
-        setVoice(bestVoice);
+        console.log('Voices loaded:', voices.length);
+        // נסה להשתמש בקול אנגלי, אחרת בקול ברירת המחדל
+        const preferredVoice = voices.find(v => v.lang.startsWith('en') && 
+          (v.name.includes('Enhanced') || v.name.includes('Neural')));
+        
+        // אם לא נמצא קול מועדף, השתמש בקול ברירת מחדל או באחד הקולות הזמינים
+        setVoice(preferredVoice || voices[0]);
       }
     };
 
-    loadVoice();
+    // טען קולות מיד (לדפדפנים כמו Firefox)
+    loadVoices();
 
+    // הקשב לאירוע מוכנות הקולות (לדפדפנים כמו Chrome)
     const voicesChangedHandler = () => {
-      loadVoice();
+      loadVoices();
     };
-
+    
     window.speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler);
+
+    // בדיקה תקופתית (פתרון חלופי למכשירים בעייתיים)
+    const voiceCheckInterval = setInterval(() => {
+      if (!voice && window.speechSynthesis.getVoices().length > 0) {
+        loadVoices();
+      }
+    }, 500);
 
     return () => {
       isMounted = false;
       window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+      clearInterval(voiceCheckInterval);
+      
+      // נקה את הסינתיסייזר בעת עזיבת הקומפוננטה
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+      }
     };
-  }, []);
+  }, [voice]);
 
   const speak = () => {
-    if (!text) return;
-
-    if (!voice) {
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-      const bestVoice = englishVoices.find(v => 
-        v.name.includes('Enhanced') || v.name.includes('Neural')
-      ) || englishVoices[0];
-    }
-
+    if (!text || !isSpeechSupported) return;
+    
+    // קודם בטל כל דיבור פעיל
     window.speechSynthesis.cancel();
-
+    
+    // עדכן את מצב ההשמעה
     setPlaybackState(current => {
-      switch(current) {
-        case 'normal': return 'slow';
-        case 'slow': return 'mute';
-        case 'mute': return 'normal';
-        default: return 'normal';
+      const nextState = current === 'normal' ? 'slow' : 
+                        current === 'slow' ? 'mute' : 'normal';
+      
+      // אם המצב הבא הוא השתקה, רק עדכן את המצב ואל תשמיע
+      if (nextState === 'mute') {
+        setIsPlaying(false);
+        return nextState;
       }
+      
+      // אחרת, הכן השמעה חדשה
+      try {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utteranceRef.current = utterance;
+        
+        // הגדר קול אם יש
+        if (voice) {
+          utterance.voice = voice;
+        }
+        
+        // הגדר מהירות לפי המצב החדש
+        utterance.rate = nextState === 'slow' ? 0.6 : 1;
+        utterance.pitch = 1;
+        
+        // טפל באירועים
+        utterance.onend = () => {
+          setIsPlaying(false);
+        };
+        
+        utterance.onerror = (e) => {
+          console.error('Speech synthesis error:', e);
+          setIsPlaying(false);
+        };
+        
+        // נסה להשמיע
+        setIsPlaying(true);
+        
+        // פתרון עוקף לבעיית אנדרואיד - הוסף השהייה קצרה
+        setTimeout(() => {
+          window.speechSynthesis.speak(utterance);
+          
+          // פתרון עוקף לשמירה על פעילות במכשירי מובייל
+          if (navigator.userAgent.match(/Android/i)) {
+            const keepAlive = setInterval(() => {
+              if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.pause();
+                window.speechSynthesis.resume();
+              } else {
+                clearInterval(keepAlive);
+              }
+            }, 10000); // בדוק כל 10 שניות
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Speech synthesis failed:', error);
+        setIsPlaying(false);
+      }
+      
+      return nextState;
     });
-
-    if (playbackState === 'mute') {
-      setIsPlaying(false);
-      return;
-    }
-
-    setIsPlaying(true);
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (voice) {
-      utterance.voice = voice;
-    }
-    utterance.rate = playbackState === 'slow' ? 0.6 : 1;
-    utterance.pitch = 1;
-
-    utterance.onend = () => {
-      setIsPlaying(false);
-      // Only reset to normal speed if currently in slow mode
-      if (playbackState === 'slow') {
-        setPlaybackState('normal');
-      }
-    };
-
-    utterance.onerror = () => {
-      setIsPlaying(false);
-    };
-
-    window.speechSynthesis.speak(utterance);
   };
 
   const getIcon = () => {
@@ -97,6 +141,8 @@ const AudioButton = ({ text }) => {
   };
 
   const getButtonTitle = () => {
+    if (!isSpeechSupported) return 'Speech synthesis not supported';
+    
     switch(playbackState) {
       case 'normal': return 'Click for normal speed';
       case 'slow': return 'Click to slow down';
@@ -112,6 +158,7 @@ const AudioButton = ({ text }) => {
         playbackState !== 'normal' ? 'bg-gray-100' : ''
       }`}
       title={getButtonTitle()}
+      disabled={!isSpeechSupported}
     >
       {getIcon()}
     </button>
