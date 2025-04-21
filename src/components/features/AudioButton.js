@@ -126,104 +126,45 @@ const AudioButton = ({ text }) => {
   }, [apiInfo.speechSynthesisSupported]);
 
   const speak = () => {
-    if (!text || !apiInfo.speechSynthesisSupported) {
-      addLog('Cannot speak: no text or API not supported', 'error');
-      return;
-    }
-
+    // קודם בטל כל דיבור קיים
     window.speechSynthesis.cancel();
-    addLog('Canceled any ongoing speech', 'info');
-
-    // עדכן את מצב ההשמעה
-    setPlaybackState(current => {
-      let nextState;
+    
+    if (!text) return;
+    
+    // יצירת אובייקט השמעה
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // חשוב: הגדר קול ספציפי - לפעמים ברירת המחדל שבורה
+    const voices = window.speechSynthesis.getVoices();
+    const englishVoice = voices.find(v => v.lang === 'en_GB' || v.lang === 'en-GB');
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+    
+    // הגדרות קיצוניות שלפעמים עוזרות באנדרואיד
+    utterance.volume = 1.0;  // מקסימום עוצמה
+    utterance.rate = 1.0;    // מהירות רגילה
+    utterance.pitch = 1.0;   // טון רגיל
+    
+    // טריק חשוב: הוסף תו מיוחד בתחילת הטקסט
+    // (לפעמים זה "מעיר" את מנוע הדיבור באנדרואיד)
+    utterance.text = ".\n" + text;
+    
+    // הפעל בתוך setTimeout (טריק נוסף שעובד לפעמים)
+    setTimeout(() => {
+      window.speechSynthesis.speak(utterance);
       
-      switch(current) {
-        case 'normal': nextState = 'slow'; break;
-        case 'slow': nextState = 'mute'; break;
-        case 'mute': nextState = 'normal'; break;
-        default: nextState = 'normal';
-      }
-      
-      addLog(`Switching playback state: ${current} -> ${nextState}`, 'info');
-      
-      if (nextState === 'mute') {
-        setIsPlaying(false);
-        addLog('Muted - not playing audio', 'info');
-        return nextState;
-      }
-      
-      try {
-        // יצירת אובייקט השמעה חדש
-        const utterance = new SpeechSynthesisUtterance(text);
-        
-        // הגדרת קול אם זמין
-        if (voice) {
-          utterance.voice = voice;
-          addLog(`Using voice: ${voice.name}`, 'info');
+      // טריק "keep-alive" משופר
+      const keepAlive = setInterval(() => {
+        if (window.speechSynthesis.speaking) {
+          // נסה לעורר את המנוע
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
         } else {
-          addLog('No voice selected, using browser default', 'warning');
+          clearInterval(keepAlive);
         }
-        
-        // הגדרת מהירות ההשמעה
-        utterance.rate = nextState === 'slow' ? 0.6 : 1;
-        utterance.pitch = 1;
-        addLog(`Speech rate set to: ${utterance.rate}`, 'info');
-        
-        // טיפול באירועים
-        utterance.onstart = () => {
-          addLog('Speech started', 'success');
-        };
-        
-        utterance.onend = () => {
-          addLog('Speech ended normally', 'success');
-          setIsPlaying(false);
-        };
-        
-        utterance.onerror = (event) => {
-          addLog(`Speech error: ${event.error}`, 'error');
-          setIsPlaying(false);
-        };
-        
-        utterance.onpause = () => addLog('Speech paused', 'info');
-        utterance.onresume = () => addLog('Speech resumed', 'info');
-        utterance.onboundary = (event) => addLog(`Speech boundary at ${event.charIndex}`, 'debug');
-        
-        // ניסיון להשמיע
-        addLog('Attempting to speak...', 'info');
-        window.speechSynthesis.speak(utterance);
-        setIsPlaying(true);
-        
-        // בדוק האם התחיל לדבר
-        setTimeout(() => {
-          if (window.speechSynthesis.speaking) {
-            addLog('Confirmed speech is active', 'success');
-          } else {
-            addLog('Speech didn\'t start despite no error', 'warning');
-          }
-        }, 500);
-        
-        // פתרון עוקף לבעיות דפדפני אנדרואיד - חדש דיבור כל 10 שניות
-        if (/Android/i.test(navigator.userAgent)) {
-          addLog('Android device detected, applying workaround', 'info');
-          
-          const keepAliveInterval = setInterval(() => {
-            if (window.speechSynthesis.speaking) {
-              addLog('Applying Android keep-alive fix', 'debug');
-              window.speechSynthesis.pause();
-              window.speechSynthesis.resume();
-            } else {
-              clearInterval(keepAliveInterval);
-            }
-          }, 10000);
-        }
-      } catch (error) {
-        addLog(`Exception during speech attempt: ${error.message}`, 'error');
-        setIsPlaying(false);
-      }
-      
-      return nextState;
-    });
+      }, 5000);  // בדוק כל 5 שניות במקום 10
+    }, 100);
   };
 
   const getIcon = () => {
