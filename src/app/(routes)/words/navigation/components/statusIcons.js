@@ -42,7 +42,7 @@ const StatusIcons = ({ word, index, category, inf }) => {
             <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-blue-900/80" />
           </button>
 
-          <div className="flex gap-1 sm:gap-4 flex-wrap justify-center">
+          <div className="flex gap-3 sm:gap-4 flex-wrap justify-center">
             {IconData.map((icon) => (
               <div key={icon.level} className="flex flex-col items-center">
                 <Tooltip content={icon.content}>
@@ -66,7 +66,7 @@ const StatusIcons = ({ word, index, category, inf }) => {
                 >
                   <div className="relative">
                     <CircleDot
-                      className="w-8 h-8 sm:w-12 md:w-14 sm:h-12 md:h-14 transition-transform duration-300 hover:rotate-12"
+                      className="w-10 h-10 sm:w-12 md:w-14 sm:h-12 md:h-14 transition-transform duration-300 hover:rotate-12"
                       style={{ color: icon.color }}
                     />
                     <div 

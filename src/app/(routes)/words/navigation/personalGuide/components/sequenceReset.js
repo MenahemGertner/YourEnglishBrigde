@@ -27,10 +27,10 @@ function SequenceReset() {
   };
 
   const handleResetConfirm = async () => {
-    // if (!session?.user?.id) {
-    //   setError('נא להתחבר כדי להמשיך');
-    //   return;
-    // }
+    if (!session?.user?.id) {
+      setError('נא להתחבר כדי להמשיך');
+      return;
+    }
 
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -53,10 +53,10 @@ function SequenceReset() {
   };
 
   const handlePositionSubmit = async () => {
-    // if (!session?.user?.id) {
-    //   setError('נא להתחבר כדי להמשיך');
-    //   return;
-    // }
+    if (!session?.user?.id) {
+      setError('נא להתחבר כדי להמשיך');
+      return;
+    }
 
     const targetIndex = parseInt(position);
     if (targetIndex >= 1 && targetIndex <= 2500) {
