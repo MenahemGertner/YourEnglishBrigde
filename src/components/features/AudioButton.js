@@ -26,64 +26,64 @@ const AudioButton = ({ text }) => {
   };
 
   const handleSpeak = () => {
-    if (!text || !isReady) return;
+  if (!text || !isReady) return;
+  
+  // Always cancel previous speech
+  cancel();
+  
+  // Next state logic - keep this separate and immediate
+  if (playbackState === 'normal') {
+    // Calculate the rate based on current state - normal
+    const options = {
+      rate: 1,
+      pitch: 1,
+      onend: handleSpeechEnd,
+      onerror: () => setIsPlaying(false)
+    };
     
-    // Always cancel previous speech
-    cancel();
+    // Only set playing if we're actually going to speak
+    setIsPlaying(true);
     
-    // Next state logic - keep this separate and immediate
-    if (playbackState === 'normal') {
-      // Calculate the rate based on current state - normal
-      const options = {
-        rate: 1,
-        pitch: 1,
-        onend: handleSpeechEnd,
-        onerror: () => setIsPlaying(false)
-      };
-      
-      // Only set playing if we're actually going to speak
-      setIsPlaying(true);
-      
-      // Immediate function to ensure speak happens with right parameters
-      (function(speakOptions) {
-        // Small delay to ensure cancel completes
-        setTimeout(() => {
-          speak(text, speakOptions);
-        }, 10);
-      })(options);
-      
-      // Change state after setting up speech
-      setPlaybackState('slow');
-    }
-    else if (playbackState === 'slow') {
-      // Calculate the rate based on current state - slow
-      const options = {
-        rate: 0.6,
-        pitch: 1,
-        onend: handleSpeechEnd,
-        onerror: () => setIsPlaying(false)
-      };
-      
-      // Only set playing if we're actually going to speak
-      setIsPlaying(true);
-      
-      // Immediate function to ensure speak happens with right parameters  
-      (function(speakOptions) {
-        // Small delay to ensure cancel completes
-        setTimeout(() => {
-          speak(text, speakOptions);
-        }, 10);
-      })(options);
-      
-      // Change state after setting up speech
-      setPlaybackState('mute');
-    }
-    else {
-      // We're in mute state, just change to normal
-      setIsPlaying(false);
-      setPlaybackState('normal');
-    }
-  };
+    // Immediate function to ensure speak happens with right parameters
+    (function(speakOptions) {
+      // Small delay to ensure cancel completes
+      setTimeout(() => {
+        speak(text, speakOptions);
+      }, 10);
+    })(options);
+    
+    // Change state after setting up speech
+    setPlaybackState('slow');
+  }
+  else if (playbackState === 'slow') {
+    // Calculate the rate based on current state - slow
+    const options = {
+      rate: 0.6,
+      pitch: 1,
+      onend: handleSpeechEnd,
+      onerror: () => setIsPlaying(false)
+    };
+    
+    // Only set playing if we're actually going to speak
+    setIsPlaying(true);
+    
+    // Immediate function to ensure speak happens with right parameters  
+    (function(speakOptions) {
+      // Small delay to ensure cancel completes
+      setTimeout(() => {
+        speak(text, speakOptions);
+      }, 10);
+    })(options);
+    
+    // Change state after setting up speech
+    setPlaybackState('mute');
+  }
+  else {
+    // We're in mute state, just change to normal
+    setIsPlaying(false);
+    setPlaybackState('normal');
+  }
+};
 
   const getIcon = () => {
     switch(playbackState) {
