@@ -1,8 +1,21 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export function ResetDialog({ isOpen, onClose, onConfirm, error }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isOpen && e.key === 'Enter') {
+        onConfirm();
+      } else if (isOpen && e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onConfirm, onClose]);
+
   if (!isOpen) return null;
   
   return (
@@ -33,6 +46,20 @@ export function ResetDialog({ isOpen, onClose, onConfirm, error }) {
 }
 
 export function PositionDialog({ isOpen, onClose, onSubmit, position, setPosition, error }) {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (isOpen && e.key === 'Enter' && position && parseInt(position) >= 1 && parseInt(position) <= 2500) {
+        onSubmit();
+      } else if (isOpen && e.key === 'Escape') {
+        onClose();
+        setPosition('');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onSubmit, onClose, position, setPosition]);
+
   if (!isOpen) return null;
 
   return (

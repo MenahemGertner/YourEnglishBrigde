@@ -27,29 +27,36 @@ const InflectionRenderer = ({
       }`}
     >
       <div 
-        className="flex items-center gap-2 mb-1 cursor-pointer"
-        onClick={() => toggleSentence(item.id)}
-      >
-        <div 
-          className="text-blue-600 hover:text-blue-800"
-          aria-label={activeSentenceId === item.id ? "Hide details" : "Show details"}
-        >
-          {activeSentenceId === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </div>
-        <span className="font-medium text-gray-800 truncate max-w-[150px]">{item.word}</span>
-        <span onClick={(e) => e.stopPropagation()}>
-          <AudioButton text={item.word}/>
-        </span>
-        <PartOfSpeech ps={item.inflec} variant="compact" />
-        <span className="text-gray-300 text-xs">{item.Inflections}</span> 
-      </div>
+  className="flex items-center justify-between mb-1 cursor-pointer"
+  onClick={() => toggleSentence(item.id)}
+>
+  <div className="flex items-center gap-2">
+    <div 
+      className="text-blue-600 hover:text-blue-800"
+      aria-label={activeSentenceId === item.id ? "Hide details" : "Show details"}
+    >
+      {activeSentenceId === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+    </div>
+    <span className="font-medium text-gray-800 truncate max-w-[150px]">{item.word}</span>
+    <span onClick={(e) => e.stopPropagation()}>
+      <AudioButton text={item.word}/>
+    </span>
+    <PartOfSpeech ps={item.inflec} variant="compact" />
+  </div>
+  
+  <span className="mr-2" dir="rtl">{item.translateInflection}</span>
+</div>
   
       {activeSentenceId === item.id ? (
         <div className="mt-2 pl-6 border-l-2 border-blue-200">
-          <div className="mb-2 text-sm text-gray-600 flex justify-between items-center" dir="rtl">
-            <span>{item.translateInflection}</span>
+          <div className="mb-2 text-sm text-gray-600 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <span  dir='ltr'>{item.Inflections}</span>
+              <span  
+                className="cursor-pointer hover:text-blue-700"
+                onClick={() => setShowExplanation(prev => !prev)}
+              >
+                {item.Inflections}
+              </span>
               <button 
                 onClick={() => setShowExplanation(prev => !prev)}
                 className="text-blue-500 hover:text-blue-700 rounded-full w-4 h-4 flex items-center justify-center"
@@ -128,13 +135,14 @@ const InflectionRenderer = ({
   // Function to render an item in practice mode
   const renderPracticeItem = (item) => (
     <div key={item.id} className="mb-6 p-3 bg-white rounded-lg shadow-sm border border-gray-200">
-      <div className="flex justify-between items-center mb-2">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-700">{item.word}</span>
-          <AudioButton text={item.word}/>
-          <PartOfSpeech ps={item.inflec} variant="compact" />
-        </div>
-      </div>
+  <div className="flex justify-between items-center mb-2">
+    <div className="flex items-center gap-2">
+      <span className="font-medium text-gray-700">{item.word}</span>
+      <AudioButton text={item.word}/>
+      <PartOfSpeech ps={item.inflec} variant="compact" />
+    </div>
+    <span className="mr-2" dir="rtl">{item.translateInflection}</span>
+  </div>
       
       {/* במצב תרגול רציף - הצג את כל הדוגמאות */}
       {item.examples.map((example, exIndex) => (

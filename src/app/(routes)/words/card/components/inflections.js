@@ -77,9 +77,18 @@ const Inflections = ({ inf = [], word = '', infl = null }) => {
 
   return (
     <div className="w-full max-w-xs mx-auto">
-      {/* Compact Title */}
+      {/* Clickable Title */}
       <div className="text-center mb-2">
-        <h2 className="text-sm font-medium text-blue-500/70 inline-block">
+        <h2 
+          className={`text-sm font-medium text-blue-500/70 inline-block ${infl ? 'cursor-pointer hover:text-blue-600 transition-colors' : ''}`}
+          onClick={handleOpenWindow}
+          style={{
+            ...(selectedColor && infl ? {
+              color: `${selectedColor}b3`, // 70% opacity version of the color
+              ':hover': { color: selectedColor }
+            } : {})
+          }}
+        >
           הטיות ומשפטים לתרגול
         </h2>
       </div>
@@ -107,7 +116,7 @@ const Inflections = ({ inf = [], word = '', infl = null }) => {
                 transition-transform 
                 duration-300 
                 hover:scale-105 
-                ${(infl || der) ? 'cursor-pointer' : ''}
+                ${infl ? 'cursor-pointer' : ''}
               `}
               onClick={handleOpenWindow}
               style={{

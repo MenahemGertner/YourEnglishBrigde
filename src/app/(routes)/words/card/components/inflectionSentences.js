@@ -8,7 +8,8 @@ const InflectionSentences = ({ infl }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSentenceId, setActiveSentenceId] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [viewMode, setViewMode] = useState('default');
+  // שינוי ברירת המחדל ל'practice' במקום 'default'
+  const [viewMode, setViewMode] = useState('practice');
   const maxItems = 5;
   const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
   const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
@@ -102,9 +103,22 @@ const InflectionSentences = ({ infl }) => {
     >
       <div className="bg-gradient-to-r from-blue-400 to-purple-400 rounded-t-lg p-4 border-b border-blue-100 sticky top-0 z-10 flex justify-between items-center">
         <div className="flex items-center bg-white/20 rounded-lg">
+          {/* שינוי סדר הכפתורים - לימוד והבנה בצד שמאל */}
+          <button 
+            onClick={() => setViewMode('default')}
+            className={`px-2 py-1 text-sm rounded-l-md transition ${
+              viewMode === 'default' ? 'bg-white text-blue-700' : 'text-white'
+            }`}
+          >
+            <div className="flex items-center gap-1">
+              <Book size={14} />
+              <span>הסבר והרחבה</span>
+            </div>
+          </button>
+          {/* משפטים ברצף בצד ימין */}
           <button 
             onClick={() => setViewMode('practice')}
-            className={`px-2 py-1 text-sm rounded-l-md transition ${
+            className={`px-2 py-1 text-sm rounded-r-md transition ${
               viewMode === 'practice' ? 'bg-white text-blue-700' : 'text-white'
             }`}
           >
@@ -113,22 +127,13 @@ const InflectionSentences = ({ infl }) => {
               <span>משפטים ברצף</span>
             </div>
           </button>
-          <button 
-            onClick={() => setViewMode('default')}
-            className={`px-2 py-1 text-sm rounded-r-md transition ${
-              viewMode === 'default' ? 'bg-white text-blue-700' : 'text-white'
-            }`}
-          >
-            <div className="flex items-center gap-1">
-              <Book size={14} />
-              <span>לימוד והבנה</span>
-            </div>
-          </button>
         </div>
         <p className="font-semibold text-lg text-white" dir="rtl">משפטי תרגול</p>
       </div>
+      
+      {/* כותרת משנה שמשתנה לפי מצב התצוגה */}
       <p className="text-white text-sm text-center bg-gradient-to-r from-blue-400 to-purple-400 py-3" dir="rtl">
-        תרגל לפחות 3 משפטים!
+        {viewMode === 'practice' ? 'תרגל לפחות 5 משפטים!' : 'הבנת השימושים השונים של המילה'}
       </p>
 
       {viewMode === 'default' ? (
