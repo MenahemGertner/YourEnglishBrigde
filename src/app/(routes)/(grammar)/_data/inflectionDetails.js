@@ -323,7 +323,12 @@ export const InflectionDetails = {
             translation: 'צורות שלילה',
             explanation: 'מילים המשמשות להבעת שלילה או היעדר',
             example: 'no, not, never, none, nowhere'
-        }
+        },
+        'Contractions': {
+translation: 'קיצורים',
+explanation: 'צירופי מילים באנגלית שקוצרו על ידי השמטת אות או אותיות והחלפתן בגרש',
+example: "don't (do not), I'll (I will), we're (we are)"
+}
     } } 
   };
 
