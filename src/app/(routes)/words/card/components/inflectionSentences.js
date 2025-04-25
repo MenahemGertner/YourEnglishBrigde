@@ -112,7 +112,7 @@ const InflectionSentences = ({ infl }) => {
           >
             <div className="flex items-center gap-1">
               <Book size={14} />
-              <span>הסבר והרחבה</span>
+              <span>להבין יותר</span>
             </div>
           </button>
           {/* משפטים ברצף בצד ימין */}
@@ -133,7 +133,7 @@ const InflectionSentences = ({ infl }) => {
       
       {/* כותרת משנה שמשתנה לפי מצב התצוגה */}
       <p className="text-white text-sm text-center bg-gradient-to-r from-blue-400 to-purple-400 py-3" dir="rtl">
-        {viewMode === 'practice' ? 'תרגל לפחות 5 משפטים!' : 'הבנת השימושים השונים של המילה'}
+        {viewMode === 'practice' ? 'תרגל לפחות 5 משפטים!' : 'הבנת ההטיה והשימוש הנכון'}
       </p>
 
       {viewMode === 'default' ? (
