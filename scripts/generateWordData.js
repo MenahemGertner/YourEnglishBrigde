@@ -4,6 +4,9 @@ const path = require('path');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
+// הגדרה להתחלת האינדקס
+const START_INDEX = 96;
+
 // הגדרות API
 const API_KEY = process.env.CLAUDE_API_KEY;
 const API_URL = 'https://api.anthropic.com/v1/messages';
@@ -39,7 +42,7 @@ const promptTemplate = (word) => `
 האובייקט חייב לעקוב אחר המבנה המדויק הבא, עם הקפדה על דיוק ועושר לשוני:
 
 1. מזהה ייחודי (_id.$oid)
-2. אינדקס סידורי (index)
+2. אינדקס סידורי (index) - תיצור החל מ ${START_INDEX} והלאה
 3. המילה באנגלית ("word")
 4. תרגום מדויק לעברית ("tr")
 5. חלק דיבר ("ps"): N=שם עצם, V=פועל, A=תואר, D=תואר הפועל, F=מילת פונקציה
@@ -84,15 +87,14 @@ const promptTemplate = (word) => `
             'Modal Particle',
             'Negative Forms',
             'Contractions']
-   - דוגמאות שימוש 'פשוטות' באנגלית (ברמה של המילה הנלמדת) עם תרגום לעברית ("examples") - אם יש פחות מ 5 הטיות, אז להשלים משפטים נוספים, כך שיהיו בסך הכל 5 משפטים לפחות
-8. ביטויים נפוצים ("ex") - ביטויים ופתגמים 'קצרים' שכוללים את המילה
+   - דוגמאות שימוש 'פשוטות' באנגלית 'ברמה של המילה הנלמדת' עם תרגום לעברית ("examples") - אם יש פחות מ 5 הטיות, אז להשלים משפטים נוספים, כך שיהיו בסך הכל 5 משפטים לפחות
+8. ביטויים נפוצים ("ex") - 3 ביטויים ופתגמים 'קצרים' שכוללים את המילה
 9. מילים נרדפות ("syn") - להשאיר ריק
 10. מילים מנוגדות ("con") - להשאיר ריק
 
 כללים חשובים:
-- דוגמאות השימוש חייבות להיות משפטים פשוטים וברורים. כמו כן חשוב לי לשלב משפטי מוטיבציה
+- דוגמאות השימוש חייבות להיות משפטים פשוטים וברורים. כמו כן חשוב לי לשלב משפטי מוטיבציה, וגם איזה משפט עם עובדה פיקנטית על אמריקה או אנגלית
 - התרגומים לעברית חייבים להיות טבעיים (לא מילוליים מדי)
-- האובייקט חייב להיות בתבנית JSON תקינה
 
 הנה 3 דוגמאות מדויקות למבנה הרצוי:
 {
@@ -594,7 +596,8 @@ async function processAllWords(words) {
   
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
-    const outputFile = path.join(OUTPUT_DIR, `word_${String(i).padStart(3, '0')}_${word}.json`);
+    const actualIndex = START_INDEX + i;
+    const outputFile = path.join(OUTPUT_DIR, `word_${String(actualIndex).padStart(3, '0')}_${word}.json`);
     
     // בדיקה אם המילה כבר עובדה
     try {
@@ -612,7 +615,7 @@ async function processAllWords(words) {
     }
     
     console.log(`\nמעבד מילה ${i+1}/${words.length}: ${word}`);
-    const { obj: wordObj, message } = await getWordObject(word, i);
+    const { obj: wordObj, message } = await getWordObject(word, START_INDEX + i);
     
     if (wordObj) {
       // שמירת תוצאה בקובץ
