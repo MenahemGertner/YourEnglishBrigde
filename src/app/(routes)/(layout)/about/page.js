@@ -2,7 +2,7 @@ export default function About() {
   return (
     <div className="py-16 px-4">
         <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-8 text-blue-900">אודות</h1>
+          <h1 className="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">אודות</h1>
           
           <div className="space-y-6 text-right leading-relaxed">
             <p className="text-lg">
@@ -27,7 +27,7 @@ export default function About() {
             </p>
             
             <div className="text-center mt-12 space-y-2">
-              <p className="text-xl text-blue-700">לימוד מהנה</p>
+              <p className="text-lg bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">לימוד מהנה</p>
               <p className="text-lg font-medium">מנחם</p>
             </div>
           </div>

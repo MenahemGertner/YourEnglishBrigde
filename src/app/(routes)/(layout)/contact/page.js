@@ -62,16 +62,18 @@ export default function Contact() {
     <div className="py-16 px-4">
       <div className="max-w-xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-8 text-blue-900">צור קשר</h1>
-          
-          <div className="text-center mb-8 leading-relaxed text-gray-700">
-            <p className="font-semibold p-2">האתר בהרצה.</p>
-            <p>
-              אני אשמח לקבל שיתופים על חווית המשתמש שלך, 
-              ועל היעילות והרלוונטיות של התוכן עבורך.<br/>
-              וכמובן שגם כל הערה, הארה, שאלה, פניה ונושאים אחרים יתקבלו בברכה.
-            </p>
-          </div>
+        <h1 className="flex justify-center items-center text-3xl font-bold text-center mb-8">
+  <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">צור קשר</span>
+  <span className="mr-2">👋</span>
+</h1>
+<div className="text-center mb-8 leading-relaxed text-gray-700">
+  <p className="font-semibold p-2">האתר עדיין בשלבי פיתוח! 🚀</p>
+  <p>
+    רוצים לשתף חוויות מהאתר? יש לכם רעיונות מגניבים?<br/>
+    ספרו לנו איך האתר עוזר לכם ללמוד אנגלית!<br/>
+    כל הערה, שאלה או סתם לומר שלום - אנחנו כאן בשבילכם! 😊
+  </p>
+</div>
           
           {status.message && (
             <div className={`text-center p-3 mb-4 rounded-md ${status.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
@@ -145,7 +147,7 @@ export default function Contact() {
               <button
                 type="submit"
                 disabled={status.submitting}
-                className={`bg-blue-900 text-white px-8 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 ${status.submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+                className={`bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 ${status.submitting ? 'opacity-70 cursor-not-allowed' : ''}`}
               >
                 {status.submitting ? 'שולח...' : 'שלח הודעה'}
               </button>
