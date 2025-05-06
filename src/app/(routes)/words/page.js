@@ -8,6 +8,7 @@ import { headers } from 'next/headers';
 import SequenceReset from './navigation/personalGuide/components/sequenceReset'
 import { ColorProvider } from './navigation/components/colorContext';
 import { WindowProvider } from './card/providers/WindowContext'
+import FeedbackButton from "./card/feedbackButton/components/feedbackButton";
 
 
 async function getWordData(index, category = '500') {
@@ -62,6 +63,7 @@ export default async function Word({ searchParams }) {
       <GuestContent>
       <NextAndPrevious index={data.index} categorySize={categorySize} />
       </GuestContent>
+      <FeedbackButton/>
       </WindowProvider>
       </ColorProvider>
     </div>
