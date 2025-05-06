@@ -5,7 +5,7 @@ const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
 // הגדרה להתחלת האינדקס
-const START_INDEX = 96;
+const START_INDEX = 151;
 
 // הגדרות API
 const API_KEY = process.env.CLAUDE_API_KEY;
@@ -46,7 +46,7 @@ const promptTemplate = (word) => `
 3. המילה באנגלית ("word")
 4. תרגום מדויק לעברית ("tr")
 5. חלק דיבר ("ps"): N=שם עצם, V=פועל, A=תואר, D=תואר הפועל, F=מילת פונקציה
-6. רשימת צורות נטייה ("inf") - כל ההטיות הדקדוקיות הרלוונטיות של המילה (לא נגזרות)
+6. רשימת צורות נטייה ("inf") - כל ההטיות של המילה, 'רק הטיות' לא כולל נגזרות ולא כוללה מילה עצמה
 7. פירוט נטיות דקדוקיות ("infl") - כל נטייה חייבת לכלול:
    - צורת המילה ("form")
    - 'תרגום לעברית עם 'ניקוד מלא ("tr")
@@ -72,7 +72,6 @@ const promptTemplate = (word) => `
             'Positive',
             'Comparative',
             'Superlative',
-            'Possessive',
             'Adjectival Participle',
             'Feature Adjective',
             'Adverb Form',
@@ -84,7 +83,6 @@ const promptTemplate = (word) => `
             'Determiner',
             'Interjection',
             'Auxiliary Verb',
-            'Modal Particle',
             'Negative Forms',
             'Contractions']
    - דוגמאות שימוש 'פשוטות' באנגלית 'ברמה של המילה הנלמדת' עם תרגום לעברית ("examples") - אם יש פחות מ 5 הטיות, אז להשלים משפטים נוספים, כך שיהיו בסך הכל 5 משפטים לפחות
@@ -256,50 +254,69 @@ const promptTemplate = (word) => `
 }
   {
   "_id": {
-    "$oid": "676e4e14f6dabc96ddf5a06d"
+    "$oid": "676e7f13f6dabc96ddf5a094"
   },
-  "index": 27,
-  "word": "the",
-  "tr": "את, ה-",
+  "index": 4,
+  "word": "of",
+  "tr": "של, מ-, על",
   "ps": "F",
   "inf": [],
   "infl": [
     {
-      "form": "the",
-      "tr": "הַ-",
-      "ps": "Article",
+      "form": "of",
+      "tr": "שֶׁל",
+      "ps": "Preposition",
       "examples": [
         {
-          "sen": "The house stands strong",
-          "trn": "הבית עומד חזק"
+          "sen": "The power of education can transform lives",
+          "trn": "כוחו של החינוך יכול לשנות חיים"
         },
         {
-          "sen": "The sun rises in the east",
-          "trn": "השמש זורחת במזרח"
+          "sen": "A cup of coffee helps me start my day",
+          "trn": "כוס קפה עוזרת לי להתחיל את היום"
+        }
+      ]
+    },
+    {
+      "form": "of",
+      "tr": "מִ-",
+      "ps": "Preposition",
+      "examples": [
+        {
+          "sen": "Many of the students passed the test",
+          "trn": "רבים מהתלמידים עברו את המבחן"
         },
         {
-          "sen": "The book is on the table",
-          "trn": "הספר נמצא על השולחן"
+          "sen": "Each of us has the potential for greatness",
+          "trn": "לכל אחד מאיתנו יש פוטנציאל לגדולה"
+        }
+      ]
+    },
+    {
+      "form": "of",
+      "tr": "עַל",
+      "ps": "Preposition",
+      "examples": [
+        {
+          "sen": "The museum of history is full of amazing artifacts",
+          "trn": "מוזיאון ההיסטוריה מלא בממצאים מדהימים"
         },
         {
-          "sen": "The children play in the garden",
-          "trn": "הילדים משחקים בגינה"
-        },
-        {
-          "sen": "The teacher explains the lesson",
-          "trn": "המורה מסביר את השיעור"
+          "sen": "Dreams of success motivate us to work harder",
+          "trn": "חלומות על הצלחה מניעים אותנו לעבוד קשה יותר"
         }
       ]
     }
   ],
   "ex": {
-    "all the": "כל ה-",
-    "in the": "ב-",
-    "by the": "ליד ה-"
+    "part of": "חלק מ-",
+    "of course": "כמובן",
+    "proud of": "גאה ב-"
   },
   "syn": [],
   "con": []
 }
+  
   {
   "_id": {
     "$oid": "676e46f2f6dabc96ddf5a062"
