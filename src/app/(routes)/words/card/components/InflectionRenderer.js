@@ -120,7 +120,7 @@ const InflectionRenderer = ({
               className="mt-3 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800"
             >
               <ArrowLeft size={14} />
-              <span>המשך לתרגול הבא</span>
+              <span>המשך להטיה הבא</span>
             </button>
           )}
         </div>
@@ -139,7 +139,6 @@ const InflectionRenderer = ({
     <div className="flex items-center gap-2">
       <span className="font-medium text-gray-700">{item.word}</span>
       <AudioButton text={item.word}/>
-      <PartOfSpeech ps={item.inflec} variant="compact" />
     </div>
     <span className="mr-2" dir="rtl">{item.translateInflection}</span>
   </div>
