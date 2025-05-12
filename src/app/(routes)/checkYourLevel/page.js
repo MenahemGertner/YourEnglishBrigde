@@ -31,7 +31,6 @@ const CheckYourLevel = () => {
       maxFailuresInAnyLevel = Math.max(maxFailuresInAnyLevel, levelFailures[level]);
     }
     
-    // חישוב אחוזים בהתאם ללוגיקה שהסברת
     // 5 הצלחות = 100%, כל הצלחה שווה 20%
     // 4 כשלונות = 100%, כל כשלון שווה 25%
     const successProgress = Math.min(maxSuccessesInAnyLevel * 20, 100);
@@ -42,94 +41,103 @@ const CheckYourLevel = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-blue-50 items-center justify-center space-y-6 text-center p-4 my-8">
-      <h1 className="text-3xl font-bold mb-16">מבדק רמת אנגלית</h1>
-      
-      {showIntro && !testActive && !showResult && (
-        <div className="space-y-6">
-          <p className="text-lg mb-4 max-w-[600px] px-4">להלן שאלון קצר ומקצועי. השאלון כולל מספר שאלות אמריקאיות, שבסיומן תוכל כבר להתחיל ללמוד ולשפר את האנגלית שלך!</p>
-          <button
-            onClick={handleStartTest}
-            className="bg-gradient-to-r from-indigo-700 via-blue-600 to-indigo-700 hover:shadow-lg text-white font-bold py-4 px-8 rounded-lg text-xl transition-colors"
-          >
-            התחל שאלון
-          </button>
+    <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 md:p-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-center">מבדק רמת אנגלית</h1>
         </div>
-      )}
-      
-      {testActive && currentQuestion && (
-        <div className="w-full max-w-2xl space-y-6 bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-4">
-            {/* החלפת מספר השאלה במד ההתקדמות - רק המד בלי האחוז */}
-            <div className="w-24 bg-gray-200 rounded-full h-2.5">
-              <div 
-                className="bg-gradient-to-r from-blue-600 to-purple-700 h-2.5 rounded-full transition-all duration-500 ease-in-out" 
-                style={{ width: `${calculateProgress()}%` }}
-              ></div>
-            </div>
-            {/* <span className="text-gray-600">רמה {currentQuestion.level}</span> */}
-          </div>
-          
-          <h2 className="text-xl font-semibold mb-4 text-left" dir="ltr">
-            {formatQuestionText(currentQuestion.question)}
-          </h2>
-          
-          <div className="space-y-3">
-            {currentQuestion.options.map((option, index) => (
+
+        {/* Content Container */}
+        <div className="p-6 md:p-10 space-y-6">
+          {showIntro && !testActive && !showResult && (
+            <div className="text-center space-y-6">
+              <p className="text-gray-700 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
+                להלן שאלון קצר חכם ומקצועי. השאלון כולל מספר שאלות אמריקאיות, שבסיומן תוכל כבר להתחיל ללמוד ולשפר את האנגלית שלך!
+              </p>
               <button
-                key={index}
-                onClick={() => handleAnswerSelection(index)}
-                className="w-full text-left p-3 border border-gray-300 rounded-md hover:bg-blue-50 transition-colors"
-                dir="ltr"
+                onClick={handleStartTest}
+                className="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-600 hover:from-indigo-600 hover:via-blue-600 hover:to-indigo-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
               >
-                {option}
+                התחל שאלון
               </button>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {showResult && (
-        <div className="space-y-6 max-w-md bg-white rounded-lg shadow-md p-8">
-          <h2 className="text-2xl font-bold mb-4">השאלון הסתיים!</h2>
+            </div>
+          )}
           
+          {testActive && currentQuestion && (
+            <div className="space-y-6">
+              {/* Progress Bar */}
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div 
+                  className="bg-gradient-to-r from-indigo-600 to-blue-500 h-2.5 rounded-full transition-all duration-500 ease-in-out" 
+                  style={{ width: `${calculateProgress()}%` }}
+                ></div>
+              </div>
+              {/* <span className="text-gray-600">רמה {currentQuestion.level}</span> */}
+              {/* Question Section */}
+              <div className="bg-gray-50 rounded-xl p-6 shadow-md">
+                <h2 className="text-xl font-semibold mb-4 text-gray-800 text-left" dir="ltr">
+                  {formatQuestionText(currentQuestion.question)}
+                </h2>
+                
+                <div className="space-y-3">
+                  {currentQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleAnswerSelection(index)}
+                      className="w-full text-left p-3 bg-white border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 ease-in-out text-gray-700 hover:text-blue-700 shadow-sm hover:shadow-md"
+                      dir="ltr"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           
-          {(() => {
-  let message = "";
-  let linkUrl = "";
-  
-  if (userLevel === 0) {
-    message = "נראה שאתה מתחיל. נתחיל מיסודות השפה.";
-    linkUrl = "/underConstruction";
-  } else if (userLevel > 0 && userLevel < 6) {
-    message = `יש לך בסיס טוב! נעזור לך להתקדם לרמה הבאה.`;
-    linkUrl = `/words?index=${userLevel*500-499}&category=${userLevel*500}`;
-  } else if (userLevel === 6) {
-    message = "מעולה! יש לך שליטה מצוינת באנגלית, תוכל להמשיך לרמת 'מתקדמים'!";
-    linkUrl = "/underConstruction";
-  }
-  
-  return (
-    <div>
-      <p className="text-xl mb-6">
-        {userLevel === 0 
-          ? "הרמה שלך היא רמת 'מתחילים'" 
-          : userLevel === 6 
-            ? "הרמה שלך היא רמת 'מתקדמים'" 
-            : `הרמה שלך היא רמה ${userLevel}`}
-      </p>
-      <p className="text-gray-600 mb-6">{message}</p>
-      <Link
-        href={linkUrl}
-        className="inline-block bg-gradient-to-r from-indigo-700 via-blue-600 to-indigo-700 hover:shadow-lg text-white font-bold py-3 px-6 rounded-lg text-lg transition-colors"
-      >
-        התחל בלימוד
-      </Link>
-    </div>
-  );
-})()}
+          {showResult && (
+            <div className="text-center space-y-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">השאלון הסתיים!</h2>
+              
+              {(() => {
+                let message = "";
+                let linkUrl = "";
+                
+                if (userLevel === 0) {
+                  message = "נראה שאתה מתחיל. נתחיל מיסודות השפה.";
+                  linkUrl = "/underConstruction";
+                } else if (userLevel > 0 && userLevel < 6) {
+                  message = `יש לך בסיס טוב! נעזור לך להתקדם לרמה הבאה.`;
+                  linkUrl = `/words?index=${userLevel*500-499}&category=${userLevel*500}`;
+                } else if (userLevel === 6) {
+                  message = "מעולה! יש לך שליטה מצוינת באנגלית, תוכל להמשיך לרמת 'מתקדמים'!";
+                  linkUrl = "/underConstruction";
+                }
+                
+                return (
+                  <div className="bg-white rounded-xl shadow-lg p-8 max-w-md mx-auto">
+                    <p className="text-xl font-semibold mb-4 text-gray-800">
+                      {userLevel === 0 
+                        ? "הרמה שלך היא רמת 'מתחילים'" 
+                        : userLevel === 6 
+                          ? "הרמה שלך היא רמת 'מתקדמים'" 
+                          : `הרמה שלך היא רמה ${userLevel}`}
+                    </p>
+                    <p className="text-gray-600 mb-6">{message}</p>
+                    <Link
+                      href={linkUrl}
+                      className="inline-block bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-600 hover:from-indigo-600 hover:via-blue-600 hover:to-indigo-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                    >
+                      התחל בלימוד
+                    </Link>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
