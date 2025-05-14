@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, Volume1, VolumeX } from 'lucide-react';
 import { useResponsiveVoice } from '@/app/providers/ResponsiveVoiceProvider';
 
@@ -7,9 +7,10 @@ const AudioButton = ({ text }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackState, setPlaybackState] = useState('normal');
   const { isReady, speak, cancel } = useResponsiveVoice();
+  const processingClick = useRef(false);
 
+  // ניקוי בסיום
   useEffect(() => {
-    // Clean up on unmount
     return () => {
       if (isPlaying) {
         cancel();
@@ -17,74 +18,67 @@ const AudioButton = ({ text }) => {
     };
   }, [isPlaying, cancel]);
 
+  // טיפול בסיום הדיבור
   const handleSpeechEnd = () => {
     setIsPlaying(false);
-    // Only reset to normal speed if currently in slow mode
+    // רק אם במצב איטי, נאפס למצב רגיל
     if (playbackState === 'slow') {
       setPlaybackState('normal');
     }
   };
 
-  const handleSpeak = () => {
-  if (!text || !isReady) return;
-  
-  // Always cancel previous speech
-  cancel();
-  
-  // Next state logic - keep this separate and immediate
-  if (playbackState === 'normal') {
-    // Calculate the rate based on current state - normal
-    const options = {
-      rate: 1,
-      pitch: 1,
-      onend: handleSpeechEnd,
-      onerror: () => setIsPlaying(false)
-    };
+  // טיפול בלחיצה - עם הגנה מפני לחיצות כפולות
+  const handleSpeak = async () => {
+    if (!text || !isReady || processingClick.current) return;
     
-    // Only set playing if we're actually going to speak
-    setIsPlaying(true);
+    processingClick.current = true;
     
-    // Immediate function to ensure speak happens with right parameters
-    (function(speakOptions) {
-      // Small delay to ensure cancel completes
+    try {
+      // בודקים האם אנחנו במצב השתקה - אם כן, רק משנים מצב בלי להפעיל דיבור
+      if (playbackState === 'mute') {
+        setPlaybackState('normal');
+        setIsPlaying(false);
+        processingClick.current = false;
+        return;
+      }
+      
+      // אחרת, מבטלים דיבור נוכחי אם יש
+      cancel();
+      
+      // מעדכנים את ה-UI למצב ניגון
+      setIsPlaying(true);
+      
+      // קובעים את מהירות ההשמעה לפי המצב הנוכחי
+      const rate = playbackState === 'normal' ? 1 : 0.6;
+      
+      // מפעילים את הדיבור
+      await speak(text, {
+        rate,
+        pitch: 1,
+        onend: handleSpeechEnd,
+        onerror: () => {
+          setIsPlaying(false);
+        }
+      });
+      
+      // מעדכנים את המצב הבא
+      if (playbackState === 'normal') {
+        setPlaybackState('slow');
+      } else if (playbackState === 'slow') {
+        setPlaybackState('mute');
+      }
+    } catch (error) {
+      console.error('Speech error:', error);
+      setIsPlaying(false);
+    } finally {
+      // תמיד מאפסים את הדגל בסוף הפעולה
       setTimeout(() => {
-        speak(text, speakOptions);
-      }, 10);
-    })(options);
-    
-    // Change state after setting up speech
-    setPlaybackState('slow');
-  }
-  else if (playbackState === 'slow') {
-    // Calculate the rate based on current state - slow
-    const options = {
-      rate: 0.6,
-      pitch: 1,
-      onend: handleSpeechEnd,
-      onerror: () => setIsPlaying(false)
-    };
-    
-    // Only set playing if we're actually going to speak
-    setIsPlaying(true);
-    
-    // Immediate function to ensure speak happens with right parameters  
-    (function(speakOptions) {
-      // Small delay to ensure cancel completes
-      setTimeout(() => {
-        speak(text, speakOptions);
-      }, 10);
-    })(options);
-    
-    // Change state after setting up speech
-    setPlaybackState('mute');
-  }
-  else {
-    // We're in mute state, just change to normal
-    setIsPlaying(false);
-    setPlaybackState('normal');
-  }
-};
+        processingClick.current = false;
+      }, 300); // מניעת לחיצות כפולות למשך 300ms
+    }
+  };
 
+  // הפונקציות לממשק המשתמש - ללא שינוי
   const getIcon = () => {
     switch(playbackState) {
       case 'normal': return <Volume2 className="h-4 w-4 text-gray-600 hover:text-gray-800" />;
@@ -108,9 +102,9 @@ const AudioButton = ({ text }) => {
       onClick={handleSpeak}
       className={`inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 pt-1 ${
         playbackState !== 'normal' ? 'bg-gray-100' : ''
-      } ${!isReady ? 'opacity-50' : ''}`}
+      } ${!isReady || processingClick.current ? 'opacity-50' : ''}`}
       title={getButtonTitle()}
-      disabled={!isReady}
+      disabled={!isReady || processingClick.current}
     >
       {getIcon()}
     </button>
