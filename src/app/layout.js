@@ -4,9 +4,6 @@ import Navbar from "@/components/layout/navbar"
 import Footer from "@/components/layout/footer"
 import AuthProvider from "./providers/SessionProvider"
 import StoppingPoint from '@/app/(routes)/words/navigation/personalGuide/components/stoppingPoint';
-import { ResponsiveVoiceProvider } from './providers/ResponsiveVoiceProvider';
-
-
 
 const inter = Inter({
   subsets: ['latin', 'latin-ext'], 
@@ -28,12 +25,10 @@ export default function RootLayout({ children }) {
       <body className={`${inter.variable} antialiased page-container`}>
         <AuthProvider>
             <Navbar />
-            <ResponsiveVoiceProvider>
             <div className="content-wrapper">
               <main>{children}</main>
               <StoppingPoint/>
             </div>
-            </ResponsiveVoiceProvider>
             <Footer />
         </AuthProvider>
       </body>

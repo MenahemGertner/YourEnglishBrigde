@@ -1,89 +1,91 @@
 'use client'
 import React, { useState, useEffect } from 'react';
 import { Volume2, Volume1, VolumeX } from 'lucide-react';
-import { useResponsiveVoice } from '@/app/providers/ResponsiveVoiceProvider';
 
 const AudioButton = ({ text }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [voice, setVoice] = useState(null);
   const [playbackState, setPlaybackState] = useState('normal');
-  const { isReady, speak, cancel } = useResponsiveVoice();
 
   useEffect(() => {
-    // Clean up on unmount
-    return () => {
-      if (isPlaying) {
-        cancel();
+    let isMounted = true;
+
+    const loadVoice = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0 && isMounted) {
+        const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+        const bestVoice = englishVoices.find(v => 
+          v.name.includes('Enhanced') || v.name.includes('Neural')
+        ) || englishVoices[0];
+
+        setVoice(bestVoice);
       }
     };
-  }, [isPlaying, cancel]);
 
-  const handleSpeechEnd = () => {
-    setIsPlaying(false);
-    // Only reset to normal speed if currently in slow mode
-    if (playbackState === 'slow') {
-      setPlaybackState('normal');
+    loadVoice();
+
+    const voicesChangedHandler = () => {
+      loadVoice();
+    };
+
+    window.speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler);
+
+    return () => {
+      isMounted = false;
+      window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+    };
+  }, []);
+
+  const speak = () => {
+    if (!text) return;
+
+    if (!voice) {
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+      const bestVoice = englishVoices.find(v => 
+        v.name.includes('Enhanced') || v.name.includes('Neural')
+      ) || englishVoices[0];
     }
-  };
 
-  const handleSpeak = () => {
-  if (!text || !isReady) return;
-  
-  // Always cancel previous speech
-  cancel();
-  
-  // Next state logic - keep this separate and immediate
-  if (playbackState === 'normal') {
-    // Calculate the rate based on current state - normal
-    const options = {
-      rate: 1,
-      pitch: 1,
-      onend: handleSpeechEnd,
-      onerror: () => setIsPlaying(false)
-    };
-    
-    // Only set playing if we're actually going to speak
+    window.speechSynthesis.cancel();
+
+    setPlaybackState(current => {
+      switch(current) {
+        case 'normal': return 'slow';
+        case 'slow': return 'mute';
+        case 'mute': return 'normal';
+        default: return 'normal';
+      }
+    });
+
+    if (playbackState === 'mute') {
+      setIsPlaying(false);
+      return;
+    }
+
     setIsPlaying(true);
-    
-    // Immediate function to ensure speak happens with right parameters
-    (function(speakOptions) {
-      // Small delay to ensure cancel completes
-      setTimeout(() => {
-        speak(text, speakOptions);
-      }, 10);
-    })(options);
-    
-    // Change state after setting up speech
-    setPlaybackState('slow');
-  }
-  else if (playbackState === 'slow') {
-    // Calculate the rate based on current state - slow
-    const options = {
-      rate: 0.6,
-      pitch: 1,
-      onend: handleSpeechEnd,
-      onerror: () => setIsPlaying(false)
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (voice) {
+      utterance.voice = voice;
+    }
+    utterance.rate = playbackState === 'slow' ? 0.6 : 1;
+    utterance.pitch = 1;
+
+    utterance.onend = () => {
+      setIsPlaying(false);
+      // Only reset to normal speed if currently in slow mode
+      if (playbackState === 'slow') {
+        setPlaybackState('normal');
+      }
     };
-    
-    // Only set playing if we're actually going to speak
-    setIsPlaying(true);
-    
-    // Immediate function to ensure speak happens with right parameters  
-    (function(speakOptions) {
-      // Small delay to ensure cancel completes
-      setTimeout(() => {
-        speak(text, speakOptions);
-      }, 10);
-    })(options);
-    
-    // Change state after setting up speech
-    setPlaybackState('mute');
-  }
-  else {
-    // We're in mute state, just change to normal
-    setIsPlaying(false);
-    setPlaybackState('normal');
-  }
-};
+
+    utterance.onerror = () => {
+      setIsPlaying(false);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
 
   const getIcon = () => {
     switch(playbackState) {
@@ -105,12 +107,11 @@ const AudioButton = ({ text }) => {
 
   return (
     <button
-      onClick={handleSpeak}
+      onClick={speak}
       className={`inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 pt-1 ${
         playbackState !== 'normal' ? 'bg-gray-100' : ''
-      } ${!isReady ? 'opacity-50' : ''}`}
+      }`}
       title={getButtonTitle()}
-      disabled={!isReady}
     >
       {getIcon()}
     </button>
