@@ -5,7 +5,7 @@ const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
 // הגדרה להתחלת האינדקס
-const START_INDEX = 661;
+const START_INDEX = 1001;
 
 // הגדרות API
 const API_KEY = process.env.CLAUDE_API_KEY;
@@ -93,7 +93,7 @@ const promptTemplate = (word) => `
 10. מילים מנוגדות ("con") - להשאיר ריק
 
 כללים חשובים:
-- דוגמאות השימוש חייבות להיות משפטים פשוטים וברורים. כמו כן חשוב לי לשלב בתוכם משפטי מוטיבציה ומשפטים מחכימים.
+- דוגמאות השימוש חייבות להיות משפטים פשוטים וברורים. כמו כן חשוב לי לשלב בתוכם משפטי מוטיבציה המלמדים עובדות מקוריות.
 - התרגומים לעברית חייבים להיות טבעיים (לא מילוליים מדי)
 
 הנה 3 דוגמאות מדויקות למבנה הרצוי:
@@ -535,14 +535,36 @@ function validateQuality(obj, word) {
   return { isValid: true, message: "האובייקט עבר את בדיקת האיכות" };
 }
 
-// פונקציה לקבלת אובייקט מילה
+/**
+ * יוצר MongoDB ObjectID מותאם אישית עם אינדקס מוגדר
+ * @param {number} index - אינדקס לשימוש בחלק האחרון של ה-ObjectID
+ * @returns {string} MongoDB ObjectID בפורמט הקסדצימלי
+ */
+function createCustomObjectId(index) {
+  // חלק 1: חותמת זמן (4 בתים, 8 תווים הקסדצימליים)
+  const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+  
+  // חלק 2: מזהה מכונה + מזהה תהליך (5 בתים, 10 תווים הקסדצימליים)
+  // בדוגמה זו נשתמש בערך קבוע, אך ניתן להחליף לערך ייחודי למכונה או לתהליך
+  const machineAndProcess = 'f6dabc96dd'; // לקוח מהדוגמה שלך למען עקביות
+  
+  // חלק 3: מונה (3 בתים, 6 תווים הקסדצימליים)
+  // נשתמש באינדקס שמועבר כפרמטר
+  const counter = index.toString().padStart(6, '0');
+  
+  return timestamp + machineAndProcess + counter;
+}
+
+/**
+ * פונקציה משופרת לקבלת אובייקט מילה עם מזהה MongoDB מותאם אישית
+ */
 async function getWordObject(word, index, attempt = 1) {
   if (attempt > 3) {
     return { obj: null, message: "מספר הניסיונות המקסימלי הושג" };
   }
   
-  // יצירת מזהה ייחודי בסגנון MongoDB
-  const randomId = uuidv4().replace(/-/g, '').substring(0, 24);
+  // יצירת מזהה ייחודי בפורמט MongoDB אמיתי עם אינדקס
+  const customId = createCustomObjectId(index);
   
   try {
     const response = await axios.post(API_URL, {
@@ -577,10 +599,8 @@ async function getWordObject(word, index, attempt = 1) {
       // עדכון האינדקס
       wordObj.index = index;
       
-      // אפשר גם לעדכן את המזהה הייחודי שיצרנו למעלה
-      if (!wordObj._id || !wordObj._id.$oid) {
-        wordObj._id = { $oid: randomId };
-      }
+      // עדכון המזהה הייחודי בפורמט המתאים לסכמה שלך
+      wordObj._id = { $oid: customId };
       
       // בדיקת איכות
       const { isValid, message } = validateQuality(wordObj, word);
