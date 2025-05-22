@@ -10,6 +10,7 @@
     "generate-words": "node -r dotenv/config scripts/generateWordData.js"
   },
   "dependencies": {
+    "@google-cloud/text-to-speech": "^6.1.0",
     "@popperjs/core": "^2.11.8",
     "@prisma/client": "^6.1.0",
     "@radix-ui/react-alert-dialog": "^1.1.6",
@@ -21,7 +22,6 @@
     "@types/jsonwebtoken": "^9.0.8",
     "add": "^2.0.6",
     "autoprefixer": "^10.4.20",
-    "aws-sdk": "^2.1692.0",
     "axios": "^1.8.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

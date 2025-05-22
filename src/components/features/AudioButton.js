@@ -1,94 +1,138 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Volume2, Volume1, VolumeX } from 'lucide-react';
 
-const AudioButton = ({ text }) => {
+const GoogleTtsPlayer = ({ text }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [voice, setVoice] = useState(null);
   const [playbackState, setPlaybackState] = useState('normal');
-
+  const [loadingDots, setLoadingDots] = useState('');
+  const audioRef = useRef(null);
+  
+  // אנימציה לנקודות טעינה
   useEffect(() => {
-    let isMounted = true;
-
-    const loadVoice = () => {
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0 && isMounted) {
-        const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-        const bestVoice = englishVoices.find(v => 
-          v.name.includes('Enhanced') || v.name.includes('Neural')
-        ) || englishVoices[0];
-
-        setVoice(bestVoice);
-      }
-    };
-
-    loadVoice();
-
-    const voicesChangedHandler = () => {
-      loadVoice();
-    };
-
-    window.speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler);
-
+    let interval;
+    if (isLoading) {
+      interval = setInterval(() => {
+        setLoadingDots(prev => prev.length >= 3 ? '' : prev + '.');
+      }, 500);
+    } else {
+      setLoadingDots('');
+    }
+    return () => clearInterval(interval);
+  }, [isLoading]);
+  
+  useEffect(() => {
     return () => {
-      isMounted = false;
-      window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
-  const speak = () => {
-    if (!text) return;
-
-    if (!voice) {
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
-      const bestVoice = englishVoices.find(v => 
-        v.name.includes('Enhanced') || v.name.includes('Neural')
-      ) || englishVoices[0];
+  const stopCurrentAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
+  };
 
-    window.speechSynthesis.cancel();
-
-    setPlaybackState(current => {
-      switch(current) {
+  const handlePlay = async () => {
+    setPlaybackState((current) => {
+      switch (current) {
         case 'normal': return 'slow';
         case 'slow': return 'mute';
         case 'mute': return 'normal';
         default: return 'normal';
       }
     });
-
+    
     if (playbackState === 'mute') {
+      stopCurrentAudio();
       setIsPlaying(false);
       return;
     }
 
-    setIsPlaying(true);
+    if (!text) return;
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (voice) {
-      utterance.voice = voice;
-    }
-    utterance.rate = playbackState === 'slow' ? 0.6 : 1;
-    utterance.pitch = 1;
+    stopCurrentAudio();
 
-    utterance.onend = () => {
-      setIsPlaying(false);
-      // Only reset to normal speed if currently in slow mode
-      if (playbackState === 'slow') {
-        setPlaybackState('normal');
+    try {
+      setIsLoading(true);
+      
+      const speakingRate = playbackState === 'slow' ? 0.7 : 1.0;
+      
+      // שימוש בAbortController לביטול בקשות עם timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 שניות מקסימום
+      
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          text,
+          languageCode: 'en-US',
+          voiceName: 'en-US-Neural2-A',
+          speakingRate
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error('Failed to get audio');
       }
-    };
 
-    utterance.onerror = () => {
-      setIsPlaying(false);
-    };
-
-    window.speechSynthesis.speak(utterance);
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+      
+      // הגדרת preload לטעינה מהירה יותר
+      audio.preload = 'auto';
+      
+      const currentPlaybackState = playbackState;
+      
+      audio.onplay = () => setIsPlaying(true);
+      audio.onended = () => {
+        setIsPlaying(false);
+        audioRef.current = null;
+        URL.revokeObjectURL(audioUrl);
+        
+        if (currentPlaybackState === 'slow') {
+          setPlaybackState('normal');
+        }
+      };
+      audio.onerror = () => {
+        setIsPlaying(false);
+        audioRef.current = null;
+        URL.revokeObjectURL(audioUrl);
+      };
+      
+      // שימוש ב-promise כדי לחכות לטעינה
+      audio.addEventListener('canplaythrough', () => {
+        audio.play();
+      });
+      
+      // טעינת האודיו
+      audio.load();
+      
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Error playing audio:', error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getIcon = () => {
-    switch(playbackState) {
+    switch (playbackState) {
       case 'normal': return <Volume2 className="h-4 w-4 text-gray-600 hover:text-gray-800" />;
       case 'slow': return <Volume1 className="h-4 w-4 text-gray-600 hover:text-gray-800" />;
       case 'mute': return <VolumeX className="h-4 w-4 text-gray-600 hover:text-gray-800" />;
@@ -97,7 +141,7 @@ const AudioButton = ({ text }) => {
   };
 
   const getButtonTitle = () => {
-    switch(playbackState) {
+    switch (playbackState) {
       case 'normal': return 'Click for normal speed';
       case 'slow': return 'Click to slow down';
       case 'mute': return 'Click to mute';
@@ -107,15 +151,20 @@ const AudioButton = ({ text }) => {
 
   return (
     <button
-      onClick={speak}
-      className={`inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 pt-1 ${
+      onClick={handlePlay}
+      disabled={isLoading}
+      className={`inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 pt-1 transition-colors ${
         playbackState !== 'normal' ? 'bg-gray-100' : ''
-      }`}
-      title={getButtonTitle()}
+      } ${isLoading ? 'cursor-wait' : 'cursor-pointer'}`}
+      title={isLoading ? `Loading audio${loadingDots}` : getButtonTitle()}
     >
-      {getIcon()}
+      {isLoading ? (
+        <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+      ) : (
+        getIcon()
+      )}
     </button>
   );
 };
 
-export default AudioButton;
+export default GoogleTtsPlayer;
