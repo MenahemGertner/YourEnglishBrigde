@@ -1,83 +1,76 @@
-// app/api/tts/route.js
+// app/api/tts/route.js - גירסה פשוטה לVercel
 import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-
-const memoryCache = new Map();
-
-// יצירת client גלובלי - מונע cold start
-let globalClient = null;
-const getClient = () => {
-  if (!globalClient) {
-    globalClient = new TextToSpeechClient();
-  }
-  return globalClient;
-};
 
 export async function POST(request) {
+  console.log('=== TTS API Called ===', new Date().toISOString());
+  console.log('Environment check:', {
+    hasCredentials: !!process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON,
+    nodeEnv: process.env.NODE_ENV
+  });
+  
   try {
-    const { 
-      text, 
-      speakingRate = 1.0 
-    } = await request.json();
+    const body = await request.json();
+    console.log('Request body:', body);
+    
+    const { text, speakingRate = 1.0 } = body;
     
     if (!text) {
+      console.log('No text provided');
       return NextResponse.json({ error: 'Text is required' }, { status: 400 });
     }
 
-    const languageCode = 'en-US';
-    const voiceName = 'en-US-Neural2-F';
+    console.log('Creating TTS client...');
     
-    const cacheKey = crypto
-      .createHash('md5')
-      .update(`${text}-${speakingRate}`)
-      .digest('hex');
-    
-    if (memoryCache.has(cacheKey)) {
-      const cachedAudio = memoryCache.get(cacheKey);
-      return new NextResponse(cachedAudio, {
-        headers: {
-          'Content-Type': 'audio/mpeg',
-          'Cache-Control': 'public, max-age=86400',
-        },
-      });
+    // הגדרת credentials מ-environment variable
+    let client;
+    if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+      const credentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+      client = new TextToSpeechClient({ credentials });
+    } else {
+      // fallback למצב local development
+      client = new TextToSpeechClient();
     }
-
-    const client = getClient();
     
     const ttsRequest = {
       input: { text },
-      voice: { languageCode, name: voiceName },
+      voice: { 
+        languageCode: 'en-US', 
+        name: 'en-US-Neural2-F' 
+      },
       audioConfig: { 
         audioEncoding: 'MP3',
-        speakingRate: parseFloat(speakingRate),
-        pitch: 0,
-        volumeGainDb: 0,
-        effectsProfileId: ['headphone-class-device'],
-        // הגדרות דחיסה לקבצים קטנים יותר
-        sampleRateHertz: 16000, // במקום 24000 - איכות טובה אבל קובץ קטן יותר
+        speakingRate: parseFloat(speakingRate)
       },
     };
 
+    console.log('Calling Google TTS...');
     const [response] = await client.synthesizeSpeech(ttsRequest);
+    console.log('Google TTS response received');
+    
     const audioContent = response.audioContent;
     
-    // הגבלת גודל המטמון - מונע זליגת זיכרון
-    if (memoryCache.size > 100) {
-      const firstKey = memoryCache.keys().next().value;
-      memoryCache.delete(firstKey);
+    if (!audioContent) {
+      console.log('No audio content received');
+      return NextResponse.json({ error: 'No audio generated' }, { status: 500 });
     }
     
-    memoryCache.set(cacheKey, audioContent);
-    
+    console.log('Returning audio response...');
     return new NextResponse(audioContent, {
       headers: {
-        'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'public, max-age=86400',
+        'Content-Type': 'audio/mpeg'
       },
     });
+    
   } catch (error) {
-    console.error('Error in TTS service:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('=== TTS ERROR ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', error);
+    
+    return NextResponse.json({ 
+      error: 'TTS service failed',
+      details: error.message
+    }, { status: 500 });
   }
 }
