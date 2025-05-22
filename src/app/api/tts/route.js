@@ -39,7 +39,6 @@ export async function POST(request) {
         headers: {
           'Content-Type': 'audio/mpeg',
           'Cache-Control': 'public, max-age=86400',
-          'Content-Disposition': 'inline; filename="speech.mp3"',
         },
       });
     }
@@ -75,7 +74,6 @@ export async function POST(request) {
       headers: {
         'Content-Type': 'audio/mpeg',
         'Cache-Control': 'public, max-age=86400',
-        'Content-Disposition': 'inline; filename="speech.mp3"',
       },
     });
   } catch (error) {
