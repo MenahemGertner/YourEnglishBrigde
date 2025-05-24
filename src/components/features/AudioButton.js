@@ -1,13 +1,18 @@
 'use client'
 import React, { useState, useRef, useEffect } from 'react';
 import { Volume2, Volume1, VolumeX } from 'lucide-react';
+import { getAudioCache } from '@/utils/audioCache';
 
-const GoogleTtsPlayer = ({ text }) => {
+const AudioButton = ({ text }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackState, setPlaybackState] = useState('normal');
   const [loadingDots, setLoadingDots] = useState('');
   const audioRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  
+  // קבלת instance של ה-Cache
+  const audioCache = getAudioCache();
   
   // אנימציה לנקודות טעינה
   useEffect(() => {
@@ -28,6 +33,9 @@ const GoogleTtsPlayer = ({ text }) => {
         audioRef.current.pause();
         audioRef.current = null;
       }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
   }, []);
 
@@ -36,9 +44,13 @@ const GoogleTtsPlayer = ({ text }) => {
       audioRef.current.pause();
       audioRef.current = null;
     }
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
   };
 
   const handlePlay = async () => {
+    // שינוי מצב ההשמעה
     setPlaybackState((current) => {
       switch (current) {
         case 'normal': return 'slow';
@@ -62,10 +74,48 @@ const GoogleTtsPlayer = ({ text }) => {
       setIsLoading(true);
       
       const speakingRate = playbackState === 'slow' ? 0.7 : 1.0;
+      const cacheKey = `${text}-${speakingRate}`;
       
-      // שימוש בAbortController לביטול בקשות עם timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 שניות מקסימום
+      // בדיקה בCache - Memory + Persistent
+      console.log('Checking cache for:', cacheKey);
+      const cachedItem = await audioCache.get(cacheKey);
+      
+      if (cachedItem) {
+        console.log('Playing from cache:', cacheKey);
+        
+        const audio = new Audio(cachedItem.url);
+        audioRef.current = audio;
+        
+        const currentPlaybackState = playbackState;
+        
+        audio.onplay = () => setIsPlaying(true);
+        audio.onended = () => {
+          setIsPlaying(false);
+          audioRef.current = null;
+          
+          if (currentPlaybackState === 'slow') {
+            setPlaybackState('normal');
+          }
+        };
+        audio.onerror = () => {
+          setIsPlaying(false);
+          audioRef.current = null;
+        };
+        
+        setIsLoading(false);
+        await audio.play();
+        return;
+      }
+      
+      console.log('Fetching from server:', cacheKey);
+      
+      // שימוש בAbortController עם timeout
+      abortControllerRef.current = new AbortController();
+      const timeoutId = setTimeout(() => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      }, 10000); // 10 שניות מקסימום
       
       const response = await fetch('/api/tts', {
         method: 'POST',
@@ -78,19 +128,25 @@ const GoogleTtsPlayer = ({ text }) => {
           voiceName: 'en-US-Neural2-A',
           speakingRate
         }),
-        signal: controller.signal
+        signal: abortControllerRef.current.signal
       });
 
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error('Failed to get audio');
+        throw new Error(`Server error: ${response.status}`);
       }
 
       const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
       
-      const audio = new Audio(audioUrl);
+      // שמירה בCache (Memory + Persistent)
+      const cacheItem = await audioCache.set(cacheKey, audioBlob, { 
+        speakingRate,
+        textLength: text.length,
+        voiceName: 'en-US-Neural2-A'
+      });
+      
+      const audio = new Audio(cacheItem.url);
       audioRef.current = audio;
       
       // הגדרת preload לטעינה מהירה יותר
@@ -102,7 +158,6 @@ const GoogleTtsPlayer = ({ text }) => {
       audio.onended = () => {
         setIsPlaying(false);
         audioRef.current = null;
-        URL.revokeObjectURL(audioUrl);
         
         if (currentPlaybackState === 'slow') {
           setPlaybackState('normal');
@@ -111,7 +166,6 @@ const GoogleTtsPlayer = ({ text }) => {
       audio.onerror = () => {
         setIsPlaying(false);
         audioRef.current = null;
-        URL.revokeObjectURL(audioUrl);
       };
       
       // שימוש ב-promise כדי לחכות לטעינה
@@ -125,9 +179,17 @@ const GoogleTtsPlayer = ({ text }) => {
     } catch (error) {
       if (error.name !== 'AbortError') {
         console.error('Error playing audio:', error);
+        
+        // הצגת שגיאה ידידותית למשתמש
+        if (error.message.includes('Server error')) {
+          console.error('Server is currently unavailable');
+        } else if (error.message.includes('Failed to fetch')) {
+          console.error('Network connection problem');
+        }
       }
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -140,14 +202,34 @@ const GoogleTtsPlayer = ({ text }) => {
     }
   };
 
-  const getButtonTitle = () => {
+  const getButtonTitle = async () => {
+    // הצגת סטטיסטיקות בסביבת פיתוח
+    const isDev = process.env.NODE_ENV === 'development';
+    let cacheInfo = '';
+    
+    if (isDev) {
+      try {
+        const stats = await audioCache.getStats();
+        cacheInfo = ` (Cache: ${stats.hitRate}% hit rate, ${stats.memory.items} items, ${stats.memory.sizeMB}MB)`;
+      } catch (error) {
+        cacheInfo = ' (Cache stats unavailable)';
+      }
+    }
+    
     switch (playbackState) {
-      case 'normal': return 'Click for normal speed';
-      case 'slow': return 'Click to slow down';
-      case 'mute': return 'Click to mute';
-      default: return 'Click for normal speed';
+      case 'normal': return `Click for normal speed${cacheInfo}`;
+      case 'slow': return `Click to slow down${cacheInfo}`;
+      case 'mute': return `Click to mute${cacheInfo}`;
+      default: return `Click for normal speed${cacheInfo}`;
     }
   };
+
+  // שימוש ב-state עבור ה-title כדי לא לעשות async בתוך הרינדר
+  const [buttonTitle, setButtonTitle] = useState('Click to play audio');
+  
+  useEffect(() => {
+    getButtonTitle().then(setButtonTitle);
+  }, [playbackState]);
 
   return (
     <button
@@ -156,7 +238,7 @@ const GoogleTtsPlayer = ({ text }) => {
       className={`inline-flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 pt-1 transition-colors ${
         playbackState !== 'normal' ? 'bg-gray-100' : ''
       } ${isLoading ? 'cursor-wait' : 'cursor-pointer'}`}
-      title={isLoading ? `Loading audio${loadingDots}` : getButtonTitle()}
+      title={isLoading ? `Loading audio${loadingDots}` : buttonTitle}
     >
       {isLoading ? (
         <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
@@ -167,4 +249,4 @@ const GoogleTtsPlayer = ({ text }) => {
   );
 };
 
-export default GoogleTtsPlayer;
+export default AudioButton;
