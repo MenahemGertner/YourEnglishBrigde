@@ -5,7 +5,8 @@ import MainWord from './mainWord';
 import MoreInfo from './moreInfo';
 import { ColorContext } from '../../navigation/components/colorContext';
 
-const MainCard = ({ word, index, tr, ps, inf, infl, ex, syn, con }) => { 
+const MainCard = ({ word, index, tr, ps, inf, infl, ex, syn, con }) => {
+  
   const { selectedColor } = useContext(ColorContext);
   const [isAnimating, setIsAnimating] = useState(false);
   
@@ -16,7 +17,7 @@ const MainCard = ({ word, index, tr, ps, inf, infl, ex, syn, con }) => {
       return () => clearTimeout(timer);
     }
   }, [selectedColor]);
-
+  
   return (
     <div
       className={`bg-gradient-to-r from-blue-50 via-white to-purple-50 rounded-lg shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] hover:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)]
@@ -41,19 +42,22 @@ const MainCard = ({ word, index, tr, ps, inf, infl, ex, syn, con }) => {
         </div>
         <div className="mb-6">
           <MainWord 
+            key={`mainword-${index}`} // איפוס MainWord
             word={word}
             tr={tr}
             ps={ps}
           />
         </div>
-
-          <Inflections
-            word={word}
-            inf={inf}
-            infl={infl}
-          />
+        
+        <Inflections
+          key={`inflections-${index}`} // איפוס Inflections (הקרוסלה)
+          word={word}
+          inf={inf}
+          infl={infl}
+        />
 
         <MoreInfo
+          key={`moreinfo-${index}`} // איפוס MoreInfo
           ex={ex}
           syn={syn}
           con={con}

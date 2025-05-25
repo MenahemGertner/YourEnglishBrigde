@@ -153,10 +153,13 @@ const Inflections = ({ inf = [], word = '', infl = null }) => {
           selectedColor={selectedColor}
         />
         
-        {/* Audio button component */}
+        {/* Audio button component - מתאפס עם כל מילה חדשה */}
         {currentWord && (
           <div className="ml-1">
-            <AudioButton text={currentWord} />
+            <AudioButton 
+              key={`audio-${currentIndex}-${currentWord}`}
+              text={currentWord} 
+            />
           </div>
         )}
       </div>
