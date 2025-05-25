@@ -8,7 +8,6 @@ const InflectionSentences = ({ infl }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSentenceId, setActiveSentenceId] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  // שינוי ברירת המחדל ל'practice' במקום 'default'
   const [viewMode, setViewMode] = useState('practice');
   const maxItems = 5;
   const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
@@ -133,7 +132,7 @@ const InflectionSentences = ({ infl }) => {
       
       {/* כותרת משנה שמשתנה לפי מצב התצוגה */}
       <p className="text-white text-sm text-center bg-gradient-to-r from-blue-400 to-purple-400 py-3" dir="rtl">
-        {viewMode === 'practice' ? 'תרגל לפחות 5 משפטים!' : 'הבנת ההטיה והשימוש הנכון'}
+        {viewMode === 'practice' ? 'תרגל לפחות 3 משפטים!' : 'הבנת ההטיה והשימוש הנכון'}
       </p>
 
       {viewMode === 'default' ? (

@@ -5,14 +5,13 @@ import AudioButton from "@/components/features/AudioButton";
 import PartOfSpeech from "../helpers/partOfSpeech.js";
 import Link from "next/link";
 import underLine from "@/components/features/UnderLine";
+import GrammarTranslator from "../data/grammarTranslator.js";
 
 const InflectionRenderer = ({ 
   viewMode,
   items,
   activeSentenceId,
   toggleSentence,
-  showExplanation,
-  setShowExplanation,
   visibleTranslations,
   toggleTranslation,
   isLastInflection,
@@ -27,59 +26,45 @@ const InflectionRenderer = ({
       }`}
     >
       <div 
-  className="flex items-center justify-between mb-1 cursor-pointer"
-  onClick={() => toggleSentence(item.id)}
->
-  <div className="flex items-center gap-2">
-    <div 
-      className="text-blue-600 hover:text-blue-800"
-      aria-label={activeSentenceId === item.id ? "Hide details" : "Show details"}
-    >
-      {activeSentenceId === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-    </div>
-    <span className="font-medium text-gray-800 truncate max-w-[150px]">{item.word}</span>
-    <span onClick={(e) => e.stopPropagation()}>
-      <AudioButton text={item.word}/>
-    </span>
-    <PartOfSpeech ps={item.inflec} variant="compact" />
-  </div>
-  
-  <span className="mr-2" dir="rtl">{item.translateInflection}</span>
-</div>
+        className="flex items-center justify-between mb-1 cursor-pointer"
+        onClick={() => toggleSentence(item.id)}
+      >
+        <div className="flex items-center gap-2">
+          <div 
+            className="text-blue-600 hover:text-blue-800"
+            aria-label={activeSentenceId === item.id ? "Hide details" : "Show details"}
+          >
+            {activeSentenceId === item.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </div>
+          <span className="font-medium text-gray-800 truncate max-w-[150px]">{item.word}</span>
+          <span onClick={(e) => e.stopPropagation()}>
+            <AudioButton text={item.word}/>
+          </span>
+          <PartOfSpeech ps={item.inflec} variant="compact" />
+        </div>
+        
+        <span className="mr-2" dir="rtl">{item.translateInflection}</span>
+      </div>
   
       {activeSentenceId === item.id ? (
         <div className="mt-2 pl-6 border-l-2 border-blue-200">
-          <div className="mb-2 text-sm text-gray-600 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <span  
-                className="cursor-pointer hover:text-blue-700"
-                onClick={() => setShowExplanation(prev => !prev)}
-              >
-                {item.Inflections}
-              </span>
-              <button 
-                onClick={() => setShowExplanation(prev => !prev)}
-                className="text-blue-500 hover:text-blue-700 rounded-full w-4 h-4 flex items-center justify-center"
-                aria-label="הסבר על הטיה"
-              >
-                <CircleHelp size={14} />
-              </button>
-            </div>
-          </div>
           
-          {showExplanation && (
-            <div className="mb-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 text-sm rounded border border-blue-100">
-              <p className="text-gray-700" dir="rtl">
-                {item.inflectionDescription}
-              </p>
-              <Link 
-                href={`/explainInflection?type=${item.type || 'other'}&inflection=${item.Inflections}`}
-                className="mr-1 text-blue-600 hover:underline inline-flex items-center gap-1"
-              >
-                <span>למידע נוסף</span>                
-              </Link>
-            </div>
-          )}
+          
+          {/* הסבר תמיד מוצג */}
+          <div className="mb-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 text-sm rounded border border-blue-100">
+            <div className="mb-2 text-sm font-semibold text-gray-600" dir="rtl">
+            <span> <GrammarTranslator definition={item.Inflections}/> - {item.Inflections}  </span>
+          </div>
+            <p className="text-gray-700" dir="rtl">
+              {item.inflectionDescription}
+            </p>
+            <Link 
+              href={`/explainInflection?type=${item.type || 'other'}&inflection=${item.Inflections}`}
+              className="mr-1 text-blue-600 hover:underline inline-flex items-center gap-1"
+            >
+              <span>למידע נוסף</span>                
+            </Link>
+          </div>
           
           {/* במצב הטיות - הצג רק את המשפט הראשון */}
           {item.examples && item.examples.length > 0 && (
@@ -135,13 +120,13 @@ const InflectionRenderer = ({
   // Function to render an item in practice mode
   const renderPracticeItem = (item) => (
     <div key={item.id} className="mb-6 p-3 bg-white rounded-lg shadow-sm border border-gray-200">
-  <div className="flex justify-between items-center mb-2">
-    <div className="flex items-center gap-2">
-      <span className="font-medium text-gray-700">{item.word}</span>
-      <AudioButton text={item.word}/>
-    </div>
-    <span className="mr-2" dir="rtl">{item.translateInflection}</span>
-  </div>
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-gray-700">{item.word}</span>
+          <AudioButton text={item.word}/>
+        </div>
+        <span className="mr-2" dir="rtl">{item.translateInflection}</span>
+      </div>
       
       {/* במצב תרגול רציף - הצג את כל הדוגמאות */}
       {item.examples.map((example, exIndex) => (
