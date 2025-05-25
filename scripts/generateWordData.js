@@ -568,7 +568,7 @@ async function getWordObject(word, index, attempt = 1) {
   
   try {
     const response = await axios.post(API_URL, {
-      model: "claude-3-7-sonnet-20250219",
+      model: "claude-sonnet-4-20250514",
       max_tokens: 4000,
       messages: [
         { role: "user", content: promptTemplate(word) }
