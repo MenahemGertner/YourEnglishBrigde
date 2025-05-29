@@ -35,7 +35,7 @@ export const PartsOfSpeechContent = {
     verbs: {
         fullName: 'Verbs - פעלים',
         title: 'מה הם פעלים?',
-        mainDefinition: 'פעלים הם מילים המתארות פעולות, מצבים או תהליכים. הם הלב של המשפט ומציינים מה קורה, מה נעשה או במה מצב של הנושא.',
+        mainDefinition: 'פעלים הם מילים המתארות פעולות, מצבים או תהליכים. הם הלב של המשפט ומציינים מה קורה, מה נעשה או את המצב של הנושא.',
         identificationRules: {
             title: 'איך מזהים פועל?',
             categories: [
