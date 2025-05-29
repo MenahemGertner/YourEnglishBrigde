@@ -38,11 +38,11 @@ const PartOfSpeechExplain = () => {
                             </p>
                             
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-                                <p className="text-blue-800 font-medium">
-                                    💫 <strong>לדוגמה:</strong> המילה &quot;write&quot; יכולה להיות פועל (I write),
-                                    שם עצם (The write stuff) או שם תואר (a write-protected disk) – הכל תלוי בהקשר!
-                                </p>
-                            </div>
+    <p className="text-blue-800 font-medium">
+        💫 <strong>לדוגמה:</strong> המילה &quot;run&quot; יכולה להיות פועל (I run every morning),
+        שם עצם (I went for a run) או שם תואר (a run-down building) – הכל תלוי בהקשר!
+    </p>
+</div>
                             
                             <p className="mt-6 text-slate-600">
                                 לחץ על כל חלק דיבור למטה כדי ללמוד עליו לעומק ולראות דוגמאות מפורטות.

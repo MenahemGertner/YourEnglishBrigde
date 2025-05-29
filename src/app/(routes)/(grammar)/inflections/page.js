@@ -157,6 +157,7 @@ export default function InflectionsPage() {
 </button>
 
                         {showAllInflections && (
+                            <div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {remainingInflections.map((key) => {
                                     const details = inflectionData.inflections[key]
@@ -173,8 +174,8 @@ export default function InflectionsPage() {
                                             <p className="text-sm italic text-gray-500">דוגמה: {details.example}</p>
                                         </Link>
                                     )
-                                })}
-                                <p className="text-sm text-gray-500">
+                                })}</div>
+                                <p className="text-sm text-gray-500 mt-8">
                     * רשימה זו כוללת את סוגי ההטיות העיקריים. ישנם סוגים נוספים ומונחים מקובלים שונים.
                 </p>
                             </div>
@@ -190,7 +191,7 @@ export default function InflectionsPage() {
                     href="/partOfSpeech"
                     className="inline-block text-xl font-bold text-blue-900 hover:text-blue-700 transition-colors"
                 >
-                     חזרה לחלקי הדיבור ←
+                     לכל חלקי הדיבור ←
                 </Link>
             </div>
         </div>
