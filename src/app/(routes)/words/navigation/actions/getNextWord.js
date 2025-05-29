@@ -36,22 +36,25 @@ export async function getNextWord(userId) {
 
     if (userError) throw userError
 
+    // שמירת lastPosition למקרה שנצטרך אותו בהחזרות
+    const lastPosition = userData.last_position
+
     // Check if practice threshold reached
     // בדיקת התרגול רק במצב פיתוח, דילוג עליה במצב ייצור
-if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTICE_THRESHOLD) {
-  // Reset practice counter
-  await supabase
-    .from('users')
-    .update({ practice_counter: 0 })
-    .eq('id', userId)
+    if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTICE_THRESHOLD) {
+      // Reset practice counter
+      await supabase
+        .from('users')
+        .update({ practice_counter: 0 })
+        .eq('id', userId)
 
-  return {
-    found: false,
-    status: 'PRACTICE_NEEDED',
-    lastPosition: userData.last_position,
-    currentCategory: userData.current_category
-  }
-}
+      return {
+        found: false,
+        status: 'PRACTICE_NEEDED',
+        lastPosition,
+        currentCategory: userData.current_category
+      }
+    }
 
     const learningSequencePointer = userData.last_position?.learning_sequence_pointer || 0
     const currentCategory = userData.last_position?.category || '500'
@@ -72,7 +75,8 @@ if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTI
       return {
         found: true,
         index: word.word_id,
-        category: word.word_forms?.category || currentCategory
+        category: word.word_forms?.category || currentCategory,
+        lastPosition
       }
     }
 
@@ -92,7 +96,8 @@ if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTI
       return {
         found: true,
         index: nextWord.index,
-        category: nextWord.category
+        category: nextWord.category,
+        lastPosition
       }
     }
 
@@ -112,7 +117,8 @@ if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTI
       return {
         found: true,
         index: word.word_id,
-        category: word.word_forms?.category || currentCategory
+        category: word.word_forms?.category || currentCategory,
+        lastPosition
       }
     }
 
@@ -126,7 +132,8 @@ if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTI
         status: 'LIST_END',
         message: 'סיימת את כל המילים ברשימה הנוכחית',
         nextCategory,
-        currentCategory
+        currentCategory,
+        lastPosition
       }
     }
 
@@ -134,13 +141,15 @@ if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTI
     return {
       found: false,
       status: 'COMPLETE',
-      message: 'סיימת את כל הרשימות! כל הכבוד!'
+      message: 'סיימת את כל הרשימות! כל הכבוד!',
+      lastPosition
     }
   } catch (error) {
     console.error('Error in getNextWord:', error)
     return {
       found: false,
-      error: error.message
+      error: error.message,
+      lastPosition: null 
     }
   }
 }
