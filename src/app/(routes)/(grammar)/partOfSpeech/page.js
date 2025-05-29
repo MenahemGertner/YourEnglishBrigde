@@ -39,7 +39,7 @@ const PartOfSpeechExplain = () => {
                             
                             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
                                 <p className="text-blue-800 font-medium">
-                                    💫 <strong>לדוגמה:</strong> המילה "write" יכולה להיות פועל (I write),
+                                    💫 <strong>לדוגמה:</strong> המילה &quot;write&quot; יכולה להיות פועל (I write),
                                     שם עצם (The write stuff) או שם תואר (a write-protected disk) – הכל תלוי בהקשר!
                                 </p>
                             </div>
