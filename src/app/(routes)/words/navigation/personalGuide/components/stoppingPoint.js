@@ -10,7 +10,8 @@ const StoppingPoint = () => {
   const pathname = usePathname()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [hasLastPosition, setHasLastPosition] = useState(null)
+  const [hasLastPosition, setHasLastPosition] = useState(false) // שינוי מ-null ל-false
+  const [isCheckingPosition, setIsCheckingPosition] = useState(true) // מצב בדיקה
   const [retryCount, setRetryCount] = useState(0)
 
   // בדיקת last_position של המשתמש
@@ -25,12 +26,15 @@ const StoppingPoint = () => {
         const nextWord = await getNextWord(session.user.id)
         console.log('getNextWord result:', nextWord)
         
-        const result = nextWord.lastPosition !== null
+        // עכשיו getNextWord תמיד מחזיר lastPosition
+        const result = nextWord.lastPosition !== null && nextWord.lastPosition !== undefined
         setHasLastPosition(result)
+        setIsCheckingPosition(false) // סיום הבדיקה
         
         // אם קיבלנו false בפעם הראשונה, ננסה שוב אחרי 2 שניות
         if (!result && retryCount < 3) {
           console.log('Got false, will retry in 2 seconds...')
+          setIsCheckingPosition(true) // חזרה למצב בדיקה
           setTimeout(() => {
             setRetryCount(prev => prev + 1)
           }, 2000)
@@ -38,9 +42,11 @@ const StoppingPoint = () => {
       } catch (error) {
         console.error('Error checking last position:', error)
         setHasLastPosition(false)
+        setIsCheckingPosition(false) // סיום הבדיקה גם במקרה של שגיאה
         
         // גם במקרה של שגיאה, ננסה שוב
         if (retryCount < 3) {
+          setIsCheckingPosition(true)
           setTimeout(() => {
             setRetryCount(prev => prev + 1)
           }, 2000)
@@ -69,9 +75,20 @@ const StoppingPoint = () => {
   }
 
   const shouldShowCat = session && 
+                        !isCheckingPosition && // לא להציג כשעדיין בודקים
                         hasLastPosition === true && 
                         pathname !== '/words' &&
                         pathname !== '/practiceSpace'
+
+  // הוספת לוגים לדיבוג
+  console.log('StoppingPoint Debug:', {
+    session: !!session,
+    isCheckingPosition,
+    hasLastPosition,
+    pathname,
+    shouldShowCat,
+    nextWordResult: 'will be logged in useEffect'
+  })
 
   return (
     <div>

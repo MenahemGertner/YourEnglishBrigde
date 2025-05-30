@@ -36,7 +36,7 @@ export async function getNextWord(userId) {
 
     if (userError) throw userError
 
-    // שמירת lastPosition למקרה שנצטרך אותו בהחזרות
+    // הגדרת lastPosition לשימוש בכל ההחזרות
     const lastPosition = userData.last_position
 
     // Check if practice threshold reached
@@ -51,7 +51,7 @@ export async function getNextWord(userId) {
       return {
         found: false,
         status: 'PRACTICE_NEEDED',
-        lastPosition,
+        lastPosition: lastPosition,
         currentCategory: userData.current_category
       }
     }
@@ -76,28 +76,31 @@ export async function getNextWord(userId) {
         found: true,
         index: word.word_id,
         category: word.word_forms?.category || currentCategory,
-        lastPosition
+        lastPosition: lastPosition
       }
     }
 
-    // Try to find next new word
-    const headersList = await headers()
-    const domain = headersList.get('host')
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
-    const nextIndex = learningSequencePointer + 1
+    // Check if current index is divisible by 500 - if so, skip to review words
+    if (learningSequencePointer % 500 !== 0) {
+      // Try to find next new word
+      const headersList = await headers()
+      const domain = headersList.get('host')
+      const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https'
+      const nextIndex = learningSequencePointer + 1
 
-    const response = await fetch(
-      `${protocol}://${domain}/words/card/api/word?index=${nextIndex}&category=${currentCategory}`,
-      { cache: 'no-store' }
-    )
+      const response = await fetch(
+        `${protocol}://${domain}/words/card/api/word?index=${nextIndex}&category=${currentCategory}`,
+        { cache: 'no-store' }
+      )
 
-    if (response.ok) {
-      const nextWord = await response.json()
-      return {
-        found: true,
-        index: nextWord.index,
-        category: nextWord.category,
-        lastPosition
+      if (response.ok) {
+        const nextWord = await response.json()
+        return {
+          found: true,
+          index: nextWord.index,
+          category: nextWord.category,
+          lastPosition: lastPosition
+        }
       }
     }
 
@@ -118,7 +121,7 @@ export async function getNextWord(userId) {
         found: true,
         index: word.word_id,
         category: word.word_forms?.category || currentCategory,
-        lastPosition
+        lastPosition: lastPosition
       }
     }
 
@@ -133,7 +136,7 @@ export async function getNextWord(userId) {
         message: 'סיימת את כל המילים ברשימה הנוכחית',
         nextCategory,
         currentCategory,
-        lastPosition
+        lastPosition: lastPosition
       }
     }
 
@@ -142,14 +145,14 @@ export async function getNextWord(userId) {
       found: false,
       status: 'COMPLETE',
       message: 'סיימת את כל הרשימות! כל הכבוד!',
-      lastPosition
+      lastPosition: lastPosition
     }
   } catch (error) {
     console.error('Error in getNextWord:', error)
     return {
       found: false,
       error: error.message,
-      lastPosition: null 
+      lastPosition: null // במקרה של שגיאה, נחזיר null
     }
   }
 }
