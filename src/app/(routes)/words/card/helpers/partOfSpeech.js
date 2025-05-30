@@ -290,9 +290,20 @@ const PartOfSpeech = ({
                     <div className="flex flex-col text-center">
                         <span className='font-bold mb-1'>{partOfSpeechInfo.fullName} </span>
                         {partOfSpeechInfo.explain}
-                        <Link href={href} className='underline text-blue-700 hover:text-blue-500 mt-1'>
+                        <button 
+                            onPointerDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.location.href = href;
+                            }}
+                            className='underline text-blue-700 hover:text-blue-500 mt-1 bg-transparent border-none cursor-pointer'
+                        >
                             ללמוד יותר
-                        </Link>
+                        </button>
                     </div>
                 }>
                     <div className="w-12 h-12 flex items-center justify-center">
@@ -309,9 +320,20 @@ const PartOfSpeech = ({
                 <div className="flex flex-col text-center">
                     <span className='font-bold mb-1'>{partOfSpeechInfo.fullName} </span>
                     {partOfSpeechInfo.explain}
-                    <Link href={href} className='underline text-blue-700 hover:text-blue-500 mt-1'>
+                    <button 
+                        onPointerDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.location.href = href;
+                        }}
+                        className='underline text-blue-700 hover:text-blue-500 mt-1 bg-transparent border-none cursor-pointer'
+                    >
                         ללמוד יותר
-                    </Link>
+                    </button>
                 </div>
             }>
                 <div className={`flex items-center justify-center h-4 w-4 rounded-full ${currentColor.color} ${currentColor.textColor} font-semibold text-xs hover:text-gray-200`}>
