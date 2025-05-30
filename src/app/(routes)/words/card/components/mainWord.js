@@ -9,7 +9,7 @@ const MainWord = ({ word, tr, ps }) => {
     }
     // קביעת גודל הטקסט בהתאם לאורך המילה
     const textSizeClass = word.length > 8 
-        ? "lg:text-7xl text-4xl" 
+        ? "lg:text-6xl text-4xl" 
         : "lg:text-7xl text-5xl";
 
     return(
