@@ -5,7 +5,7 @@ const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
 // הגדרה להתחלת האינדקס
-const START_INDEX = 1001;
+const START_INDEX = 1501;
 
 // הגדרות API
 const API_KEY = process.env.CLAUDE_API_KEY;
