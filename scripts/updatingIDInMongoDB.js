@@ -9,21 +9,16 @@ const DB_CONNECTION_STRING = process.env.MONGODB_URI;
 const DB_NAME = process.env.MONGODB_DB;
 // הערה: שמות האוספים הם ישירות '500', '1000', '1500' ללא תחילית
 
-/**
- * יוצר MongoDB ObjectID מותאם אישית עם אינדקס מוגדר
- */
 function createCustomObjectId(index) {
-  // חלק 1: חותמת זמן (4 בתים, 8 תווים הקסדצימליים)
-  const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+  // חלק קבוע (20 תווים ראשונים) - זהה לכל האובייקטים
+  const fixedPart = 'f6dabc96ddf6dabc96dd'; // 20 תווים הקסדצימליים קבועים
   
-  // חלק 2: מזהה מכונה + מזהה תהליך (5 בתים, 10 תווים הקסדצימליים)
-  const machineAndProcess = 'f6dabc96dd'; // לקוח מהדוגמה המקורית למען עקביות
+  // חלק משתנה (4 תווים אחרונים) - לפי האינדקס
+  const indexPart = index.toString().padStart(4, '0'); // ממלא באפסים עד 4 תווים
   
-  // חלק 3: מונה (3 בתים, 6 תווים הקסדצימליים)
-  const counter = index.toString().padStart(6, '0');
-  
-  return timestamp + machineAndProcess + counter;
+  return fixedPart + indexPart;
 }
+
 
 /**
  * עדכון מסד הנתונים MongoDB
