@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category') || '500';
+    const category = searchParams.get('category') || '300';
 
     const { db } = await connectToDatabase();
     const collection = db.collection(category);

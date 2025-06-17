@@ -9,7 +9,7 @@ const UserComparison = () => {
   const regularFeatures = [
     {
       icon: <Book className="w-6 h-6 text-blue-600" />,
-      title: "2500 המילים השימושיות באנגלית",
+      title: "1500 המילים השימושיות באנגלית",
       description: "גישה לאוצר המילים החיוני ביותר באנגלית, מחולק לפי 5 רמות מובנות לפי סדר שימושיות ותדירות."
     },
     {
@@ -210,7 +210,7 @@ const UserComparison = () => {
             </thead>
             <tbody>
               <tr className="border-t border-gray-200">
-                <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700">2500 מילים שימושיות</td>
+                <td className="py-2 sm:py-3 px-2 sm:px-4 text-gray-700">1500 מילים שימושיות</td>
                 <td className="py-2 sm:py-3 px-2 sm:px-4 text-center"><Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mx-auto" /></td>
                 <td className="py-2 sm:py-3 px-2 sm:px-4 text-center bg-purple-50"><Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mx-auto" /></td>
               </tr>

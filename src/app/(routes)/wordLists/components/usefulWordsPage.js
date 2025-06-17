@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 
-async function fetchWordLists(category = '500') {
+async function fetchWordLists(category = '300') {
   try {
     const headersList = await headers();
     const domain = headersList.get('host');
@@ -28,7 +28,7 @@ async function fetchWordLists(category = '500') {
 }
 
 export default async function UsefulWordsPage({ searchParams }) {
-  const { category = '500' } = await Promise.resolve(searchParams);
+  const { category = '300' } = await Promise.resolve(searchParams);
   
   const data = await fetchWordLists(category);
   
@@ -39,7 +39,7 @@ export default async function UsefulWordsPage({ searchParams }) {
   return (
     <div className="container mx-auto my-10 px-4">
       <h1 className="text-center text-3xl font-bold mb-8 text-gray-800">
-        {parseInt(category) - 499} - {category} המילים השימושיות ביותר באנגלית
+        {parseInt(category) - 299} - {category} המילים השימושיות ביותר באנגלית
       </h1>
       <div className="grid md:grid-cols-4 lg:grid-cols-5 gap-3">
         {[...data]

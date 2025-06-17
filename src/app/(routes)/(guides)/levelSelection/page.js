@@ -27,11 +27,11 @@ const LevelSelection = () => {
   
   const programs = [
     { name: 'מתחילים מהבסיס', href: '/underConstruction' },
-    { name: 'רמה 1', href: '/words?index=1&category=500' },
-    { name: 'רמה 2', href: '/words?index=501&category=1000' },
-    { name: 'רמה 3', href: '/underConstruction' },
-    { name: 'רמה 4', href: '/underConstruction' },
-    { name: 'רמה 5', href: '/underConstruction' },
+    { name: 'רמה 1', href: '/words?index=1&category=300' },
+    { name: 'רמה 2', href: '/words?index=301&category=600' },
+    { name: 'רמה 3', href: '/words?index=601&category=900' },
+    { name: 'רמה 4', href: '/words?index=901&category=1200' },
+    { name: 'רמה 5', href: '/words?index=1201&category=1500' },
     { name: 'מתקדמים', href: '/underConstruction' }
   ];
 

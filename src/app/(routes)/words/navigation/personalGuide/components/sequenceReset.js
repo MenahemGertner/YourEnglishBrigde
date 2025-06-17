@@ -34,7 +34,7 @@ function SequenceReset() {
 
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const currentCategory = urlParams.get('category') || '500';
+      const currentCategory = urlParams.get('category') || '300';
       const startingIndex = getStartingIndexForCategory(currentCategory);
       
       const result = await updateSequencePosition(session.user.id, startingIndex, true);
@@ -59,7 +59,7 @@ function SequenceReset() {
     }
 
     const targetIndex = parseInt(position);
-    if (targetIndex >= 1 && targetIndex <= 2500) {
+    if (targetIndex >= 1 && targetIndex <= 1500) {
       try {
         const result = await updateSequencePosition(session.user.id, targetIndex, false);
         

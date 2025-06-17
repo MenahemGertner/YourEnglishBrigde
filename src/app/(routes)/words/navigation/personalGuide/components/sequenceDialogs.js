@@ -48,7 +48,7 @@ export function ResetDialog({ isOpen, onClose, onConfirm, error }) {
 export function PositionDialog({ isOpen, onClose, onSubmit, position, setPosition, error }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (isOpen && e.key === 'Enter' && position && parseInt(position) >= 1 && parseInt(position) <= 2500) {
+      if (isOpen && e.key === 'Enter' && position && parseInt(position) >= 1 && parseInt(position) <= 1500) {
         onSubmit();
       } else if (isOpen && e.key === 'Escape') {
         onClose();
@@ -67,12 +67,12 @@ export function PositionDialog({ isOpen, onClose, onSubmit, position, setPositio
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <h2 className="text-xl font-semibold mb-4 text-right">בחר מיקום ברשימה</h2>
         <p className="text-gray-600 mb-4 text-right">
-          עליך לבחור את המיקום ברשימה שאליו תרצה לנווט! <br/> (המעבר לא יפגע במילים שכבר דרגת) <br/>*יש לבחור מיקום בין 1 - 2500
+          עליך לבחור את המיקום ברשימה שאליו תרצה לנווט! <br/> (המעבר לא יפגע במילים שכבר דרגת) <br/>*יש לבחור מיקום בין 1 - 1500
         </p>
         <input
           type="number"
           min="1"
-          max="2500"
+          max="1500"
           value={position}
           onChange={(e) => setPosition(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded-md mb-6 text-right"
@@ -89,7 +89,7 @@ export function PositionDialog({ isOpen, onClose, onSubmit, position, setPositio
           </button>
           <button
             onClick={onSubmit}
-            disabled={!position || parseInt(position) < 1 || parseInt(position) > 2500}
+            disabled={!position || parseInt(position) < 1 || parseInt(position) > 1500}
             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-md text-white transition-colors duration-200 disabled:bg-blue-300 disabled:cursor-not-allowed"
           >
             המשך

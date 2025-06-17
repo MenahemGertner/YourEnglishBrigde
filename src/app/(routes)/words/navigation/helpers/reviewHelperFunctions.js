@@ -4,15 +4,15 @@ export const intervals = {
       4: 7 
     };
     
-export const categories = ['500', '1000', '1500', '2000', '2500']
+export const categories = ['300', '600', '900', '1200', '1500']
   
 export function getStartingIndexForCategory(category) {
     const indexMap = {
-      '500': 1,
-      '1000': 501,
-      '1500': 1001,
-      '2000': 1501,
-      '2500': 2001
+      '300': 1,
+      '600': 301,
+      '900': 601,
+      '1200': 901,
+      '1500': 1201
     };
     return indexMap[category] || 1;
   }

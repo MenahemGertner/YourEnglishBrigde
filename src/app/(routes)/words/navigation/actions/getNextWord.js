@@ -57,7 +57,7 @@ export async function getNextWord(userId) {
     }
 
     const learningSequencePointer = userData.last_position?.learning_sequence_pointer || 0
-    const currentCategory = userData.last_position?.category || '500'
+    const currentCategory = userData.last_position?.category || '300'
 
     // Try to find word with next_review <= learning_sequence_pointer
     const { data: wordsLTE, error: wordsLTEError } = await supabase
@@ -80,8 +80,8 @@ export async function getNextWord(userId) {
       }
     }
 
-    // Check if current index is divisible by 500 - if so, skip to review words
-    if (learningSequencePointer % 500 !== 0) {
+    // Check if current index is divisible by 300 - if so, skip to review words
+    if (learningSequencePointer % 300 !== 0) {
       // Try to find next new word
       const headersList = await headers()
       const domain = headersList.get('host')

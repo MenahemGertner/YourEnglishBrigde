@@ -11,7 +11,7 @@ import { WindowProvider } from './card/providers/WindowContext'
 import FeedbackButton from "./card/feedbackButton/components/feedbackButton";
 
 
-async function getWordData(index, category = '500') {
+async function getWordData(index, category = '300') {
   try {
     const headersList = await headers();
     const domain = headersList.get('host');
@@ -34,7 +34,7 @@ async function getWordData(index, category = '500') {
 }
 
 export default async function Word({ searchParams }) {
-  const { index, category = '500' } = await Promise.resolve(searchParams);
+  const { index, category = '300' } = await Promise.resolve(searchParams);
   
   if (!index) {
     notFound();

@@ -36,10 +36,10 @@ export async function updateSequencePosition(userId, targetIndex, shouldReset = 
       // Find the appropriate category for the target index
       const category = categories.find((cat, index) => {
         const nextCat = categories[index + 1]
-        const currentStart = parseInt(cat) - 499
-        const nextStart = nextCat ? parseInt(nextCat) - 499 : Infinity
+        const currentStart = parseInt(cat) - 299
+        const nextStart = nextCat ? parseInt(nextCat) - 299 : Infinity
         return targetIndex >= currentStart && targetIndex < nextStart
-      }) || '500'
+      }) || '300'
   
       // Update last_position with new values and reset practice_counter
       const { error: updateError } = await supabase

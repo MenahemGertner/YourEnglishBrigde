@@ -1,5 +1,5 @@
 // כאשר הרשימות מלאות, ניתן להחליף בקוד הזה, כדי למנוע קריאת API מיותרת לגודל הרשימה.
-// const CATEGORY_SIZE = 500;
+// const CATEGORY_SIZE = 300;
 
 // export function getAdjacentIndex(currentIndex, direction) {
 //   const categoryNumber = Math.ceil(currentIndex / CATEGORY_SIZE);
@@ -7,8 +7,8 @@
 //   const categoryEnd = categoryStart + CATEGORY_SIZE;
 
 export function getAdjacentIndex(currentIndex, direction, categorySize) {
-    const categoryNumber = Math.ceil(currentIndex / 500);
-    const categoryStart = (categoryNumber - 1) * 500 + 1;
+    const categoryNumber = Math.ceil(currentIndex / 300);
+    const categoryStart = (categoryNumber - 1) * 300 + 1;
     const categoryEnd = categoryStart + categorySize - 1;
   
     if (direction === 'next') {

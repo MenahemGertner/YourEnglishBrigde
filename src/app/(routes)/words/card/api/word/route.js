@@ -4,11 +4,11 @@ import { ObjectId } from 'mongodb';
 
 // פונקציה לקביעת קטגוריה לפי אינדקס
 function getCategoryByIndex(index) {
-  if (index <= 500) return '500';
-  if (index <= 1000) return '1000';
+  if (index <= 300) return '300';
+  if (index <= 600) return '600';
+  if (index <= 900) return '900';
+  if (index <= 1200) return '1200';
   if (index <= 1500) return '1500';
-  if (index <= 2000) return '2000';
-  if (index <= 2500) return '2500';
   return null; // אינדקס לא חוקי
 }
 
@@ -23,7 +23,7 @@ export async function GET(request) {
     const index = parseInt(searchParams.get('index'));
     
     // בדיקת תקינות האינדקס
-    if (!index || index < 1 || index > 2500) {
+    if (!index || index < 1 || index > 1500) {
       return NextResponse.json({ error: 'Invalid index' }, { status: 400 });
     }
 
@@ -56,7 +56,7 @@ export async function GET(request) {
 
     // Populate synonyms
     if (wordData.syn && wordData.syn.length > 0) {
-      const categories = ['500', '1000', '1500', '2000', '2500'];
+      const categories = ['300', '600', '900', '1200', '1500'];
       const synonymWords = await Promise.all(
         wordData.syn.map(async (synId) => {
           for (const category of categories) {
@@ -81,7 +81,7 @@ export async function GET(request) {
 
     // Populate confused words
     if (wordData.con && wordData.con.length > 0) {
-      const categories = ['500', '1000', '1500', '2000', '2500'];
+      const categories = ['300', '600', '900', '1200', '1500'];
       const confusedWords = await Promise.all(
         wordData.con.map(async (conId) => {
           for (const category of categories) {
