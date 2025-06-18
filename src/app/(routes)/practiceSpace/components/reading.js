@@ -34,26 +34,61 @@ const Reading = () => {
         }
     ];
 
+    // פונקציה לשליפת מילה אחת ממונגו לפי אינדקס
+    const fetchWordByIndex = async (index) => {
+        try {
+            const response = await fetch(`/api/words?index=${index}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch word with index ${index}`);
+            }
+            const wordData = await response.json();
+            return wordData;
+        } catch (error) {
+            console.error(`Error fetching word ${index}:`, error);
+            return null;
+        }
+    };
+
     useEffect(() => {
         const fetchUserWords = async () => {
             try {
+                // שליפת האינדקסים מ-Supabase
                 const response = await fetch('/practiceSpace/api/wordAndInflections');
                 if (!response.ok) {
-                    throw new Error('Failed to fetch words');
+                    throw new Error('Failed to fetch word indices');
                 }
                 const data = await response.json();
                 
-                // מיזוג המילים וההטיות מרמות 3 ו-4
-                const combinedWords = [
-                    ...data.words.level2,
-                    ...data.words.level3,
-                    ...data.words.level4,
-                    ...data.inflections.level2,
-                    ...data.inflections.level3,
-                    ...data.inflections.level4
+                // איסוף כל האינדקסים מכל הרמות
+                const allIndices = [
+                    ...data.wordIndices.level2,
+                    ...data.wordIndices.level3,
+                    ...data.wordIndices.level4
                 ];
+
+                // שליפת המילים ממונגו לפי האינדקסים
+                const wordPromises = allIndices.map(index => fetchWordByIndex(index));
+                const wordResults = await Promise.all(wordPromises);
                 
-                setUserWords(combinedWords);
+                // סינון המילים שנשלפו בהצלחה ויצירת מערך המילים וההטיות
+                const combinedWords = [];
+                wordResults
+                    .filter(wordData => wordData !== null)
+                    .forEach(wordData => {
+                        // הוספת המילה הבסיסית
+                        if (wordData.word) {
+                            combinedWords.push(wordData.word);
+                        }
+                        // הוספת ההטיות
+                        if (wordData.inf && Array.isArray(wordData.inf)) {
+                            combinedWords.push(...wordData.inf);
+                        }
+                    });
+                
+                // הסרת כפילויות
+                const uniqueWords = [...new Set(combinedWords)];
+                setUserWords(uniqueWords);
+                
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -111,44 +146,51 @@ const Reading = () => {
                     <div className="flex items-center justify-between">
                         <span className="text-white font-medium">Story Time</span>
                         <div className="flex items-center space-x-2">
-    <div className="flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full hover:bg-white/30 active:bg-white/80 transition-all duration-200 border-2 border-white/60">
-        <AudioButton 
-            text={fullStory}
-            className="text-white"
-        />
-        <span className="text-sm">השמע</span>
-    </div>
-</div>
+                            <div className="flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full hover:bg-white/30 active:bg-white/80 transition-all duration-200 border-2 border-white/60">
+                                <AudioButton 
+                                    text={fullStory}
+                                    className="text-white"
+                                />
+                                <span className="text-sm">השמע</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div className="p-6 bg-gradient-to-b from-white to-gray-50">
-                    <div className="space-y-6">
-                        {sentences.map((sentence, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                onHoverStart={() => setActiveIndex(index)}
-                                onHoverEnd={() => setActiveIndex(null)}
-                            >
-                                <Tooltip content={sentence.hebrew}>
-                                    <div 
-                                        className={`p-4 rounded-lg transition-all duration-200 ${
-                                            activeIndex === index 
-                                            ? 'bg-indigo-50 shadow-md' 
-                                            : 'hover:bg-gray-50'
-                                        }`}
-                                    >
-                                        <span className="text-lg leading-relaxed text-gray-800">
-                                            {underLine(sentence.english, userWords)}
-                                        </span>
-                                    </div>
-                                </Tooltip>
-                            </motion.div>
-                        ))}
-                    </div>
+                    {isLoading ? (
+                        <div className="text-center py-8">
+                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                            <p className="mt-2 text-gray-600">טוען מילים...</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {sentences.map((sentence, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: index * 0.1 }}
+                                    onHoverStart={() => setActiveIndex(index)}
+                                    onHoverEnd={() => setActiveIndex(null)}
+                                >
+                                    <Tooltip content={sentence.hebrew}>
+                                        <div 
+                                            className={`p-4 rounded-lg transition-all duration-200 ${
+                                                activeIndex === index 
+                                                ? 'bg-indigo-50 shadow-md' 
+                                                : 'hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <span className="text-lg leading-relaxed text-gray-800">
+                                                {underLine(sentence.english, userWords)}
+                                            </span>
+                                        </div>
+                                    </Tooltip>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50">

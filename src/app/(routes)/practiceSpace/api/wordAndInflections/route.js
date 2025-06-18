@@ -39,12 +39,12 @@ export async function GET(request) {
       userIdToUse = userId;
     }
 
-    // Get words and their levels
+    // Get word indices and their levels - שליפת האינדקסים במקום המילים
     const { data: userWords, error: wordsError } = await supabaseClient
       .from('user_words')
-      .select('word_forms, level')
+      .select('word_id, level')
       .eq('user_id', userIdToUse)
-      .not('word_forms', 'is', null);
+      .not('word_id', 'is', null);
 
     if (wordsError) {
       console.error('Words lookup error:', wordsError);
@@ -53,55 +53,32 @@ export async function GET(request) {
 
     // Initialize the result structure
     const result = {
-      words: {
-        level2: [],
-        level3: [],
-        level4: []
-      },
-      inflections: {
+      wordIndices: {
         level2: [],
         level3: [],
         level4: []
       }
     };
 
-    // Process each word and organize by level
+    // Process each word index and organize by level
     userWords.forEach(item => {
-      if (item.word_forms && item.level >= 2 && item.level <= 4) {
-        // Add the main word to the appropriate level
-        if (item.word_forms.word) {
-          result.words[`level${item.level}`].push(item.word_forms.word);
-        }
-
-        // Add inflections to the appropriate level
-        if (item.word_forms.inflections && Array.isArray(item.word_forms.inflections)) {
-          result.inflections[`level${item.level}`].push(...item.word_forms.inflections);
-        }
+      if (item.word_id && item.level >= 2 && item.level <= 4) {
+        result.wordIndices[`level${item.level}`].push(parseInt(item.word_id));
       }
     });
 
     // Remove duplicates from each array
     for (const level of [2, 3, 4]) {
-      result.words[`level${level}`] = [...new Set(result.words[`level${level}`])];
-      result.inflections[`level${level}`] = [...new Set(result.inflections[`level${level}`])];
+      result.wordIndices[`level${level}`] = [...new Set(result.wordIndices[`level${level}`])];
     }
 
     return NextResponse.json({
-      words: result.words,
-      inflections: result.inflections,
+      wordIndices: result.wordIndices,
       stats: {
-        words: {
-          level2: result.words.level2.length,
-          level3: result.words.level3.length,
-          level4: result.words.level4.length,
-          total: result.words.level2.length + result.words.level3.length + result.words.level4.length
-        },
-        inflections: {
-          level2: result.inflections.level2.length,
-          level3: result.inflections.level3.length,
-          level4: result.inflections.level4.length,
-          total: result.inflections.level2.length + result.inflections.level3.length + result.inflections.level4.length
-        }
+        level2: result.wordIndices.level2.length,
+        level3: result.wordIndices.level3.length,
+        level4: result.wordIndices.level4.length,
+        total: result.wordIndices.level2.length + result.wordIndices.level3.length + result.wordIndices.level4.length
       }
     });
 
