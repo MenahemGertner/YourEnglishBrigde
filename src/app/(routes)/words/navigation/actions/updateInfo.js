@@ -97,7 +97,7 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
       // יצירת אובייקט word_forms מהנתונים החדשים
       const word_forms = {
         word: word,
-        inflactions: inf
+        inflections: inf
       };
 
       const { data: createData, error: createError } = await supabaseClient
