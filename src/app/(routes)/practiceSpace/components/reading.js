@@ -37,7 +37,7 @@ const Reading = () => {
     // פונקציה לשליפת מילה אחת ממונגו לפי אינדקס
     const fetchWordByIndex = async (index) => {
         try {
-            const response = await fetch(`/api/words?index=${index}`);
+            const response = await fetch(`/words/card/api/word?index=${index}`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch word with index ${index}`);
             }
