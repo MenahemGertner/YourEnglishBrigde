@@ -1,37 +1,20 @@
 import Link from 'next/link';
-import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
+import { getWordsByCategory } from '@/lib/db/getWordsByCategory';
 
-async function fetchWordLists(category = '300') {
+export default async function UsefulWordsPage(props) {
+  const { searchParams } = props;
+  const resolvedParams = await Promise.resolve(searchParams);
+  const category = resolvedParams?.category || '300';
+
+  let data;
   try {
-    const headersList = await headers();
-    const domain = headersList.get('host');
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-    
-    const response = await fetch(
-      `${protocol}://${domain}/wordLists/api/list?category=${category}`, 
-      { 
-        cache: 'no-store',
-        next: { revalidate: 3600 }
-      }
-    );
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch word lists');
-    }
-    
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching word lists:', error);
-    return null;
+    data = await getWordsByCategory(category);
+  } catch (err) {
+    console.error(err);
+    notFound();
   }
-}
 
-export default async function UsefulWordsPage({ searchParams }) {
-  const { category = '300' } = await Promise.resolve(searchParams);
-  
-  const data = await fetchWordLists(category);
-  
   if (!data || data.length === 0) {
     notFound();
   }
@@ -43,9 +26,9 @@ export default async function UsefulWordsPage({ searchParams }) {
       </h1>
       <div className="grid md:grid-cols-4 lg:grid-cols-5 gap-3">
         {[...data]
-          .sort((a, b) => a.index - b.index) 
+          .sort((a, b) => a.index - b.index)
           .map((item) => (
-            <Link 
+            <Link
               href={`/words?index=${item.index}&category=${category}`}
               key={item._id}
               className="bg-white border border-gray-100 shadow-sm hover:shadow-md rounded p-4 transition duration-200 hover:border-blue-200 hover:translate-y-[-2px]"
