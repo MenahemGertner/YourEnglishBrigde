@@ -62,7 +62,7 @@ export async function getNextWord(userId) {
     // Try to find word with next_review <= learning_sequence_pointer
     const { data: wordsLTE, error: wordsLTEError } = await supabase
       .from('user_words')
-      .select('word_id, next_review, word_forms')
+      .select('word_id, next_review')
       .eq('user_id', userId)
       .lte('next_review', learningSequencePointer)
       .order('next_review', { ascending: true })
@@ -75,7 +75,7 @@ export async function getNextWord(userId) {
       return {
         found: true,
         index: word.word_id,
-        category: word.word_forms?.category || currentCategory,
+        category: currentCategory,
         lastPosition: lastPosition
       }
     }
@@ -107,7 +107,7 @@ export async function getNextWord(userId) {
     // Try to find word with next_review > learning_sequence_pointer
     const { data: wordsGT, error: wordsGTError } = await supabase
       .from('user_words')
-      .select('word_id, next_review, word_forms')
+      .select('word_id, next_review')
       .eq('user_id', userId)
       .gt('next_review', learningSequencePointer)
       .order('next_review', { ascending: true })
@@ -120,7 +120,7 @@ export async function getNextWord(userId) {
       return {
         found: true,
         index: word.word_id,
-        category: word.word_forms?.category || currentCategory,
+        category: currentCategory,
         lastPosition: lastPosition
       }
     }

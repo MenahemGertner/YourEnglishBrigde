@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useContext  } from 'react'
+import { useState, useContext } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { ColorContext } from '../components/colorContext'
@@ -8,7 +8,7 @@ import { updateInfo } from '../actions/updateInfo'
 import { getNextWord } from '../actions/getNextWord'
 import { getStartingIndexForCategory } from '../helpers/reviewHelperFunctions'
 
-export function useWordRating({ word, index, category, inf  }) {
+export function useWordRating({ index, category }) {
   const router = useRouter()
   const { data: session, status } = useSession()
   const { handleColorChange } = useContext(ColorContext)
@@ -21,7 +21,7 @@ export function useWordRating({ word, index, category, inf  }) {
     nextCategory: null,
     currentCategory: null
   })
-
+  
   const handleNextCategory = async () => {
     if (navigationState.nextCategory) {
       const startingIndex = getStartingIndexForCategory(navigationState.nextCategory)
@@ -29,44 +29,42 @@ export function useWordRating({ word, index, category, inf  }) {
       setNavigationState({ showMessage: false })
     }
   }
-
+  
   const handleWordRating = async (level) => {
     if (!session?.user?.id) {
       setError('נא להתחבר כדי להמשיך')
       return
     }
-
+    
     if (!index || !category) {
       setError('חסר מזהה מילה')
       return
     }
-
+    
     try {
       setIsLoading(true)
       setError(null)
-
+      
       // הפעלת אנימציית שינוי צבע
       await handleColorChange(level)
-
+      
       const result = await updateInfo(
         session.user.id,
         index,
         level,
-        category,
-        word,
-        inf
+        category
       )
-
+      
       if (!result?.success) {
         throw new Error(result?.error || 'שגיאה בעדכון המילה')
       }
-
+      
       const nextWord = await getNextWord(session.user.id)
-
+      
       if (nextWord.error) {
         throw new Error(nextWord.error)
       }
-
+      
       if (nextWord.status === 'PRACTICE_NEEDED') {
         // Store return position before redirecting to practice
         localStorage.setItem('practiceReturnPosition', nextWord.lastPosition.index)
@@ -91,7 +89,7 @@ export function useWordRating({ word, index, category, inf  }) {
       setIsLoading(false)
     }
   }
-
+  
   return {
     isLoading,
     error,

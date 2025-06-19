@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/db/supabase';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 
-export async function updateInfo(userId, wordId, level, category, word, inf) {
+export async function updateInfo(userId, wordId, level, category) {
   try {
     if (!userId) throw new Error('נדרש מזהה משתמש');
     if (!wordId || !category) throw new Error('נדרש מזהה מילה וקטגוריה');
@@ -94,20 +94,13 @@ export async function updateInfo(userId, wordId, level, category, word, inf) {
     } else {
       const nextReview = wordId + intervals[level];
       
-      // יצירת אובייקט word_forms מהנתונים החדשים
-      const word_forms = {
-        word: word,
-        inflections: inf
-      };
-
       const { data: createData, error: createError } = await supabaseClient
         .from('user_words')
         .insert([{
           user_id: userId,
           word_id: wordId,
           level,
-          next_review: nextReview,
-          word_forms
+          next_review: nextReview
         }])
         .select();
 

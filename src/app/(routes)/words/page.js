@@ -56,8 +56,7 @@ export default async function Word({ searchParams }) {
                 syn={data.synonyms} con={data.confused}/>   
       <div className="py-6"/>
       <ProContent>
-        <StatusIcons word={data.word} index={data.index}
-                      category={category} inf={data.inf}/>
+        <StatusIcons index={data.index} category={category}/>
         <SequenceReset/>
       </ProContent>
       <GuestContent>

@@ -1,4 +1,5 @@
 'use client'
+
 import { CircleDot, Info, ArrowRight } from 'lucide-react'
 import { useWordRating } from '../hooks/useWordRating'
 import { usePreviousNavigation } from '../hooks/usePreviousNavigation'
@@ -6,17 +7,17 @@ import Tooltip from '@/components/features/Tooltip'
 import IconData from '@/lib/data/ColorMap'
 import NavigationMessage from './navigationMessage'
 
-const StatusIcons = ({ word, index, category, inf }) => {
+const StatusIcons = ({ index, category }) => {
   const { 
     handleWordRating, 
     isLoading, 
     error,
     navigationState,
     handleNextCategory
-  } = useWordRating({ word, index, category, inf  })
-
+  } = useWordRating({ index, category })
+  
   const { handlePrevious, isPrevLoading, message } = usePreviousNavigation()
-
+  
   return (
     <>
       <div className="flex flex-col gap-2 border-t p-2 sm:p-4">
@@ -41,7 +42,7 @@ const StatusIcons = ({ word, index, category, inf }) => {
           >
             <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-blue-900/80" />
           </button>
-
+          
           <div className="flex gap-3 sm:gap-4 flex-wrap justify-center">
             {IconData.map((icon) => (
               <div key={icon.level} className="flex flex-col items-center">
@@ -50,7 +51,7 @@ const StatusIcons = ({ word, index, category, inf }) => {
                     <Info className="w-3 h-3 sm:w-5 sm:h-5 text-blue-900/80" />
                   </button>
                 </Tooltip>
-                
+                                
                 <button
                   disabled={isLoading}
                   onClick={() => handleWordRating(icon.level)}
@@ -80,7 +81,7 @@ const StatusIcons = ({ word, index, category, inf }) => {
           </div>
         </div>
       </div>
-
+      
       <NavigationMessage
         navigationState={navigationState}
         onNextCategory={handleNextCategory}
