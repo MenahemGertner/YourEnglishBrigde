@@ -5,6 +5,8 @@ import { createServerClient } from '@/lib/db/supabase';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
 import { headers } from 'next/headers';
+import { getWordByIndex } from '@/lib/db/getWordByIndex';
+
 
 export async function updateWordAndGetNext(userId, wordId, level, category) {
   try {
@@ -193,33 +195,22 @@ async function findNextWord(supabaseClient, userId, learningSequencePointer, cur
     // אם הגענו לקצה של 300 מילים, עבור למילים לחזרה
     if (learningSequencePointer % 300 !== 0) {
       // נסה למצוא מילה חדשה
-      try {
-        const headersList = await headers();
-        const domain = headersList.get('host');
-        const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-        const nextIndex = learningSequencePointer + 1;
+try {
+  const nextIndex = learningSequencePointer + 1;
+  const nextWord = await getWordByIndex(nextIndex);
 
-        const response = await fetch(
-          `${protocol}://${domain}/words/card/api/word?index=${nextIndex}&category=${currentCategory}`,
-          { 
-            cache: 'no-store',
-            timeout: 5000 // timeout של 5 שניות
-          }
-        );
+  if (nextWord) {
+    return {
+      found: true,
+      index: nextWord.index,
+      category: nextWord.category,
+      source: 'new'
+    };
+  }
+} catch (fetchError) {
+  console.warn('Failed to get next word directly:', fetchError);
+}
 
-        if (response.ok) {
-          const nextWord = await response.json();
-          return {
-            found: true,
-            index: nextWord.index,
-            category: nextWord.category,
-            source: 'new'
-          };
-        }
-      } catch (fetchError) {
-        console.warn('Failed to fetch next word:', fetchError);
-        // נמשיך לחיפוש מילים מתקדמות במקום לכשל
-      }
     }
 
     // חיפוש מילים מתקדמות לחזרה

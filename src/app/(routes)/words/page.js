@@ -4,46 +4,26 @@ import StatusIcons from './navigation/components/statusIcons';
 import ProContent from '@/components/auth/ProContent';
 import GuestContent from '@/components/auth/GuestContent';
 import { notFound } from 'next/navigation';
-import { headers } from 'next/headers';
-import SequenceReset from './navigation/personalGuide/components/sequenceReset'
+import SequenceReset from './navigation/personalGuide/components/sequenceReset';
 import { ColorProvider } from './navigation/components/colorContext';
-import { WindowProvider } from './card/providers/WindowContext'
+import { WindowProvider } from './card/providers/WindowContext';
 import FeedbackButton from "./card/feedbackButton/components/feedbackButton";
-
-
-async function getWordData(index, category = '300') {
-  try {
-    const headersList = await headers();
-    const domain = headersList.get('host');
-    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-    
-    const response = await fetch(
-      `${protocol}://${domain}/words/card/api/word?index=${index}&category=${category}`,
-      { cache: 'no-store' }
-    );
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch word data');
-    }
-    
-    return response.json();
-  } catch (error) {
-    console.error('Error fetching word data:', error);
-    return null;
-  }
-}
+import { getWordByIndex } from '@/lib/db/getWordByIndex';
 
 export default async function Word({ searchParams }) {
-  const { index, category = '300' } = await Promise.resolve(searchParams);
-  
+  const params = await searchParams;
+  const index = parseInt(params.index);
+
+
   if (!index) {
     notFound();
   }
 
-  const data = await getWordData(index, category);
-  const categorySize = data.categorySize;
-  
-  if (!data) {
+  let data;
+  try {
+    data = await getWordByIndex(index);
+  } catch (error) {
+    console.error('Failed to load word data:', error);
     notFound();
   }
 
@@ -56,11 +36,11 @@ export default async function Word({ searchParams }) {
                 syn={data.synonyms} con={data.confused}/>   
       <div className="py-6"/>
       <ProContent>
-        <StatusIcons index={data.index} category={category}/>
+        <StatusIcons index={data.index} category={data.category}/>
         <SequenceReset/>
       </ProContent>
       <GuestContent>
-      <NextAndPrevious index={data.index} categorySize={categorySize} />
+      <NextAndPrevious index={data.index} categorySize={data.categorySize} />
       </GuestContent>
       <FeedbackButton/>
       </WindowProvider>
