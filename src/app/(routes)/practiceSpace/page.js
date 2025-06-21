@@ -81,9 +81,9 @@ const PracticeSpace = () => {
                             <div className="grid gap-8 md:grid-cols-1 lg:gap-12">
                                 <ChallengingWords/>
                                 <Reading />
-                                <Hearing />
                                 <Writing/>
-                                <Speaking />
+                                {/* <Hearing />                                */}
+                                {/* <Speaking /> */}
                             </div>
                             <div>
                                 
