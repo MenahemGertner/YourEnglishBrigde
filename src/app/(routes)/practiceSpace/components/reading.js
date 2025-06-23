@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import AudioButton from '@/components/features/AudioButton';
 import Tooltip from '@/components/features/Tooltip';
 import underLine from '@/components/features/UnderLine';
 import { BookOpen, Info } from 'lucide-react';
-import { useChallengingWords } from '../hooks/useChallengingWords'; // התאם את הנתיב
 
-const Reading = () => {
-  const { userWords, wordInflections, allWords, isLoading, error } = useChallengingWords();
+const Reading = ({ userWords = [], wordInflections = [] }) => {
+
+
   const [activeIndex, setActiveIndex] = useState(null);
 
   const sentences = [
@@ -37,17 +37,14 @@ const Reading = () => {
 
   const fullStory = sentences.map(s => s.english).join(" ");
 
-  if (error) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0 }} 
-        animate={{ opacity: 1 }} 
-        className="text-red-500 text-center p-4 bg-red-50 rounded-lg"
-      >
-        {error}
-      </motion.div>
-    );
-  }
+  // יצירת מערך מאוחד לפונקציית underLine - עם בדיקת טיפוס
+  const wordsToHighlight = useMemo(() => {
+    // וידוא שהנתונים הם strings בלבד
+    const validWords = userWords.filter(word => typeof word === 'string');
+    const validInflections = wordInflections.filter(word => typeof word === 'string');
+    return [...validWords, ...validInflections];
+  }, [userWords, wordInflections]);
+
 
   return (
     <motion.div 
@@ -115,11 +112,9 @@ const Reading = () => {
                           : 'hover:bg-gray-50'
                       }`}
                     >
-                      <div className="text-lg leading-relaxed text-gray-800">
-                        {/* כרגע משתמש בכל המילים יחד - בעתיד ניתן להפריד */}
-                        {underLine(sentence.english, allWords, null)}
-                        
-                      </div>
+                      <span className="text-lg leading-relaxed text-gray-800">
+                        {underLine(sentence.english, wordsToHighlight)}
+                      </span>
                     </div>
                   </Tooltip>
                 </motion.div>
@@ -135,14 +130,6 @@ const Reading = () => {
           </div>
         </div>
       </motion.div>
-      
-      {/* דוגמה לשימוש נפרד בקטגוריות (לעתיד): */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="mt-4 p-4 bg-gray-100 rounded-lg text-sm">
-          <p><strong>Base Words ({userWords.length}):</strong> {userWords.join(', ')}</p>
-          <p><strong>Inflections ({wordInflections.length}):</strong> {wordInflections.join(', ')}</p>
-        </div>
-      )}
     </motion.div>
   );
 };

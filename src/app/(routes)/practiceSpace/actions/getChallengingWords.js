@@ -1,16 +1,19 @@
 'use server';
 
 import { createServerClient } from '@/lib/db/supabase';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
 import { getWordByIndex } from '@/lib/db/getWordByIndex';
 
-export async function getChallengingWords(userId) {
-  if (!userId) {
+export async function getChallengingWords() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id || !session.accessToken) {
     throw new Error('Authentication required');
   }
 
-  // כאן יוצרים את ה-client בלי accessToken - אם אתה צריך אותו,
-  // אפשר להוסיף אותו כפרמטר גם כן ולהעביר מהקליינט.
-  const supabase = createServerClient();
+  const supabase = createServerClient(session.accessToken);
+  const userId = session.user.id;
 
   const { data: userWords, error } = await supabase
     .from('user_words')
@@ -39,18 +42,20 @@ export async function getChallengingWords(userId) {
   }
 
   const getWords = async (indices) => {
-    const wordResults = await Promise.all(indices.map((i) => getWordByIndex(i)));
-    return wordResults
-      .filter(w => w && w.word)
-      .map(w => ({
-        word: w.word,
-        inf: w.inf || [],
-      }));
-  };
+  const wordResults = await Promise.all(indices.map((i) => getWordByIndex(i)));
+  return wordResults
+    .filter(w => w && w.word)
+    .map(w => ({
+      word: w.word,
+      inf: w.inf || [],
+      
+    }));
+    
+};
 
   return {
     level2: await getWords(grouped.level2),
     level3: await getWords(grouped.level3),
-    level4: await getWords(grouped.level4),
+    level4: await getWords(grouped.level4)
   };
 }

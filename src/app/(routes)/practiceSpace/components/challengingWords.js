@@ -1,26 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react'; // ✅ נוסיף
 import { Circle } from 'lucide-react';
 import IconData from '@/lib/data/ColorMap';
-import { getChallengingWords } from '../actions/getChallengingWords';
+import { getChallengingWords } from '../actions/getChallengingWords'; // ייבוא ישיר
 
 const ChallengingWords = () => {
-  const { data: session, status } = useSession(); // ✅ נקבל session
   const [words, setWords] = useState({ level2: [], level3: [], level4: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (status !== 'authenticated') {
-      setIsLoading(false);
-      return;
-    }
-
     const fetchWords = async () => {
       try {
-        const result = await getChallengingWords(session.user.id); // ✅ שולחים userId
+        const result = await getChallengingWords(); // קריאה לפונקציית שרת
         setWords(result);
       } catch (err) {
         setError(err.message);
@@ -30,7 +23,7 @@ const ChallengingWords = () => {
     };
 
     fetchWords();
-  }, [session, status]);
+  }, []);
 
   if (error) {
     return <div className="text-red-500 text-sm">{error}</div>;

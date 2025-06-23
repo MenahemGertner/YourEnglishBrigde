@@ -23,13 +23,13 @@ export const useChallengingWords = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const result = await getChallengingWords(session.user.id);
+        const result = await getChallengingWords();
 
         const allWords = [...result.level2, ...result.level3, ...result.level4];
 
         const baseWords = [];
         const inflections = [];
-        
+                
         allWords.forEach(({ word, inf }) => {
           if (word) baseWords.push(word);
           if (Array.isArray(inf)) inflections.push(...inf);
@@ -37,7 +37,7 @@ export const useChallengingWords = () => {
 
         const uniqueWords = [...new Set(baseWords)];
         const uniqueInflections = [...new Set(inflections)];
-        
+                
         setUserWords(uniqueWords);
         setWordInflections(uniqueInflections);
       } catch (err) {
@@ -53,12 +53,12 @@ export const useChallengingWords = () => {
   return {
     userWords,
     wordInflections,
-    allWords: [...userWords, ...wordInflections], // לנוחות - כל המילים יחד
+    allWords: [...userWords, ...wordInflections], // לנוחות - כל המילים יחד כמערך של strings
     isLoading,
     error,
     refetch: () => {
       setError(null);
-      if (session?.user?.id) getChallengingWords(session.user.id);
+      if (session?.user?.id) getChallengingWords();
     }
   };
 };
