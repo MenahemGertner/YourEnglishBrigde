@@ -4,7 +4,6 @@ import { intervals, PRACTICE_THRESHOLD, categories } from '../helpers/reviewHelp
 import { createServerClient } from '@/lib/db/supabase';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/lib/auth';
-import { headers } from 'next/headers';
 import { getWordByIndex } from '@/lib/db/getWordByIndex';
 
 
@@ -138,7 +137,7 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
     }
 
     // בדיקת סף התרגול
-    if (process.env.NODE_ENV === 'development' && newPracticeCounter >= PRACTICE_THRESHOLD) {
+    if (newPracticeCounter >= PRACTICE_THRESHOLD) {
       await supabaseClient
         .from('users')
         .update({ practice_counter: 0 })

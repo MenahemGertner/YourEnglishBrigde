@@ -17,4 +17,4 @@ export function getStartingIndexForCategory(category) {
     return indexMap[category] || 1;
   }
 
-export const PRACTICE_THRESHOLD = 17;
+export const PRACTICE_THRESHOLD = 20;
