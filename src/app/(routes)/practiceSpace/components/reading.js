@@ -168,7 +168,10 @@ const Reading = () => {
                                                     : 'hover:bg-gray-50'
                                                 }`}
                                             >
-                                                <span className="text-lg leading-relaxed text-gray-800">
+                                                <span 
+                                                    className="text-lg leading-relaxed text-gray-800 block text-left"
+                                                    dir="ltr"
+                                                >
                                                     {underLine(sentence.english, allWordsForUnderLine)}
                                                 </span>
                                             </div>
