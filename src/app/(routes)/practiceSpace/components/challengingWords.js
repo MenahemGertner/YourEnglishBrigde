@@ -4,7 +4,7 @@ import { useWords } from '../providers/wordsProvider';
 import IconData from '@/lib/data/ColorMap';
 
 const ChallengingWords = () => {
-  const { wordsData, isLoading, error } = useWords(); // קבל נתונים מהקונטקסט
+  const { wordsData, isLoading, error } = useWords();
 
   if (error) {
     return <div className="text-red-500 text-sm">שגיאה בטעינת המילים: {error}</div>;
