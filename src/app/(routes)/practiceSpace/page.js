@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import PracticeLogic from './components/practiceLogic';
-import WordsProvider from './components/wordsProvider'; // הקומפוננט החדש
+import WordsProvider from './providers/wordsProvider';
 import ChallengingWords from './components/challengingWords'
 import Reading from './components/reading';
 import Hearing from './components/hearing';

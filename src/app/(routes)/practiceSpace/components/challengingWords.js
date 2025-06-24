@@ -1,6 +1,6 @@
 import React from 'react';
 import { Circle } from 'lucide-react';
-import { useWords } from './wordsProvider'; // השימוש בקונטקסט החדש
+import { useWords } from '../providers/wordsProvider';
 import IconData from '@/lib/data/ColorMap';
 
 const ChallengingWords = () => {

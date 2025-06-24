@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useWords } from './wordsProvider'; // השימוש בקונטקסט החדש
+import { useWords } from '../providers/wordsProvider';
 import AudioButton from '@/components/features/AudioButton';
 import Tooltip from '@/components/features/Tooltip';
 import underLine from '@/components/features/UnderLine';
