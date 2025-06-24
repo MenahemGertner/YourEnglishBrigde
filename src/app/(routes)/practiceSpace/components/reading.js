@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useWords } from './wordsProvider'; // השימוש בקונטקסט החדש
 import AudioButton from '@/components/features/AudioButton';
 import Tooltip from '@/components/features/Tooltip';
 import underLine from '@/components/features/UnderLine';
 import { BookOpen, Info } from 'lucide-react';
 
 const Reading = () => {
-    const [userWords, setUserWords] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const { wordsData, isLoading, error } = useWords(); // קבל נתונים מהקונטקסט
     const [activeIndex, setActiveIndex] = useState(null);
 
     const sentences = [
@@ -34,72 +33,10 @@ const Reading = () => {
         }
     ];
 
-    // פונקציה לשליפת מילה אחת ממונגו לפי אינדקס
-    const fetchWordByIndex = async (index) => {
-        try {
-            const response = await fetch(`/words/card/api/word?index=${index}`);
-            if (!response.ok) {
-                throw new Error(`Failed to fetch word with index ${index}`);
-            }
-            const wordData = await response.json();
-            return wordData;
-        } catch (error) {
-            console.error(`Error fetching word ${index}:`, error);
-            return null;
-        }
-    };
-
-    useEffect(() => {
-        const fetchUserWords = async () => {
-            try {
-                // שליפת האינדקסים מ-Supabase
-                const response = await fetch('/practiceSpace/api/wordAndInflections');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch word indices');
-                }
-                const data = await response.json();
-                
-                // איסוף כל האינדקסים מכל הרמות
-                const allIndices = [
-                    ...data.wordIndices.level2,
-                    ...data.wordIndices.level3,
-                    ...data.wordIndices.level4
-                ];
-
-                // שליפת המילים ממונגו לפי האינדקסים
-                const wordPromises = allIndices.map(index => fetchWordByIndex(index));
-                const wordResults = await Promise.all(wordPromises);
-                
-                // סינון המילים שנשלפו בהצלחה ויצירת מערך המילים וההטיות
-                const combinedWords = [];
-                wordResults
-                    .filter(wordData => wordData !== null)
-                    .forEach(wordData => {
-                        // הוספת המילה הבסיסית
-                        if (wordData.word) {
-                            combinedWords.push(wordData.word);
-                        }
-                        // הוספת ההטיות
-                        if (wordData.inf && Array.isArray(wordData.inf)) {
-                            combinedWords.push(...wordData.inf);
-                        }
-                    });
-                
-                // הסרת כפילויות
-                const uniqueWords = [...new Set(combinedWords)];
-                setUserWords(uniqueWords);
-                
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchUserWords();
-    }, []);
-
     const fullStory = sentences.map(s => s.english).join(" ");
+
+    // כאן אנחנו מחברים את המילים וההטיות רק לצורך underLine
+    const allWordsForUnderLine = [...wordsData.words, ...wordsData.inflections];
 
     if (error) {
         return (
@@ -108,7 +45,7 @@ const Reading = () => {
                 animate={{ opacity: 1 }} 
                 className="text-red-500 text-center p-4 bg-red-50 rounded-lg"
             >
-                {error}
+                שגיאה בטעינת המילים: {error}
             </motion.div>
         );
     }
@@ -183,7 +120,7 @@ const Reading = () => {
                                             }`}
                                         >
                                             <span className="text-lg leading-relaxed text-gray-800">
-                                                {underLine(sentence.english, userWords)}
+                                                {underLine(sentence.english, allWordsForUnderLine)}
                                             </span>
                                         </div>
                                     </Tooltip>

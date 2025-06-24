@@ -1,77 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Circle } from 'lucide-react';
+import { useWords } from './wordsProvider'; // השימוש בקונטקסט החדש
 import IconData from '@/lib/data/ColorMap';
 
 const ChallengingWords = () => {
-  const [words, setWords] = useState({
-    level2: [],
-    level3: [],
-    level4: []
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // פונקציה לשליפת מילה אחת ממונגו לפי אינדקס
-  const fetchWordByIndex = async (index) => {
-    try {
-      const response = await fetch(`/words/card/api/word?index=${index}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch word with index ${index}`);
-      }
-      const wordData = await response.json();
-      return wordData;
-    } catch (error) {
-      console.error(`Error fetching word ${index}:`, error);
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    const fetchWords = async () => {
-      try {
-        // שליפת האינדקסים מ-Supabase
-        const response = await fetch('practiceSpace/api/wordAndInflections');
-        if (!response.ok) {
-          throw new Error('Failed to fetch word indices');
-        }
-        const data = await response.json();
-        
-        // שליפת המילים לכל רמה בנפרד
-        const fetchWordsForLevel = async (indices) => {
-          const wordPromises = indices.map(index => fetchWordByIndex(index));
-          const wordResults = await Promise.all(wordPromises);
-          
-          // החזרת רק המילים הבסיסיות (בלי הטיות) שנשלפו בהצלחה
-          return wordResults
-            .filter(wordData => wordData !== null && wordData.word)
-            .map(wordData => wordData.word);
-        };
-
-        // שליפת מילים לכל רמה
-        const [level2Words, level3Words, level4Words] = await Promise.all([
-          fetchWordsForLevel(data.wordIndices.level2 || []),
-          fetchWordsForLevel(data.wordIndices.level3 || []),
-          fetchWordsForLevel(data.wordIndices.level4 || [])
-        ]);
-
-        setWords({
-          level2: level2Words,
-          level3: level3Words,
-          level4: level4Words
-        });
-        
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchWords();
-  }, []);
+  const { wordsData, isLoading, error } = useWords(); // קבל נתונים מהקונטקסט
 
   if (error) {
-    return <div className="text-red-500 text-sm">{error}</div>;
+    return <div className="text-red-500 text-sm">שגיאה בטעינת המילים: {error}</div>;
   }
 
   if (isLoading) {
@@ -98,10 +34,10 @@ const ChallengingWords = () => {
         title: level === 4 ? "מילים מאתגרות" :
                level === 3 ? "מילים בינוניות" :
                             "מילים קלות",
-        words: words[`level${level}`]
+        words: wordsData.challengingWords[`level${level}`]
       };
     })
-    .filter(column => column.words.length > 0);
+    .filter(column => column.words && column.words.length > 0);
 
   return (
     <div className={`
