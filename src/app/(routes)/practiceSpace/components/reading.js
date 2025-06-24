@@ -1,51 +1,70 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useWords } from '../providers/wordsProvider';
 import AudioButton from '@/components/features/AudioButton';
 import Tooltip from '@/components/features/Tooltip';
 import underLine from '@/components/features/UnderLine';
-import { BookOpen, Info } from 'lucide-react';
+import { BookOpen, Info, RefreshCw, Wand2 } from 'lucide-react';
+import { generateStoryFromWords } from '../services/generateStory';
 
 const Reading = () => {
-    const { wordsData, isLoading, error } = useWords(); // קבל נתונים מהקונטקסט
+    const { wordsData, isLoading: wordsLoading, error: wordsError } = useWords();
     const [activeIndex, setActiveIndex] = useState(null);
+    const [sentences, setSentences] = useState([]);
+    const [isGeneratingStory, setIsGeneratingStory] = useState(false);
+    const [storyError, setStoryError] = useState(null);
+    const [hasGeneratedStory, setHasGeneratedStory] = useState(false);
 
-    const sentences = [
-        {
-            english: "The beautiful child glows with happiness where the water flows free.",
-            hebrew: "הילדה היפה קורנת מאושר במקום בו המים זורמים בחופשיות."
-        },
-        {
-            english: "Day by day, her strong self develops and grows in important ways.",
-            hebrew: "יום אחר יום, העצמי החזק שלה מתפתח וגדל בדרכים חשובות."
-        },
-        {
-            english: "Time takes its course as love increases, making her good heart glow.",
-            hebrew: "הזמן עושה את שלו כשהאהבה גדלה, גורמת ללבה הטוב לזהור."
-        },
-        {
-            english: "She happily develops herself where the beautiful waters flow.",
-            hebrew: "היא מתפתחת בשמחה במקום בו המים היפים זורמים."
-        },
-        {
-            english: "Taking strong steps forward, she freely grows into who she'll be.",
-            hebrew: "צועדת צעדים חזקים קדימה, היא גדלה בחופשיות אל מי שתהיה."
+    // Generate story when words are loaded
+    useEffect(() => {
+        if (wordsData?.words && wordsData.words.length > 0 && !hasGeneratedStory) {
+            generateNewStory();
+        } else if (wordsData?.words && wordsData.words.length === 0) {
+            // If no words, use default sentences from parseStoryResponse
+            generateNewStory();
         }
-    ];
+    }, [wordsData, hasGeneratedStory]);
+
+    const generateNewStory = async () => {
+        if (!wordsData?.words || wordsData.words.length === 0) {
+            // Let the API handle the fallback
+        }
+
+        setIsGeneratingStory(true);
+        setStoryError(null);
+
+        try {
+            const storyData = await generateStoryFromWords(wordsData?.words || []);
+            if (storyData && storyData.sentences) {
+                setSentences(storyData.sentences);
+                setHasGeneratedStory(true);
+            } else {
+                throw new Error('Invalid story format received');
+            }
+        } catch (error) {
+            console.error('Error generating story:', error);
+            setStoryError('שגיאה ביצירת הסיפור. נסה שוב מאוחר יותר.');
+        } finally {
+            setIsGeneratingStory(false);
+        }
+    };
 
     const fullStory = sentences.map(s => s.english).join(" ");
+    const allWordsForUnderLine = [...(wordsData?.words || []), ...(wordsData?.inflections || [])];
 
-    // כאן אנחנו מחברים את המילים וההטיות רק לצורך underLine
-    const allWordsForUnderLine = [...wordsData.words, ...wordsData.inflections];
+    const handleRegenerateStory = () => {
+        setHasGeneratedStory(false);
+        generateNewStory();
+    };
 
-    if (error) {
+    if (wordsError) {
         return (
             <motion.div 
                 initial={{ opacity: 0 }} 
                 animate={{ opacity: 1 }} 
                 className="text-red-500 text-center p-4 bg-red-50 rounded-lg"
             >
-                שגיאה בטעינת המילים: {error}
+                שגיאה בטעינת המילים: {wordsError}
             </motion.div>
         );
     }
@@ -66,7 +85,10 @@ const Reading = () => {
                 </h1>
                 <div className="relative inline-block group">
                     <p className="text-md font-medium text-gray-600 max-w-2xl mx-auto">
-                        כדאי לשים לב למילים המאתגרות שסימנת, ולהבנת ההקשר שלהן מתוך הטקסט!
+                        {wordsData?.words && wordsData.words.length > 0 
+                            ? 'סיפור מותאם אישית המכיל את המילים המאתגרות שלך!'
+                            : 'כדאי לשים לב למילים המאתגרות שסימנת, ולהבנת ההקשר שלהן מתוך הטקסט!'
+                        }
                     </p>
                     <div className="absolute -top-1 -right-6">
                         <Info className="w-4 h-4 text-gray-400" />
@@ -81,8 +103,25 @@ const Reading = () => {
             >
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-white font-medium">Story Time</span>
                         <div className="flex items-center space-x-2">
+                            <span className="text-white font-medium">
+                                {hasGeneratedStory ? 'סיפור מותאם אישית' : 'Story Time'}
+                            </span>
+                            {hasGeneratedStory && (
+                                <Wand2 className="w-4 h-4 text-white" />
+                            )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            {wordsData?.words && wordsData.words.length > 0 && (
+                                <button
+                                    onClick={handleRegenerateStory}
+                                    disabled={isGeneratingStory}
+                                    className="flex items-center gap-2 bg-white/20 text-white px-3 py-2 rounded-full hover:bg-white/30 active:bg-white/40 transition-all duration-200 border-2 border-white/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <RefreshCw className={`w-4 h-4 ${isGeneratingStory ? 'animate-spin' : ''}`} />
+                                    <span className="text-sm">סיפור חדש</span>
+                                </button>
+                            )}
                             <div className="flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full hover:bg-white/30 active:bg-white/80 transition-all duration-200 border-2 border-white/60">
                                 <AudioButton 
                                     text={fullStory}
@@ -95,38 +134,49 @@ const Reading = () => {
                 </div>
 
                 <div className="p-6 bg-gradient-to-b from-white to-gray-50">
-                    {isLoading ? (
+                    {wordsLoading || isGeneratingStory ? (
                         <div className="text-center py-8">
                             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                            <p className="mt-2 text-gray-600">טוען מילים...</p>
+                            <p className="mt-2 text-gray-600">
+                                {wordsLoading ? 'טוען מילים...' : 'יוצר סיפור מותאם אישית...'}
+                            </p>
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            {sentences.map((sentence, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1 }}
-                                    onHoverStart={() => setActiveIndex(index)}
-                                    onHoverEnd={() => setActiveIndex(null)}
-                                >
-                                    <Tooltip content={sentence.hebrew}>
-                                        <div 
-                                            className={`p-4 rounded-lg transition-all duration-200 ${
-                                                activeIndex === index 
-                                                ? 'bg-indigo-50 shadow-md' 
-                                                : 'hover:bg-gray-50'
-                                            }`}
-                                        >
-                                            <span className="text-lg leading-relaxed text-gray-800">
-                                                {underLine(sentence.english, allWordsForUnderLine)}
-                                            </span>
-                                        </div>
-                                    </Tooltip>
-                                </motion.div>
-                            ))}
-                        </div>
+                        <>
+                            {storyError && (
+                                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                    <p className="text-yellow-800 text-sm text-center">
+                                        {storyError}
+                                    </p>
+                                </div>
+                            )}
+                            <div className="space-y-6">
+                                {sentences.map((sentence, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        onHoverStart={() => setActiveIndex(index)}
+                                        onHoverEnd={() => setActiveIndex(null)}
+                                    >
+                                        <Tooltip content={sentence.hebrew}>
+                                            <div 
+                                                className={`p-4 rounded-lg transition-all duration-200 ${
+                                                    activeIndex === index 
+                                                    ? 'bg-indigo-50 shadow-md' 
+                                                    : 'hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                <span className="text-lg leading-relaxed text-gray-800">
+                                                    {underLine(sentence.english, allWordsForUnderLine)}
+                                                </span>
+                                            </div>
+                                        </Tooltip>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </div>
 
