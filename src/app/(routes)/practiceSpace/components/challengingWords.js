@@ -14,7 +14,7 @@ const ChallengingWords = () => {
     return (
       <div className={`
         bg-gray-50 rounded p-10 shadow-lg w-64 border-b-2 border-r-2 border-purple-700
-        md:fixed md:bottom-4 md:right-4 md:p-3 md:w-48
+        xl:fixed xl:bottom-4 xl:right-4 xl:p-3 xl:w-48
         mx-auto mt-4
       `}>
         <div className="text-center">
@@ -42,7 +42,7 @@ const ChallengingWords = () => {
   return (
     <div className={`
       bg-gray-50 rounded p-10 shadow-lg w-64 border-b-2 border-r-2 border-purple-700
-      md:fixed md:bottom-4 md:right-4 md:p-3 md:w-48
+      xl:fixed xl:bottom-4 xl:right-4 xl:p-3 xl:w-48
       mx-auto mt-4
     `}>
       <div className="space-y-2">
