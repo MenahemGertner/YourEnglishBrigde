@@ -1,15 +1,18 @@
 'use client'
-import Tooltip from '@/components/features/Tooltip'; 
-import AudioButton from '@/components/features/AudioButton'; 
+import Tooltip from '@/components/features/Tooltip';
+import AudioButton from '@/components/features/AudioButton';
 import PartOfSpeech from '../helpers/partOfSpeech.js';
 
 const MainWord = ({ word, tr, ps }) => {
     if (!ps || !word) {
         return null;
     }
+
     // קביעת גודל הטקסט בהתאם לאורך המילה
-    const textSizeClass = word.length > 8 
-        ? "lg:text-6xl text-4xl" 
+    const textSizeClass = word.length > 10 
+        ? "lg:text-5xl text-3xl"
+        : word.length > 8 
+        ? "lg:text-6xl text-4xl"
         : "lg:text-7xl text-5xl";
 
     return(
@@ -19,7 +22,8 @@ const MainWord = ({ word, tr, ps }) => {
             </div>
             <Tooltip content={tr}>
                 <h2 className={`${textSizeClass} font-medium duration-300 hover:scale-105`}>{word}</h2>
-            </Tooltip>                         
+            </Tooltip>
+            
             <AudioButton text={word}/>
         </div>
     )
