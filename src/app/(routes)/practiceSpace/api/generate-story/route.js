@@ -72,38 +72,48 @@ INSTRUCTIONS:
 
 function parseStoryResponse(responseText) {
   try {
-    // נסה לחלץ JSON מהתשובה
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
+    // נסה לחלץ JSON חוקי בלבד
+    const startIndex = responseText.indexOf('{');
+    const endIndex = responseText.lastIndexOf('}');
     
-    // אם לא נמצא JSON, נסה לפרסר את התשובה באופן ידני
-    throw new Error('No valid JSON found in response');
+    if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
+      throw new Error('No valid JSON boundaries found');
+    }
+
+    const jsonSubstring = responseText.substring(startIndex, endIndex + 1).trim();
+
+    // בדוק האם זו מחרוזת JSON תקינה
+    const parsed = JSON.parse(jsonSubstring);
+
+    if (!parsed.sentences || !Array.isArray(parsed.sentences)) {
+      throw new Error('Parsed object missing "sentences" array');
+    }
+
+    return parsed;
   } catch (error) {
-    console.error('Error parsing story response:', error);
-    // החזר סיפור ברירת מחדל במקרה של שגיאה
+    console.error('Error parsing story response:', error.message, responseText);
+
     return {
       sentences: [
         {
-          english: "This is a sample story created when the AI response couldn't be parsed.",
-          hebrew: "זהו סיפור לדוגמה שנוצר כאשר תגובת הAI לא יכלה להיות מפוענחת."
+          english: "This is a fallback story because the AI response could not be parsed.",
+          hebrew: "זהו סיפור ברירת מחדל כי לא ניתן היה לפענח את תגובת ה-AI."
         },
         {
-          english: "Please try again with your word list.",
-          hebrew: "אנא נסה שוב עם רשימת המילים שלך."
+          english: "Try again with the same words or refresh the page.",
+          hebrew: "נסה שוב עם אותן מילים או רענן את הדף."
         },
         {
-          english: "The system will generate a new story for you.",
-          hebrew: "המערכת תיצור עבורך סיפור חדש."
+          english: "The system might return a better response next time.",
+          hebrew: "המערכת עשויה להחזיר תגובה טובה יותר בפעם הבאה."
         },
         {
-          english: "Each story is unique and personalized.",
-          hebrew: "כל סיפור הוא ייחודי ומותאם אישית."
+          english: "Sorry for the inconvenience.",
+          hebrew: "סליחה על חוסר הנוחות."
         },
         {
-          english: "Thank you for your patience with the learning process.",
-          hebrew: "תודה על הסבלנות שלך עם תהליך הלמידה."
+          english: "Thank you for your understanding.",
+          hebrew: "תודה על ההבנה."
         }
       ]
     };

@@ -17,37 +17,44 @@ const Reading = () => {
 
     // Generate story when words are loaded
     useEffect(() => {
-        if (wordsData?.words && wordsData.words.length > 0 && !hasGeneratedStory) {
-            generateNewStory();
-        } else if (wordsData?.words && wordsData.words.length === 0) {
-            // If no words, use default sentences from parseStoryResponse
+    // רק כאשר סיום טעינת המילים התרחש
+    if (!wordsLoading && !hasGeneratedStory) {
+        const hasWords = wordsData?.words?.length > 0;
+
+        if (hasWords) {
             generateNewStory();
         }
-    }, [wordsData, hasGeneratedStory]);
+        // אפשר להוסיף כאן else אם בעתיד תרצה ליצור סיפור גנרי כשאין מילים
+    }
+}, [wordsLoading, wordsData, hasGeneratedStory]);
 
     const generateNewStory = async () => {
-        if (!wordsData?.words || wordsData.words.length === 0) {
-            // Let the API handle the fallback
-        }
+    const words = wordsData?.words || [];
 
-        setIsGeneratingStory(true);
-        setStoryError(null);
+    if (words.length === 0) {
+        console.warn('No words available for story generation');
+        return;
+    }
 
-        try {
-            const storyData = await generateStoryFromWords(wordsData?.words || []);
-            if (storyData && storyData.sentences) {
-                setSentences(storyData.sentences);
-                setHasGeneratedStory(true);
-            } else {
-                throw new Error('Invalid story format received');
-            }
-        } catch (error) {
-            console.error('Error generating story:', error);
-            setStoryError('שגיאה ביצירת הסיפור. נסה שוב מאוחר יותר.');
-        } finally {
-            setIsGeneratingStory(false);
+    setIsGeneratingStory(true);
+    setStoryError(null);
+
+    try {
+        const storyData = await generateStoryFromWords(words);
+        if (storyData && storyData.sentences) {
+            setSentences(storyData.sentences);
+            setHasGeneratedStory(true);
+        } else {
+            throw new Error('Invalid story format received');
         }
-    };
+    } catch (error) {
+        console.error('Error generating story:', error);
+        setStoryError('שגיאה ביצירת הסיפור. נסה שוב מאוחר יותר.');
+    } finally {
+        setIsGeneratingStory(false);
+    }
+};
+
 
     const fullStory = sentences.map(s => s.english).join(" ");
     const allWordsForUnderLine = [...(wordsData?.words || []), ...(wordsData?.inflections || [])];
