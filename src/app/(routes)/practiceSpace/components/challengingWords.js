@@ -2,6 +2,7 @@ import React from 'react';
 import { Circle } from 'lucide-react';
 import { useWords } from '../providers/wordsProvider';
 import IconData from '@/lib/data/ColorMap';
+import Tooltip from '@/components/features/Tooltip';
 
 const ChallengingWords = () => {
   const { wordsData, isLoading, error } = useWords();
@@ -14,7 +15,7 @@ const ChallengingWords = () => {
     return (
       <div className={`
         bg-gray-50 rounded p-10 shadow-lg w-64 border-b-2 border-r-2 border-purple-700
-        xl:fixed xl:bottom-4 xl:right-4 xl:p-3 xl:w-48
+        lg:fixed lg:bottom-4 lg:right-4 lg:p-3 lg:w-48
         mx-auto mt-4
       `}>
         <div className="text-center">
@@ -42,7 +43,7 @@ const ChallengingWords = () => {
   return (
     <div className={`
       bg-gray-50 rounded p-10 shadow-lg w-64 border-b-2 border-r-2 border-purple-700
-      xl:fixed xl:bottom-4 xl:right-4 xl:p-3 xl:w-48
+      lg:fixed lg:bottom-4 lg:right-4 lg:p-3 lg:w-48
       mx-auto mt-4
     `}>
       <div className="space-y-2">
@@ -57,12 +58,16 @@ const ChallengingWords = () => {
             </div>
             <div className="mr-5 mt-1">
               <div className="text-gray-600">
-                {words.map((word, index) => (
-                  <span key={index}>
-                    {word}{index < words.length - 1 ? ", " : ""}
-                  </span>
-                ))}
-              </div>
+  {words.map((word, index) => (
+    <span key={index} className="inline">
+      <Tooltip content={wordsData.wordTranslations[word] || 'אין תרגום זמין'}>
+        <span className="inline">{word}</span>
+      </Tooltip>
+      {index < words.length - 1 && <span>, </span>}
+    </span>
+  ))}
+</div>
+
             </div>
           </div>
         ))}

@@ -18,7 +18,8 @@ const WordsProvider = ({ children }) => {
             level2: [],
             level3: [],
             level4: []
-        }
+        },
+        wordTranslations: {} // מפת תרגומים
     });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -32,12 +33,17 @@ const WordsProvider = ({ children }) => {
                     const errorData = await response.json();
                     throw new Error(errorData.error || 'Failed to fetch words');
                 }
-                
+                                
                 const data = await response.json();
                 setWordsData({
                     words: data.words || [], // המילים הבסיסיות
                     inflections: data.inflections || [], // ההטיות
-                    challengingWords: data.challengingWords
+                    challengingWords: data.challengingWords || {
+                        level2: [],
+                        level3: [],
+                        level4: []
+                    },
+                    wordTranslations: data.wordTranslations || {} // מפת תרגומים
                 });
             } catch (err) {
                 setError(err.message);

@@ -1,8 +1,7 @@
-// lib/services/wordsService.js
 import { createServerClient } from '@/lib/db/supabase';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from '@/lib/auth';
-import { getWordByIndex } from '@/lib/db/getWordByIndex'; // השירות הקיים שלך
+import { getWordByIndex } from '@/lib/db/getWordByIndex';
 
 export async function getUserWordsData() {
   try {
@@ -93,6 +92,7 @@ export async function getUserWordsData() {
       level3: [],
       level4: []
     };
+    const wordTranslations = {}; // מפת תרגומים לפי מילה
 
     // Create a map of index to level for easy lookup
     const indexToLevel = {};
@@ -109,6 +109,10 @@ export async function getUserWordsData() {
       // Add to challenging words by level (base word only)
       if (level && wordData.word) {
         challengingWordsByLevel[`level${level}`].push(wordData.word);
+        // שמירת התרגום במפה נפרדת
+        if (wordData.tr) {
+          wordTranslations[wordData.word] = wordData.tr;
+        }
       }
       
       // Add base word
@@ -139,6 +143,7 @@ export async function getUserWordsData() {
       inflections: uniqueInflections, // ההטיות
       allWords: uniqueCombinedWords, // לתאימות לאחור - כל המילים ביחד
       challengingWords: challengingWordsByLevel,
+      wordTranslations, // מפת תרגומים
       stats: {
         level2: challengingWordsByLevel.level2.length,
         level3: challengingWordsByLevel.level3.length,

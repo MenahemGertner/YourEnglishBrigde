@@ -49,14 +49,14 @@ export default function Tooltip({ content, children }) {
     <TooltipPrimitive.Provider>
       <TooltipPrimitive.Root open={open}>
         <TooltipPrimitive.Trigger asChild>
-          <div 
-            className="cursor-pointer" 
-            onClick={handleToggle}
-            onTouchEnd={handleToggle}
-          >
-            {children}
-          </div>
-        </TooltipPrimitive.Trigger>
+  <span 
+    className="cursor-pointer inline" 
+    onClick={handleToggle}
+    onTouchEnd={handleToggle}
+  >
+    {children}
+  </span>
+</TooltipPrimitive.Trigger>
         {open && (
           <TooltipPrimitive.Portal>
             <TooltipPrimitive.Content
