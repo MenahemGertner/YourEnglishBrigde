@@ -1,8 +1,10 @@
 export async function generateStoryFromWords(words) {
-  // יצירת AbortController עבור timeout ארוך יותר
+  // timeout מותאם לסביבת הייצור של Vercel
+  const TIMEOUT_DURATION = 25000; // 25 שניות - פחות מה-30 של Vercel Pro
+  
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 שניות
-
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_DURATION);
+  
   try {
     const response = await fetch('/practiceSpace/api/generate-story', {
       method: 'POST',
@@ -10,25 +12,40 @@ export async function generateStoryFromWords(words) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ words }),
-      signal: controller.signal, 
+      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId); 
-
+    
+    clearTimeout(timeoutId);
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      // טיפול משופר בשגיאות HTTP
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`HTTP ${response.status}: ${errorData.message || 'Unknown error'}`);
     }
-
+    
     const data = await response.json();
+    
+    // וידוא שהמבנה תקין
+    if (!data.story || !data.story.sentences) {
+      throw new Error('Invalid story format received');
+    }
+    
     return data.story;
+    
   } catch (error) {
     clearTimeout(timeoutId);
     
     if (error.name === 'AbortError') {
-      throw new Error('Request took too long - please try again');
+      throw new Error('Story generation timed out - please try again');
     }
     
-    console.error('Error generating story:', error);
-    throw new Error('Failed to generate story');
+    // לוג מפורט יותר לדיבוג
+    console.error('Error generating story:', {
+      message: error.message,
+      stack: error.stack,
+      words: words.length
+    });
+    
+    throw new Error(`Failed to generate story: ${error.message}`);
   }
 }
