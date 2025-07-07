@@ -1,9 +1,0 @@
-{
-  "functions": {
-    "app/api/generate-story/route.js": {
-      "maxDuration": 30
-    }
-  },
-  "regions": ["iad1"],
-  "framework": "nextjs"
-}
