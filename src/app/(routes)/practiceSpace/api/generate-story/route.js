@@ -35,7 +35,7 @@ async function generateStoryWithClaude(words, retryCount = 0) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 800, // הפחתה למהירות טובה יותר
+        max_tokens: 600, // מופחת מ-800 להאצה
         messages: [
           {
             role: 'user',
@@ -75,14 +75,17 @@ async function generateStoryWithClaude(words, retryCount = 0) {
 function createStoryPrompt(words) {
   const wordsList = words.join(', ');
   
-  // prompt מקוצר ומיועל למהירות
-  return `Create a coherent 5-sentence story using these English words: ${wordsList}
+  // פרומפט מותאם לJSON נקי עם שמירה על איכות
+  return `Create a coherent 5-sentence story using these English words and their inflections: ${wordsList}
 
-INSTRUCTIONS:
-1. Story must flow naturally as one connected narrative
-2. Use every word from the list (any form: original, plural, past tense, -ing, -ed, comparative, superlative)
-3. Hebrew translations should be natural and contextually appropriate
-4. Return ONLY this JSON format:
+Requirements:
+- Use each word type at least once (base word OR any inflection: plural, past tense, -ing, -ed, comparative, superlative, etc.)
+- Story must be one unified narrative that flows naturally from sentence 1 to sentence 5
+- Each sentence should continue the same storyline, not separate independent sentences
+- Hebrew translations should be contextually accurate
+- Return ONLY valid JSON, no additional text
+
+Format:
 {
   "sentences": [
     {"english": "sentence", "hebrew": "תרגום"},
@@ -95,8 +98,19 @@ INSTRUCTIONS:
 }
 
 function parseStoryResponse(responseText) {
+  // נסיון ראשון: JSON נקי ישירות
   try {
-    // ניסוי לחלץ JSON חוקי
+    const parsed = JSON.parse(responseText.trim());
+    
+    if (parsed.sentences && Array.isArray(parsed.sentences) && parsed.sentences.length === 5) {
+      return parsed;
+    }
+  } catch (error) {
+    console.log('Direct JSON parse failed, trying fallback parsing...');
+  }
+  
+  // fallback: פרסינג מורכב במקרה של כשלון
+  try {
     const startIndex = responseText.indexOf('{');
     const endIndex = responseText.lastIndexOf('}');
     
@@ -121,28 +135,28 @@ function parseStoryResponse(responseText) {
   } catch (error) {
     console.error('Error parsing story response:', error.message);
     
-    // fallback story מקוצר
+    // fallback story איכותי
     return {
       sentences: [
         {
-          english: "This is a fallback story because the AI response could not be parsed.",
-          hebrew: "זהו סיפור ברירת מחדל כי לא ניתן היה לפענח את תגובת ה-AI."
+          english: "The system encountered a temporary issue while creating your personalized story.",
+          hebrew: "המערכת נתקלה בבעיה זמנית בעת יצירת הסיפור המותאם אישית שלך."
         },
         {
-          english: "Try again with the same words or refresh the page.",
-          hebrew: "נסה שוב עם אותן מילים או רענן את הדף."
+          english: "Please try generating a new story using the refresh button above.",
+          hebrew: "אנא נסה ליצור סיפור חדש באמצעות כפתור הרענון למעלה."
         },
         {
-          english: "The system might return a better response next time.",
-          hebrew: "המערכת עשויה להחזיר תגובה טובה יותר בפעם הבאה."
+          english: "Your vocabulary words are still being processed and will be included in the next attempt.",
+          hebrew: "מילות האוצר שלך עדיין מעובדות ויכללו בניסיון הבא."
         },
         {
-          english: "Sorry for the inconvenience.",
-          hebrew: "סליחה על חוסר הנוחות."
+          english: "Thank you for your patience as we work to improve the experience.",
+          hebrew: "תודה על הסבלנות שלך בעודנו עובדים לשיפור החוויה."
         },
         {
-          english: "Thank you for your understanding.",
-          hebrew: "תודה על ההבנה."
+          english: "The story generation feature will be back to normal shortly.",
+          hebrew: "תכונת יצירת הסיפורים תחזור לפעול כרגיל בקרוב."
         }
       ]
     };
