@@ -75,17 +75,14 @@ async function generateStoryWithClaude(words, retryCount = 0) {
 function createStoryPrompt(words) {
   const wordsList = words.join(', ');
   
-  // פרומפט מותאם לJSON נקי עם שמירה על איכות
-  return `Create a coherent 5-sentence story using these English words and their inflections: ${wordsList}
+  // prompt מקוצר ומיועל למהירות
+  return `Create a coherent 5-sentence story using these English words: ${wordsList}
 
-Requirements:
-- Use each word type at least once (base word OR any inflection: plural, past tense, -ing, -ed, comparative, superlative, etc.)
-- Story must be one unified narrative that flows naturally from sentence 1 to sentence 5
-- Each sentence should continue the same storyline, not separate independent sentences
-- Hebrew translations should be contextually accurate
-- Return ONLY valid JSON, no additional text
-
-Format:
+INSTRUCTIONS:
+1. Story must flow naturally as one connected narrative
+2. Use every word from the list (any form: original, plural, -ing, -ed, comparative, etc)
+3. Hebrew translations should be natural and contextually appropriate
+4. Return ONLY valid JSON, no additional text
 {
   "sentences": [
     {"english": "sentence", "hebrew": "תרגום"},
@@ -162,3 +159,5 @@ function parseStoryResponse(responseText) {
     };
   }
 }
+
+
