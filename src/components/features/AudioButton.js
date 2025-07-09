@@ -73,7 +73,7 @@ const AudioButton = ({ text }) => {
     try {
       setIsLoading(true);
       
-      const speakingRate = playbackState === 'slow' ? 0.7 : 1.0;
+      const speakingRate = playbackState === 'slow' ? 0.6 : 1.0;
       const cacheKey = `${text}-${speakingRate}`;
       
       // בדיקה בCache - Memory + Persistent
