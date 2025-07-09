@@ -55,9 +55,9 @@ const AdditionalWordInfo = ({
                 itemRenderer={(item) => (
                   <div key={item.word} className="flex items-center hover:bg-blue-50 rounded-md p-2 transition-colors duration-200">
                     <AudioButton text={item.word} />
-                    <div className="flex items-center gap-3">
+                    <div className="flex-grow">
                       <Tooltip content={item.translation}>
-                        <span className="hover:text-blue-700 transition-colors duration-200">{item.word}</span>          
+                        <span className="hover:text-blue-700 transition-colors duration-200 text-left block">{item.word}</span>          
                       </Tooltip>
                     </div>
                   </div>
