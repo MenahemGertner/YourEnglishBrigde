@@ -22,7 +22,7 @@ const MoreInfo = ({ ex, syn, con }) => {
         onClick={() => toggleSection('additionalInfo')}
         className="toggle-button flex items-center justify-center mx-auto text-gray-600 hover:text-blue-600 transition-colors duration-300 mt-4"
       >
-        <span className="text-sm font-medium">גלה יותר: ביטויים, מילים נרדפות ודומות</span>
+        <span className="text-sm font-medium">גלה יותר: מילים נרדפות, דומות וביטויים</span>
         <ChevronDown className="h-4 w-4 mr-1" />
       </button>
       

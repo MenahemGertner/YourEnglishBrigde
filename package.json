@@ -9,7 +9,8 @@
     "lint": "next lint",
     "generate-words": "node -r dotenv/config scripts/generateWordData.js",
     "update-mongo": "node -r dotenv/config scripts/updatingIDInMongoDB.js",
-    "update-confused-words": "node -r dotenv/config scripts/update-confused-words.js"
+    "update-confused-words": "node -r dotenv/config scripts/update-confused-words.js",
+    "remove-third-ex-value.js": "node -r dotenv/config scripts/remove-third-ex-value.js"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.1.0",
