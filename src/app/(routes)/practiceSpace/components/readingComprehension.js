@@ -1,105 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, AlertCircle, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import questionService from '../services/questionService';
 
-const ReadingComprehension = ({ 
-    story, 
-    onBackToReading, 
-    preGeneratedQuestion, 
-    questionError, 
-    isGeneratingQuestion 
-}) => {
-    const [question, setQuestion] = useState(null);
+const ReadingComprehension = ({ story, onBackToReading, preGeneratedQuestion }) => {
+    const [question, setQuestion] = useState(preGeneratedQuestion || null);
     const [selectedAnswer, setSelectedAnswer] = useState('');
     const [showResult, setShowResult] = useState(false);
-    const [isCorrect, setIsCorrect] = useState(false);
+    const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // פונקציה לערבוב מערך (approach חדש)
-    const shuffleArray = (array) => {
-        const shuffled = [...array];
-        
-        // ערבוב מספר פעמים עם delay קטן
-        for (let round = 0; round < 5; round++) {
-            for (let i = 0; i < shuffled.length; i++) {
-                // יצירת אינדקס רנדומלי
-                const randomIndex = Math.floor(Math.random() * shuffled.length);
-                [shuffled[i], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[i]];
-            }
-        }
-        
-        return shuffled;
-    };
-
-    // פונקציה לעיבוד השאלה וערבוב התשובות
-    const processQuestion = (questionData) => {
-        if (!questionData || !questionData.options || !questionData.correctAnswer) {
-            return questionData;
-        }
-
-        // שמירה על התשובה הנכונה
-        const correctAnswer = questionData.correctAnswer;
-        const originalIndex = questionData.options.indexOf(correctAnswer);
-        
-        // ערבוב התשובות
-        const shuffledOptions = shuffleArray(questionData.options);
-        const newIndex = shuffledOptions.indexOf(correctAnswer);
-        
-        return {
-            ...questionData,
-            options: shuffledOptions,
-            correctAnswer: correctAnswer // התשובה הנכונה נשארת כמו שהיא
-        };
-    };
-
-    // Use pre-generated question if available, otherwise generate new one
+    // עדכון השאלה אם היא הגיעה מוכנה
     useEffect(() => {
         if (preGeneratedQuestion) {
-            setQuestion(processQuestion(preGeneratedQuestion));
-            setError('');
-            setLoading(false);
-        } else if (questionError) {
-            setError(questionError);
-            setLoading(false);
-        } else if (isGeneratingQuestion) {
-            setLoading(true);
-            setError('');
-        } else if (story && story.sentences && !question) {
-            // Fallback: generate question if no pre-generated one available
-            generateQuestion();
+            setQuestion(preGeneratedQuestion);
         }
-    }, [preGeneratedQuestion, questionError, isGeneratingQuestion, story]);
+    }, [preGeneratedQuestion]);
+
+    // יצירת שאלה אוטומטית כשהקומפוננטה נטענת (רק אם אין שאלה מוכנה)
+    useEffect(() => {
+        if (!preGeneratedQuestion && !question) {
+            const validation = questionService.validateStory(story);
+            if (validation.isValid) {
+                generateQuestion();
+            }
+        }
+    }, [story, preGeneratedQuestion, question]);
 
     const generateQuestion = async () => {
-        if (!story || !story.sentences) return;
-        
         setLoading(true);
         setError('');
+        resetState();
         
         try {
-            const englishSentences = story.sentences.map(sentence => sentence.english);
-            
-            const response = await fetch('/practiceSpace/api/generate-question', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ sentences: englishSentences }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to generate question');
-            }
-
-            const data = await response.json();
-            setQuestion(processQuestion(data.question));
+            const englishSentences = questionService.extractEnglishSentences(story);
+            const newQuestion = await questionService.generateQuestion(englishSentences);
+            setQuestion(newQuestion);
         } catch (err) {
-            setError('שגיאה ביצירת השאלה. אנא נסה שוב.');
-            console.error('Error generating question:', err);
+            setError(err.message || 'שגיאה ביצירת השאלה. אנא נסה שוב.');
         } finally {
             setLoading(false);
         }
+    };
+
+    const resetState = () => {
+        setQuestion(null);
+        setSelectedAnswer('');
+        setShowResult(false);
+        setResult(null);
     };
 
     const handleAnswerSelect = (answer) => {
@@ -110,25 +59,23 @@ const ReadingComprehension = ({
     const checkAnswer = () => {
         if (!selectedAnswer || !question) return;
         
-        const correct = selectedAnswer === question.correctAnswer;
-        setIsCorrect(correct);
+        const answerResult = questionService.checkAnswer(selectedAnswer, question.correctAnswer);
+        setResult(answerResult);
         setShowResult(true);
     };
 
     const resetQuestion = () => {
-        setSelectedAnswer('');
-        setShowResult(false);
-        setIsCorrect(false);
-        setQuestion(null);
         generateQuestion();
     };
 
-    if ((!story || !story.sentences || story.sentences.length === 0) && !loading && !question) {
+    // בדיקת תקינות הסיפור
+    const storyValidation = questionService.validateStory(story);
+    if (!storyValidation.isValid && !loading) {
         return (
             <div className="w-full max-w-4xl mx-auto my-12 px-4">
                 <div className="text-center text-gray-500">
                     <BookOpen className="w-12 h-12 mx-auto mb-4" />
-                    <p>אנא קרא קודם את הסיפור כדי להמשיך לתרגיל הבנת הנקרא</p>
+                    <p>{storyValidation.message}</p>
                 </div>
             </div>
         );
@@ -184,7 +131,7 @@ const ReadingComprehension = ({
                     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
                         <h3 className="text-white font-medium mb-3 text-right">הסיפור:</h3>
                         <div className="space-y-2 text-left" dir="ltr">
-                            {story.sentences.map((sentence, index) => (
+                            {story?.sentences?.map((sentence, index) => (
                                 <p key={index} className="text-white/90 text-sm">
                                     {sentence.english}
                                 </p>
@@ -195,12 +142,10 @@ const ReadingComprehension = ({
 
                 {/* Question Section */}
                 <div className="p-8">
-                    {loading && (
+                    {(loading && !preGeneratedQuestion) && (
                         <div className="flex items-center justify-center space-x-2 text-gray-500">
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            <span>
-                                {preGeneratedQuestion ? 'טוען שאלה...' : 'יוצר שאלה...'}
-                            </span>
+                            <span>יוצר שאלה...</span>
                         </div>
                     )}
 
@@ -219,7 +164,7 @@ const ReadingComprehension = ({
                         </div>
                     )}
 
-                    {question && !loading && !error && (
+                    {question && !error && (
                         <div className="space-y-6">
                             <div className="text-center">
                                 <h3 className="text-xl font-semibold text-gray-800 mb-6">
@@ -232,6 +177,7 @@ const ReadingComprehension = ({
                                 {question.options.map((option, index) => (
                                     <motion.button
                                         key={index}
+                                        dir="ltr"
                                         onClick={() => handleAnswerSelect(option)}
                                         disabled={showResult}
                                         whileHover={{ scale: showResult ? 1 : 1.02 }}
@@ -240,7 +186,7 @@ const ReadingComprehension = ({
                                             p-4 rounded-lg border-2 text-left transition-all
                                             ${selectedAnswer === option 
                                                 ? showResult 
-                                                    ? isCorrect 
+                                                    ? result?.isCorrect 
                                                         ? 'border-green-500 bg-green-50 text-green-700'
                                                         : 'border-red-500 bg-red-50 text-red-700'
                                                     : 'border-blue-500 bg-blue-50 text-blue-700'
@@ -295,28 +241,28 @@ const ReadingComprehension = ({
 
                             {/* Result Message */}
                             <AnimatePresence>
-                                {showResult && (
+                                {showResult && result && (
                                     <motion.div
                                         initial={{ opacity: 0, y: -10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, y: -10 }}
                                         className={`
                                             flex items-center justify-center space-x-2 p-4 rounded-lg
-                                            ${isCorrect 
+                                            ${result.isCorrect 
                                                 ? 'bg-green-50 text-green-600' 
                                                 : 'bg-red-50 text-red-600'
                                             }
                                         `}
                                     >
-                                        {isCorrect ? (
+                                        {result.isCorrect ? (
                                             <>
                                                 <CheckCircle2 className="w-5 h-5" />
-                                                <span>כל הכבוד! התשובה נכונה</span>
+                                                <span>{result.message}</span>
                                             </>
                                         ) : (
                                             <>
                                                 <AlertCircle className="w-5 h-5" />
-                                                <span>התשובה שגויה. התשובה הנכונה היא: {question.correctAnswer}</span>
+                                                <span>{result.message}</span>
                                             </>
                                         )}
                                     </motion.div>

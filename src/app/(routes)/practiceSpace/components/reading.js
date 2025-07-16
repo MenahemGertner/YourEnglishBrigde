@@ -8,130 +8,115 @@ import underLine from '@/components/features/UnderLine';
 import ReadingComprehension from './readingComprehension';
 import { BookOpen, Info, RefreshCw, Wand2, CheckCircle } from 'lucide-react';
 import { generateStoryFromWords } from '../services/generateStory';
+import questionService from '../services/questionService';
 
 const Reading = ({ words, inflections }) => {
-    
     const [activeIndex, setActiveIndex] = useState(null);
     const [sentences, setSentences] = useState([]);
-    const [isGeneratingStory, setIsGeneratingStory] = useState(false);
-    const [storyError, setStoryError] = useState(null);
-    const [hasGeneratedStory, setHasGeneratedStory] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
+    const [error, setError] = useState(null);
+    const [hasGenerated, setHasGenerated] = useState(false);
     const [showComprehension, setShowComprehension] = useState(false);
     
-    // New states for question pre-generation
-    const [preGeneratedQuestion, setPreGeneratedQuestion] = useState(null);
+    // מצב השאלה
+    const [question, setQuestion] = useState(null);
     const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
     const [questionError, setQuestionError] = useState(null);
 
-    // Generate story when component mounts
-    useEffect(() => {
-        if (!hasGeneratedStory && words?.length > 0) {
-            generateNewStory();
-        }
-    }, [hasGeneratedStory, words]);
+    // Generate story - simplified logic
+    const generateStory = async () => {
+        if (!words?.length) return;
 
-    // Generate question when story is ready
-    useEffect(() => {
-        if (sentences.length > 0 && !preGeneratedQuestion && !isGeneratingQuestion) {
-            generateQuestionInBackground();
-        }
-    }, [sentences, preGeneratedQuestion, isGeneratingQuestion]);
-
-    const generateNewStory = async () => {
-        if (!words || words.length === 0) {
-            console.warn('No words available for story generation');
-            return;
-        }
-
-        setIsGeneratingStory(true);
-        setStoryError(null);
+        setIsGenerating(true);
+        setError(null);
         setShowComprehension(false);
-        // Reset question when generating new story
-        setPreGeneratedQuestion(null);
+        // איפוס השאלה כאשר יוצרים סיפור חדש
+        setQuestion(null);
         setQuestionError(null);
 
         try {
             const storyData = await generateStoryFromWords(words);
-            if (storyData && storyData.sentences) {
-                setSentences(storyData.sentences);
-                setHasGeneratedStory(true);
-            } else {
-                throw new Error('Invalid story format received');
-            }
+            setSentences(storyData.sentences);
+            setHasGenerated(true);
         } catch (error) {
+            setError('שגיאה ביצירת הסיפור. נסה שוב מאוחר יותר.');
             console.error('Error generating story:', error);
-            setStoryError('שגיאה ביצירת הסיפור. נסה שוב מאוחר יותר.');
         } finally {
-            setIsGeneratingStory(false);
+            setIsGenerating(false);
         }
     };
 
-    const generateQuestionInBackground = async () => {
-        if (!sentences || sentences.length === 0) return;
-
+    // יצירת השאלה אוטומטית כאשר הסיפור מוכן
+    const generateQuestion = async (storyData) => {
         setIsGeneratingQuestion(true);
         setQuestionError(null);
-
+        
         try {
-            const englishSentences = sentences.map(sentence => sentence.english);
+            const englishSentences = storyData.sentences.map(sentence => ({
+                english: sentence.english
+            }));
             
-            const response = await fetch('/practiceSpace/api/generate-question', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ sentences: englishSentences }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to generate question');
+            const validation = questionService.validateStory({ sentences: englishSentences });
+            if (!validation.isValid) {
+                throw new Error(validation.message);
             }
-
-            const data = await response.json();
-            setPreGeneratedQuestion(data.question);
+            
+            const extractedSentences = questionService.extractEnglishSentences({ sentences: englishSentences });
+            const newQuestion = await questionService.generateQuestion(extractedSentences);
+            setQuestion(newQuestion);
         } catch (error) {
+            setQuestionError(error.message || 'שגיאה ביצירת השאלה');
             console.error('Error generating question:', error);
-            setQuestionError('שגיאה ביצירת השאלה');
         } finally {
             setIsGeneratingQuestion(false);
         }
     };
 
-    const fullStory = sentences.map(s => s.english).join(" ");
-    const allWordsForUnderLine = [...(words || []), ...(inflections || [])];
+    // Auto-generate on mount
+    useEffect(() => {
+        if (!hasGenerated && words?.length > 0) {
+            generateStory();
+        }
+    }, [hasGenerated, words]);
 
+    // יצירת השאלה כאשר הסיפור מוכן
+    useEffect(() => {
+        if (sentences.length > 0 && !question && !isGeneratingQuestion) {
+            generateQuestion({ sentences });
+        }
+    }, [sentences, question, isGeneratingQuestion]);
+
+    // Regenerate story
     const handleRegenerateStory = () => {
-        setHasGeneratedStory(false);
-        setShowComprehension(false);
-        generateNewStory();
+        setHasGenerated(false);
+        generateStory();
     };
 
-    const handleStartComprehension = () => {
+    // מעבר לשאלה
+    const handleShowComprehension = () => {
         setShowComprehension(true);
     };
 
-    const handleBackToReading = () => {
-        setShowComprehension(false);
-    };
+    // Computed values
+    const fullStory = sentences.map(s => s.english).join(" ");
+    const allWordsForUnderLine = [...(words || []), ...(inflections || [])];
 
-    // Create story object for ReadingComprehension component
+    // סיפור לקומפוננטת הבנת הנקרא
     const storyForComprehension = {
-        sentences: sentences,
-        title: hasGeneratedStory ? 'סיפור מותאם אישית' : 'Story Time'
+        sentences: sentences.map(sentence => ({
+            english: sentence.english
+        })),
+        title: hasGenerated ? 'סיפור מותאם אישית' : 'Story Time'
     };
 
     // Show comprehension if active
     if (showComprehension && sentences.length > 0) {
         return (
-            <div>
-                <ReadingComprehension 
-                    story={storyForComprehension} 
-                    onBackToReading={handleBackToReading}
-                    preGeneratedQuestion={preGeneratedQuestion}
-                    questionError={questionError}
-                    isGeneratingQuestion={isGeneratingQuestion}
-                />
-            </div>
+            <ReadingComprehension 
+                story={storyForComprehension} 
+                onBackToReading={() => setShowComprehension(false)}
+                preGeneratedQuestion={question}
+            />
         );
     }
 
@@ -151,7 +136,7 @@ const Reading = ({ words, inflections }) => {
                 </h1>
                 <div className="relative inline-block group">
                     <p className="text-md font-medium text-gray-600 max-w-2xl mx-auto">
-                        {words && words.length > 0 
+                        {words?.length > 0 
                             ? 'סיפור מותאם אישית המכיל את המילים המאתגרות שלך!'
                             : 'כדאי לשים לב למילים המאתגרות שסימנת, ולהבנת ההקשר שלהן מתוך הטקסט!'
                         }
@@ -171,28 +156,23 @@ const Reading = ({ words, inflections }) => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                             <span className="text-white font-medium">
-                                {hasGeneratedStory ? 'סיפור מותאם אישית' : 'Story Time'}
+                                {hasGenerated ? 'סיפור מותאם אישית' : 'Story Time'}
                             </span>
-                            {hasGeneratedStory && (
-                                <Wand2 className="w-4 h-4 text-white" />
-                            )}
+                            {hasGenerated && <Wand2 className="w-4 h-4 text-white" />}
                         </div>
                         <div className="flex items-center space-x-2">
-                            {words && words.length > 0 && (
+                            {words?.length > 0 && (
                                 <button
                                     onClick={handleRegenerateStory}
-                                    disabled={isGeneratingStory}
-                                    className="flex items-center gap-2 bg-white/20 text-white px-3 py-2 rounded-full hover:bg-white/30 active:bg-white/40 transition-all duration-200 border-2 border-white/60 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={isGenerating}
+                                    className="flex items-center gap-2 bg-white/20 text-white px-3 py-2 rounded-full hover:bg-white/30 transition-all duration-200 border-2 border-white/60 disabled:opacity-50"
                                 >
-                                    <RefreshCw className={`w-4 h-4 ${isGeneratingStory ? 'animate-spin' : ''}`} />
+                                    <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
                                     <span className="text-sm">סיפור חדש</span>
                                 </button>
                             )}
-                            <div className="flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full hover:bg-white/30 active:bg-white/80 transition-all duration-200 border-2 border-white/60">
-                                <AudioButton 
-                                    text={fullStory}
-                                    className="text-white"
-                                />
+                            <div className="flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full hover:bg-white/30 transition-all duration-200 border-2 border-white/60">
+                                <AudioButton text={fullStory} className="text-white" />
                                 <span className="text-sm">השמע</span>
                             </div>
                         </div>
@@ -200,20 +180,16 @@ const Reading = ({ words, inflections }) => {
                 </div>
 
                 <div className="p-6 bg-gradient-to-b from-white to-gray-50">
-                    {isGeneratingStory ? (
+                    {isGenerating ? (
                         <div className="text-center py-8">
                             <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                            <p className="mt-2 text-gray-600">
-                                יוצר סיפור מותאם אישית...
-                            </p>
+                            <p className="mt-2 text-gray-600">יוצר סיפור מותאם אישית...</p>
                         </div>
                     ) : (
                         <>
-                            {storyError && (
+                            {error && (
                                 <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                    <p className="text-yellow-800 text-sm text-center">
-                                        {storyError}
-                                    </p>
+                                    <p className="text-yellow-800 text-sm text-center">{error}</p>
                                 </div>
                             )}
                             <div className="space-y-6">
@@ -227,17 +203,10 @@ const Reading = ({ words, inflections }) => {
                                         onHoverEnd={() => setActiveIndex(null)}
                                     >
                                         <Tooltip content={sentence.hebrew}>
-                                            <div 
-                                                className={`p-4 rounded-lg transition-all duration-200 ${
-                                                    activeIndex === index 
-                                                    ? 'bg-indigo-50 shadow-md' 
-                                                    : 'hover:bg-gray-50'
-                                                }`}
-                                            >
-                                                <span 
-                                                    className="text-lg leading-relaxed text-gray-800 block text-left"
-                                                    dir="ltr"
-                                                >
+                                            <div className={`p-4 rounded-lg transition-all duration-200 ${
+                                                activeIndex === index ? 'bg-indigo-50 shadow-md' : 'hover:bg-gray-50'
+                                            }`}>
+                                                <span className="text-lg leading-relaxed text-gray-800 block text-left" dir="ltr">
                                                     {underLine(sentence.english, allWordsForUnderLine)}
                                                 </span>
                                             </div>
@@ -246,7 +215,6 @@ const Reading = ({ words, inflections }) => {
                                 ))}
                             </div>
 
-                            {/* Comprehension Button - Only show if story is loaded */}
                             {sentences.length > 0 && (
                                 <motion.div 
                                     initial={{ opacity: 0, y: 20 }}
@@ -255,8 +223,8 @@ const Reading = ({ words, inflections }) => {
                                     className="mt-8 text-center"
                                 >
                                     <button
-                                        onClick={handleStartComprehension}
-                                        className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-full font-medium hover:from-purple-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                                        onClick={handleShowComprehension}
+                                        className="inline-flex items-center gap-3 px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
                                     >
                                         <CheckCircle className="w-5 h-5" />
                                         <span>סיימתי לקרוא - בוא נבדוק הבנה</span>
