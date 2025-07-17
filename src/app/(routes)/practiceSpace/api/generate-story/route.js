@@ -80,13 +80,14 @@ async function generateStoryWithGPT(words, retryCount = 0) {
 function createStoryPrompt(words) {
   const wordsList = words.join(', ');
 
-  return `Create a coherent 5-sentence story using these English words: ${wordsList}
+  return `Write a fluent and engaging 5-sentence story that flows naturally as one narrative.
 
-INSTRUCTIONS:
-1. Story must flow naturally as one connected narrative
-2. Use every word from the list (any form: original, plural, -ing, -ed, comparative, etc)
-3. Hebrew translations should be natural and contextually appropriate
-4. Return ONLY valid JSON, no additional text
+REQUIREMENTS:
+1. The story should be cohesive and logically structured, with a clear beginning, middle, and end.
+2. Incorporate all of these English words in a natural and meaningful way: ${wordsList}
+3. You may use any form of the words (plural, -ing, -ed, etc).
+4. After the story, provide a Hebrew translation for each sentence.
+5. Return ONLY valid JSON. No additional explanation or comments.
 {
   "sentences": [
     {"english": "sentence", "hebrew": "תרגום"},
