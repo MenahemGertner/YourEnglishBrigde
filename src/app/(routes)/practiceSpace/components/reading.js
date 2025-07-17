@@ -10,7 +10,7 @@ import { BookOpen, Info, RefreshCw, Wand2, CheckCircle } from 'lucide-react';
 import { generateStoryFromWords } from '../services/generateStory';
 import questionService from '../services/questionService';
 
-const Reading = ({ words, inflections }) => {
+const Reading = ({ words, inflections, onPracticeCompleted }) => {
     const [activeIndex, setActiveIndex] = useState(null);
     const [sentences, setSentences] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -116,6 +116,7 @@ const Reading = ({ words, inflections }) => {
                 story={storyForComprehension} 
                 onBackToReading={() => setShowComprehension(false)}
                 preGeneratedQuestion={question}
+                onPracticeCompleted={onPracticeCompleted}
             />
         );
     }

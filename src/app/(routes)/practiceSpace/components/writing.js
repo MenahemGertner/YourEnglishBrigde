@@ -1,33 +1,146 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Edit, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 
-const Writing = () => {
+const Writing = ({ wordsData, onPracticeCompleted }) => {
     const [userInput, setUserInput] = useState('');
-    const [showError, setShowError] = useState(false);
-    const [isCorrect, setIsCorrect] = useState(false);
+    const [feedback, setFeedback] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [showFeedback, setShowFeedback] = useState(false);
+    const [feedbackType, setFeedbackType] = useState(''); // 'success', 'error', 'info'
+    const [validationError, setValidationError] = useState('');
+    const [hasCompletedPractice, setHasCompletedPractice] = useState(false);
     
-    const sentence = "The beautiful child glows with happiness where the water flows free";
-    const correctWord = "beautiful";
-    const incompleteSentence = sentence.replace(correctWord, "_____");
-
-    const handleInputChange = (e) => {
-        setUserInput(e.target.value);
-        setShowError(false);
-        setIsCorrect(false);
+    // פונקציה לבדיקת טקסט אנגלית
+    const isEnglishText = (text) => {
+        // בדיקה בסיסית - רק תווים לטיניים, מספרים, רווחים וסימני פיסוק
+        const englishRegex = /^[a-zA-Z0-9\s.,!?'"()-]+$/;
+        return englishRegex.test(text);
     };
 
-    const checkAnswer = () => {
-        if (userInput.toLowerCase() === correctWord.toLowerCase()) {
-            setIsCorrect(true);
-            setShowError(false);
-        } else if (userInput.toLowerCase() === correctWord.toLowerCase().slice(0, userInput.length)) {
-            // Word is correct so far but incomplete
-            setShowError(false);
-            setIsCorrect(false);
+    const handleInputChange = (e) => {
+    const value = e.target.value;
+    setUserInput(value);
+    setShowFeedback(false);
+    setFeedback('');
+
+    // ולידציה מרוכזת כאן בלבד
+    if (value.trim()) {
+        if (!isEnglishText(value)) {
+            setValidationError('אנא כתוב באנגלית בלבד');
+        } else if (!/^[A-Z]/.test(value.trim())) {
+            setValidationError('המשפט צריך להתחיל באות גדולה');
         } else {
-            setShowError(true);
-            setIsCorrect(false);
+            setValidationError('');
+        }
+    } else {
+        setValidationError('');
+    }
+};
+
+const checkAnswer = async () => {
+    if (!userInput.trim()) {
+        setFeedback('אנא כתוב משפט לפני הבדיקה');
+        setFeedbackType('error');
+        setShowFeedback(true);
+        return;
+    }
+
+    // לא בודקים שוב את isEnglishText ולא את /^[A-Z]/ כאן
+
+    setIsLoading(true);
+    setShowFeedback(false);
+
+    try {
+        const response = await fetch('/practiceSpace/api/check-writing', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                sentence: userInput.trim(),
+                difficultWords: []
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.feedback || !result.feedback.feedback) {
+            throw new Error('Invalid response format from API');
+        }
+
+        const apiResponse = result.feedback;
+
+        setFeedback(apiResponse.feedback);
+
+        if (apiResponse.score === 'good' && !apiResponse.hasErrors) {
+            setFeedbackType('success');
+        } else if (apiResponse.hasErrors) {
+            setFeedbackType('error');
+        } else {
+            setFeedbackType('info');
+        }
+
+        setShowFeedback(true);
+
+        if (!hasCompletedPractice) {
+            setHasCompletedPractice(true);
+            if (onPracticeCompleted) {
+                onPracticeCompleted();
+            }
+        }
+
+    } catch (error) {
+        console.error('Error checking writing:', error);
+
+        let errorMessage = 'אירעה שגיאה בבדיקת התשובה. נסה שוב.';
+        if (error.message.includes('Failed to fetch')) {
+            errorMessage = 'בעיה בחיבור לשרת. אנא בדוק את החיבור לאינטרנט ונסה שוב.';
+        } else if (error.message.includes('timeout')) {
+            errorMessage = 'הבדיקה נמשכת יותר מדי זמן. נסה שוב.';
+        }
+
+        setFeedback(errorMessage);
+        setFeedbackType('error');
+        setShowFeedback(true);
+
+        if (!hasCompletedPractice) {
+            setHasCompletedPractice(true);
+            if (onPracticeCompleted) {
+                onPracticeCompleted();
+            }
+        }
+
+    } finally {
+        setIsLoading(false);
+    }
+};
+
+
+    const getFeedbackIcon = () => {
+        switch (feedbackType) {
+            case 'success':
+                return <CheckCircle2 className="w-5 h-5" />;
+            case 'error':
+                return <AlertCircle className="w-5 h-5" />;
+            default:
+                return <AlertCircle className="w-5 h-5" />;
+        }
+    };
+
+    const getFeedbackStyles = () => {
+        switch (feedbackType) {
+            case 'success':
+                return 'bg-green-50 text-green-600';
+            case 'error':
+                return 'bg-red-50 text-red-600';
+            default:
+                return 'bg-blue-50 text-blue-600';
         }
     };
 
@@ -49,76 +162,89 @@ const Writing = () => {
                 </motion.div>
                 
                 <h1 className="text-3xl font-bold text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    שיפור יכולות הכתיבה
+                    תרגול כתיבה באנגלית
                 </h1>
                 
                 <p className="text-md font-medium text-gray-600 max-w-2xl mx-auto">
-                    השלם את המילה החסרה במשפט
+                    כתוב משפט באנגלית שיכלול לפחות 2 מילים מתוך רשימת המילים הקשות שלך
                 </p>
             </div>
 
             {/* Main Content Card */}
             <motion.div 
                 className="bg-white rounded-2xl shadow-xl overflow-hidden"
+                dir='ltr'
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
             >
-                {/* Sentence Display */}
+                {/* Header Section */}
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6">
-                    <p className="text-white text-xl font-medium text-center">
-                        {incompleteSentence}
-                    </p>
+                    <h3 className="text-white text-lg font-medium text-center">
+                        כתוב משפט באנגלית עם המילים הקשות שלך
+                    </h3>
                 </div>
 
                 {/* Input Section */}
                 <div className="p-8">
                     <div className="flex flex-col items-center space-y-6">
-                        <div className="w-full max-w-md">
-                            <input
-                                type="text"
+                        <div className="w-full max-w-2xl">
+                            <textarea
                                 value={userInput}
                                 onChange={handleInputChange}
-                                onKeyUp={(e) => {
-                                    if (e.key === 'Enter') {
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && e.ctrlKey) {
                                         checkAnswer();
                                     }
                                 }}
-                                className="w-full px-4 py-2 text-lg border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-colors"
-                                placeholder="הקלד את המילה החסרה..."
+                                className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none ${
+                                    validationError 
+                                        ? 'border-red-300 focus:border-red-500' 
+                                        : 'border-gray-300 focus:border-indigo-500'
+                                }`}
+                                placeholder="Write your sentence in English here..."
+                                rows="4"
+                                disabled={isLoading}
                             />
+                            {validationError && (
+                                <p className="text-red-500 text-sm mt-2">{validationError}</p>
+                            )}
+                            <p className="text-sm text-gray-500 mt-2 text-center">
+                                Ctrl + Enter לבדיקה מהירה
+                            </p>
                         </div>
 
                         <motion.button
                             onClick={checkAnswer}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="px-8 py-3 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors"
+                            dir='rtl'
+                            disabled={isLoading || validationError}
+                            whileHover={{ scale: (isLoading || validationError) ? 1 : 1.05 }}
+                            whileTap={{ scale: (isLoading || validationError) ? 1 : 0.95 }}
+                            className="px-8 py-3 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                         >
-                            בדוק תשובה
+                            {isLoading ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span>בודק תשובה...</span>
+                                </>
+                            ) : (
+                                <span>בדוק תשובה</span>
+                            )}
                         </motion.button>
 
                         <AnimatePresence>
-                            {showError && (
+                            {showFeedback && (
                                 <motion.div
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className="flex items-center space-x-2 p-4 bg-red-50 text-red-600 rounded-lg w-full max-w-md"
+                                    className={`flex items-start space-x-3 p-4 rounded-lg w-full max-w-2xl ${getFeedbackStyles()}`}
                                 >
-                                    <AlertCircle className="w-5 h-5" />
-                                    <span>נסה שוב! המילה אינה נכונה</span>
-                                </motion.div>
-                            )}
-
-                            {isCorrect && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="flex items-center space-x-2 p-4 bg-green-50 text-green-600 rounded-lg w-full max-w-md"
-                                >
-                                    <CheckCircle2 className="w-5 h-5" />
-                                    <span>כל הכבוד! התשובה נכונה</span>
+                                    <div className="flex-shrink-0 mt-0.5">
+                                        {getFeedbackIcon()}
+                                    </div>
+                                    <div className="flex-1" dir='rtl'>
+                                        <p className="text-sm leading-relaxed">{feedback}</p>
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -129,13 +255,13 @@ const Writing = () => {
                 <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50">
                     <div className="flex flex-col md:flex-row gap-4 justify-center">
                         <div className="flex items-center space-x-2 text-gray-600">
-                            <span className="text-sm">✍️ שים לב לאיות הנכון</span>
+                            <span className="text-sm">✍️ השתמש בלפחות 2 מילים מהרשימה</span>
                         </div>
                         <div className="flex items-center space-x-2 text-gray-600">
-                            <span className="text-sm">📖 קרא את המשפט כולו להבנת ההקשר</span>
+                            <span className="text-sm">📖 שים לב לדקדוק ולמבנה המשפט</span>
                         </div>
                         <div className="flex items-center space-x-2 text-gray-600">
-                            <span className="text-sm">🎯 נסה להיזכר במילים דומות</span>
+                            <span className="text-sm">🎯 נסה להיות יצירתי וברור</span>
                         </div>
                     </div>
                 </div>

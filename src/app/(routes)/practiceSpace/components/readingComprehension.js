@@ -3,7 +3,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, AlertCircle, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
 import questionService from '../services/questionService';
 
-const ReadingComprehension = ({ story, onBackToReading, preGeneratedQuestion }) => {
+const ReadingComprehension = ({ 
+    story, 
+    onBackToReading, 
+    preGeneratedQuestion, 
+    onPracticeCompleted 
+}) => {
     const [question, setQuestion] = useState(preGeneratedQuestion || null);
     const [selectedAnswer, setSelectedAnswer] = useState('');
     const [showResult, setShowResult] = useState(false);
@@ -62,6 +67,11 @@ const ReadingComprehension = ({ story, onBackToReading, preGeneratedQuestion }) 
         const answerResult = questionService.checkAnswer(selectedAnswer, question.correctAnswer);
         setResult(answerResult);
         setShowResult(true);
+        
+        // Signal practice completion after checking answer
+        if (onPracticeCompleted) {
+            onPracticeCompleted();
+        }
     };
 
     const resetQuestion = () => {
