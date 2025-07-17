@@ -142,7 +142,7 @@ const ReadingComprehension = ({ story, onBackToReading, preGeneratedQuestion }) 
 
                 {/* Question Section */}
                 <div className="p-8">
-                    {(loading && !preGeneratedQuestion) && (
+                    {loading && (
                         <div className="flex items-center justify-center space-x-2 text-gray-500">
                             <Loader2 className="w-5 h-5 animate-spin" />
                             <span>יוצר שאלה...</span>
@@ -164,7 +164,7 @@ const ReadingComprehension = ({ story, onBackToReading, preGeneratedQuestion }) 
                         </div>
                     )}
 
-                    {question && !error && (
+                    {question && !loading && !error && (
                         <div className="space-y-6">
                             <div className="text-center">
                                 <h3 className="text-xl font-semibold text-gray-800 mb-6">

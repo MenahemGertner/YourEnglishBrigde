@@ -1,12 +1,14 @@
+require('dotenv').config(); // טוען את מפתח ה-API מהסביבה
+
 export async function POST(request) {
   const { words } = await request.json();
-  
+
   if (!words || !Array.isArray(words) || words.length === 0) {
     return Response.json({ message: 'Words array is required' }, { status: 400 });
   }
-  
+
   try {
-    const story = await generateStoryWithClaude(words);
+    const story = await generateStoryWithGPT(words);
     return Response.json({ story });
   } catch (error) {
     console.error('Error generating story:', error);
@@ -17,26 +19,30 @@ export async function POST(request) {
   }
 }
 
-async function generateStoryWithClaude(words, retryCount = 0) {
+async function generateStoryWithGPT(words, retryCount = 0) {
   const MAX_RETRIES = 2;
-  const CLAUDE_TIMEOUT = 20000; // 20 שניות
-  
+  const OPENAI_TIMEOUT = 20000; // 20 שניות
+
   const prompt = createStoryPrompt(words);
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), CLAUDE_TIMEOUT);
-  
+  const timeoutId = setTimeout(() => controller.abort(), OPENAI_TIMEOUT);
+
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01'
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 600, // מופחת מ-800 להאצה
+        model: 'gpt-4o',
+        max_tokens: 600,
+        temperature: 0.7,
         messages: [
+          {
+            role: 'system',
+            content: 'You are an assistant that generates short stories in strict JSON format.'
+          },
           {
             role: 'user',
             content: prompt
@@ -45,37 +51,35 @@ async function generateStoryWithClaude(words, retryCount = 0) {
       }),
       signal: controller.signal
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Claude API error: ${errorData.error?.message || 'Unknown error'}`);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
     }
-    
+
     const data = await response.json();
-    const storyText = data.content[0].text;
-    
+    const storyText = data.choices[0].message.content;
+
     return parseStoryResponse(storyText);
-    
+
   } catch (error) {
     clearTimeout(timeoutId);
-    
-    // retry logic
+
     if (retryCount < MAX_RETRIES && (error.name === 'AbortError' || error.message.includes('timeout'))) {
-      console.log(`Retrying story generation, attempt ${retryCount + 1}`);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // המתנה של שנייה
-      return generateStoryWithClaude(words, retryCount + 1);
+      console.log(`Retrying GPT story generation, attempt ${retryCount + 1}`);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      return generateStoryWithGPT(words, retryCount + 1);
     }
-    
+
     throw error;
   }
 }
 
 function createStoryPrompt(words) {
   const wordsList = words.join(', ');
-  
-  // prompt מקוצר ומיועל למהירות
+
   return `Create a coherent 5-sentence story using these English words: ${wordsList}
 
 INSTRUCTIONS:
@@ -95,44 +99,40 @@ INSTRUCTIONS:
 }
 
 function parseStoryResponse(responseText) {
-  // נסיון ראשון: JSON נקי ישירות
   try {
     const parsed = JSON.parse(responseText.trim());
-    
+
     if (parsed.sentences && Array.isArray(parsed.sentences) && parsed.sentences.length === 5) {
       return parsed;
     }
   } catch (error) {
     console.log('Direct JSON parse failed, trying fallback parsing...');
   }
-  
-  // fallback: פרסינג מורכב במקרה של כשלון
+
   try {
     const startIndex = responseText.indexOf('{');
     const endIndex = responseText.lastIndexOf('}');
-    
+
     if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
       throw new Error('No valid JSON boundaries found');
     }
-    
+
     const jsonSubstring = responseText.substring(startIndex, endIndex + 1).trim();
     const parsed = JSON.parse(jsonSubstring);
-    
+
     if (!parsed.sentences || !Array.isArray(parsed.sentences)) {
       throw new Error('Parsed object missing "sentences" array');
     }
-    
-    // וידוא שיש בדיוק 5 משפטים
+
     if (parsed.sentences.length !== 5) {
       console.warn(`Expected 5 sentences, got ${parsed.sentences.length}`);
     }
-    
+
     return parsed;
-    
+
   } catch (error) {
     console.error('Error parsing story response:', error.message);
-    
-    // fallback story איכותי
+
     return {
       sentences: [
         {
@@ -159,5 +159,3 @@ function parseStoryResponse(responseText) {
     };
   }
 }
-
-

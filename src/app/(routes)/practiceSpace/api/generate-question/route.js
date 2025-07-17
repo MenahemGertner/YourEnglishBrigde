@@ -1,12 +1,14 @@
+require('dotenv').config(); // טוען מפתח API מהסביבה
+
 export async function POST(request) {
   const { sentences } = await request.json();
-  
+
   if (!sentences || !Array.isArray(sentences) || sentences.length === 0) {
     return Response.json({ message: 'Sentences array is required' }, { status: 400 });
   }
-  
+
   try {
-    const question = await generateQuestionWithClaude(sentences);
+    const question = await generateQuestionWithGPT(sentences);
     return Response.json({ question });
   } catch (error) {
     console.error('Error generating question:', error);
@@ -17,26 +19,30 @@ export async function POST(request) {
   }
 }
 
-async function generateQuestionWithClaude(sentences, retryCount = 0) {
+async function generateQuestionWithGPT(sentences, retryCount = 0) {
   const MAX_RETRIES = 2;
-  const CLAUDE_TIMEOUT = 15000; // 15 שניות
-  
+  const OPENAI_TIMEOUT = 15000; // 15 שניות
+
   const prompt = createQuestionPrompt(sentences);
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), CLAUDE_TIMEOUT);
-  
+  const timeoutId = setTimeout(() => controller.abort(), OPENAI_TIMEOUT);
+
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.CLAUDE_API_KEY,
-        'anthropic-version': '2023-06-01'
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 300,
+        model: 'gpt-4o',
+        max_tokens: 400,
+        temperature: 0.7,
         messages: [
+          {
+            role: 'system',
+            content: 'You are a teaching assistant who writes multiple choice reading comprehension questions in strict JSON.'
+          },
           {
             role: 'user',
             content: prompt
@@ -45,36 +51,35 @@ async function generateQuestionWithClaude(sentences, retryCount = 0) {
       }),
       signal: controller.signal
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Claude API error: ${errorData.error?.message || 'Unknown error'}`);
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
     }
-    
+
     const data = await response.json();
-    const questionText = data.content[0].text;
-    
+    const questionText = data.choices[0].message.content;
+
     return parseQuestionResponse(questionText);
-    
+
   } catch (error) {
     clearTimeout(timeoutId);
-    
-    // retry logic
+
     if (retryCount < MAX_RETRIES && (error.name === 'AbortError' || error.message.includes('timeout'))) {
-      console.log(`Retrying question generation, attempt ${retryCount + 1}`);
+      console.log(`Retrying GPT question generation, attempt ${retryCount + 1}`);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      return generateQuestionWithClaude(sentences, retryCount + 1);
+      return generateQuestionWithGPT(sentences, retryCount + 1);
     }
-    
+
     throw error;
   }
 }
 
 function createQuestionPrompt(sentences) {
   const storyText = sentences.join(' ');
-  
+
   return `Based on this English story, create ONE multiple choice reading comprehension question with 4 options.
 
 STORY:
@@ -102,13 +107,11 @@ INSTRUCTIONS:
 
 function parseQuestionResponse(responseText) {
   try {
-    // נסיון ראשון: JSON נקי ישירות
     const parsed = JSON.parse(responseText.trim());
-    
-    if (parsed.question && parsed.options && Array.isArray(parsed.options) && 
+
+    if (parsed.question && parsed.options && Array.isArray(parsed.options) &&
         parsed.options.length === 4 && parsed.correctAnswer) {
-      
-      // וידוא שהתשובה הנכונה קיימת באפשרויות
+
       if (parsed.options.includes(parsed.correctAnswer)) {
         return parsed;
       }
@@ -116,35 +119,32 @@ function parseQuestionResponse(responseText) {
   } catch (error) {
     console.log('Direct JSON parse failed, trying fallback parsing...');
   }
-  
-  // fallback: פרסינג מורכב
+
   try {
     const startIndex = responseText.indexOf('{');
     const endIndex = responseText.lastIndexOf('}');
-    
+
     if (startIndex === -1 || endIndex === -1 || endIndex <= startIndex) {
       throw new Error('No valid JSON boundaries found');
     }
-    
+
     const jsonSubstring = responseText.substring(startIndex, endIndex + 1).trim();
     const parsed = JSON.parse(jsonSubstring);
-    
-    if (!parsed.question || !parsed.options || !Array.isArray(parsed.options) || 
+
+    if (!parsed.question || !parsed.options || !Array.isArray(parsed.options) ||
         parsed.options.length !== 4 || !parsed.correctAnswer) {
       throw new Error('Invalid question structure');
     }
-    
-    // וידוא שהתשובה הנכונה קיימת באפשרויות
+
     if (!parsed.options.includes(parsed.correctAnswer)) {
       throw new Error('Correct answer not found in options');
     }
-    
+
     return parsed;
-    
+
   } catch (error) {
     console.error('Error parsing question response:', error.message);
-    
-    // fallback question
+
     return {
       question: "What is the main theme of the story?",
       options: [
