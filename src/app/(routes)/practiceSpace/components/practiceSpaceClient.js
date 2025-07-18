@@ -101,7 +101,6 @@ const PracticeSpaceClient = ({ wordsData }) => {
             case 'writing':
                 return (
                     <Writing 
-                        wordsData={wordsData} 
                         {...commonProps}
                     />
                 );

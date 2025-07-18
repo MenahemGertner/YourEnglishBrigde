@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Edit, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import WritingService from '../services/writingService';
 
-const Writing = ({ wordsData, onPracticeCompleted }) => {
+const Writing = ({ onPracticeCompleted }) => {
     const [userInput, setUserInput] = useState('');
     const [feedback, setFeedback] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -10,117 +11,64 @@ const Writing = ({ wordsData, onPracticeCompleted }) => {
     const [feedbackType, setFeedbackType] = useState(''); // 'success', 'error', 'info'
     const [validationError, setValidationError] = useState('');
     const [hasCompletedPractice, setHasCompletedPractice] = useState(false);
-    
-    // פונקציה לבדיקת טקסט אנגלית
-    const isEnglishText = (text) => {
-        // בדיקה בסיסית - רק תווים לטיניים, מספרים, רווחים וסימני פיסוק
-        const englishRegex = /^[a-zA-Z0-9\s.,!?'"()-]+$/;
-        return englishRegex.test(text);
-    };
 
     const handleInputChange = (e) => {
-    const value = e.target.value;
-    setUserInput(value);
-    setShowFeedback(false);
-    setFeedback('');
+        const value = e.target.value;
+        setUserInput(value);
+        setShowFeedback(false);
+        setFeedback('');
 
-    // ולידציה מרוכזת כאן בלבד
-    if (value.trim()) {
-        if (!isEnglishText(value)) {
-            setValidationError('אנא כתוב באנגלית בלבד');
-        } else if (!/^[A-Z]/.test(value.trim())) {
-            setValidationError('המשפט צריך להתחיל באות גדולה');
-        } else {
-            setValidationError('');
-        }
-    } else {
-        setValidationError('');
-    }
-};
+        // שימוש בשירות לולידציה
+        const error = WritingService.validateInput(value);
+        setValidationError(error);
+    };
 
-const checkAnswer = async () => {
-    if (!userInput.trim()) {
-        setFeedback('אנא כתוב משפט לפני הבדיקה');
-        setFeedbackType('error');
-        setShowFeedback(true);
-        return;
-    }
-
-    // לא בודקים שוב את isEnglishText ולא את /^[A-Z]/ כאן
-
-    setIsLoading(true);
-    setShowFeedback(false);
-
-    try {
-        const response = await fetch('/practiceSpace/api/check-writing', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                sentence: userInput.trim(),
-                difficultWords: []
-            })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        if (!result.feedback || !result.feedback.feedback) {
-            throw new Error('Invalid response format from API');
-        }
-
-        const apiResponse = result.feedback;
-
-        setFeedback(apiResponse.feedback);
-
-        if (apiResponse.score === 'good' && !apiResponse.hasErrors) {
-            setFeedbackType('success');
-        } else if (apiResponse.hasErrors) {
+    const checkAnswer = async () => {
+        if (!userInput.trim()) {
+            setFeedback('אנא כתוב משפט לפני הבדיקה');
             setFeedbackType('error');
-        } else {
-            setFeedbackType('info');
+            setShowFeedback(true);
+            return;
         }
 
-        setShowFeedback(true);
+        setIsLoading(true);
+        setShowFeedback(false);
 
-        if (!hasCompletedPractice) {
-            setHasCompletedPractice(true);
-            if (onPracticeCompleted) {
-                onPracticeCompleted();
+        try {
+            // שימוש בשירות לבדיקה המלאה
+            const result = await WritingService.performFullCheck(userInput, []);
+            
+            setFeedback(result.feedback);
+            setFeedbackType(result.feedbackType);
+            setShowFeedback(true);
+
+            // סימון השלמת התרגול
+            if (!hasCompletedPractice) {
+                setHasCompletedPractice(true);
+                if (onPracticeCompleted) {
+                    onPracticeCompleted();
+                }
             }
-        }
 
-    } catch (error) {
-        console.error('Error checking writing:', error);
+        } catch (error) {
+            console.error('Error in checkAnswer:', error);
+            
+            setFeedback(error.message);
+            setFeedbackType('error');
+            setShowFeedback(true);
 
-        let errorMessage = 'אירעה שגיאה בבדיקת התשובה. נסה שוב.';
-        if (error.message.includes('Failed to fetch')) {
-            errorMessage = 'בעיה בחיבור לשרת. אנא בדוק את החיבור לאינטרנט ונסה שוב.';
-        } else if (error.message.includes('timeout')) {
-            errorMessage = 'הבדיקה נמשכת יותר מדי זמן. נסה שוב.';
-        }
-
-        setFeedback(errorMessage);
-        setFeedbackType('error');
-        setShowFeedback(true);
-
-        if (!hasCompletedPractice) {
-            setHasCompletedPractice(true);
-            if (onPracticeCompleted) {
-                onPracticeCompleted();
+            // סימון השלמת התרגול גם במקרה של שגיאה
+            if (!hasCompletedPractice) {
+                setHasCompletedPractice(true);
+                if (onPracticeCompleted) {
+                    onPracticeCompleted();
+                }
             }
+
+        } finally {
+            setIsLoading(false);
         }
-
-    } finally {
-        setIsLoading(false);
-    }
-};
-
+    };
 
     const getFeedbackIcon = () => {
         switch (feedbackType) {
