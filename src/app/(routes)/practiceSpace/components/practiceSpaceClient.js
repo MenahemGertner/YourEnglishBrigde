@@ -6,8 +6,7 @@ import PracticeLogic from './practiceLogic';
 import ChallengingWords from './challengingWords';
 import Reading from './reading';
 import Writing from './writing';
-import Hearing from './hearing';
-import Speaking from './speaking';
+import AIVoiceChatComponent from './AIVoiceChatComponent'
 import { ChevronDown, ChevronLeft, Book, PenTool, Headphones } from 'lucide-react';
 
 const PracticeSpaceClient = ({ wordsData }) => {
@@ -37,6 +36,9 @@ const PracticeSpaceClient = ({ wordsData }) => {
 
     // Find current tab index
     const currentTabIndex = tabs.findIndex(tab => tab.id === activeTab);
+
+    // Check if this is the last tab
+    const isLastTab = currentTabIndex === tabs.length - 1;
 
     // Handle practice completion
     const handlePracticeCompleted = (tabId) => {
@@ -107,15 +109,10 @@ const PracticeSpaceClient = ({ wordsData }) => {
             case 'speaking':
                 return (
                     <div className="space-y-8">
-                        {/* <Hearing 
-                            wordsData={wordsData} 
-                            {...commonProps}
+                        <AIVoiceChatComponent
+                        words={readingData.words}
+                        {...commonProps}
                         />
-                        <Speaking 
-                            wordsData={wordsData} 
-                            {...commonProps}
-                        /> */}
-                        <p>בקרוב הבלוק הזה יהיה מוכן..</p>
                     </div>
                 );
             default:
@@ -251,36 +248,40 @@ const PracticeSpaceClient = ({ wordsData }) => {
                             </motion.div>
 
                             {/* Navigation Buttons - Only show when practice is completed */}
-                            {isCurrentTabCompleted && (
+                            {isCurrentTabCompleted && !isLastTab && (
                                 <motion.div 
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5 }}
                                     className="mt-12 flex justify-end items-center"
                                 >
-                                    {currentTabIndex < tabs.length - 1 && (
-                                        <button
-                                            onClick={goToNextTab}
-                                            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 px-6 py-3 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md"
-                                        >
-                                            <span>תרגול הבא</span>
-                                            <ChevronLeft className="w-4 h-4" />
-                                        </button>
-                                    )}
+                                    <button
+                                        onClick={goToNextTab}
+                                        className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 px-6 py-3 rounded-md text-sm font-medium transition-all duration-200 flex items-center space-x-2 shadow-sm hover:shadow-md"
+                                    >
+                                        <span>תרגול הבא</span>
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </button>
                                 </motion.div>
                             )}
 
-                            {/* Return Button - Always visible */}
+                            {/* Return Button - Enhanced style when last tab is completed */}
                             <motion.div 
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ delay: 0.5, duration: 0.5 }}
                                 className="mt-16 text-center"
                             >
-                                <p className='mb-6 text-sm text-gray-600'>סיימת לתרגל? מוכן להמשיך הלאה?</p>
+                                <p className={`mb-6 text-sm ${isLastTab && isCurrentTabCompleted ? 'text-blue-700 font-medium' : 'text-gray-600'}`}>
+                                    {isLastTab && isCurrentTabCompleted ? 'מעולה! סיימת את כל התרגולים!' : 'סיימת לתרגל? מוכן להמשיך הלאה?'}
+                                </p>
                                 <button
                                     onClick={handleReturn}
-                                    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-md text-sm transition-all duration-200 border border-gray-200"
+                                    className={`px-6 py-3 rounded-md text-sm transition-all duration-200 border ${
+                                        isLastTab && isCurrentTabCompleted
+                                            ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-transparent font-medium shadow-sm hover:shadow-md'
+                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 border-gray-200'
+                                    }`}
                                 >
                                     חזרה לרשימת המילים
                                 </button>
