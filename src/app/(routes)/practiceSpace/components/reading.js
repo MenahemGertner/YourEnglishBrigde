@@ -168,13 +168,13 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
                                     disabled={isGenerating}
                                     className="flex items-center gap-2 bg-white/20 text-white px-3 py-2 rounded-full hover:bg-white/30 transition-all duration-200 border-2 border-white/60 disabled:opacity-50"
                                 >
-                                    <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
                                     <span className="text-sm">סיפור חדש</span>
+                                    <RefreshCw className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
                                 </button>
                             )}
-                            <div className="flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full hover:bg-white/30 transition-all duration-200 border-2 border-white/60">
+                            <div className="flex items-center gap-2 bg-white/20 text-white px-4 py-2 rounded-full hover:bg-white/30 transition-all duration-200 border-2 border-white/60">                               
+                                <span className="text-sm">השמע את כל הסיפור</span>
                                 <AudioButton text={fullStory} className="text-white" />
-                                <span className="text-sm">השמע</span>
                             </div>
                         </div>
                     </div>
@@ -207,9 +207,18 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
                                             <div className={`p-4 rounded-lg transition-all duration-200 ${
                                                 activeIndex === index ? 'bg-indigo-50 shadow-md' : 'hover:bg-gray-50'
                                             }`}>
-                                                <span className="text-lg leading-relaxed text-gray-800 block text-left" dir="ltr">
-                                                    {underLine(sentence.english, allWordsForUnderLine)}
-                                                </span>
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <span className="text-lg leading-relaxed text-gray-800 block text-left flex-1" dir="ltr">
+                                                        {underLine(sentence.english, allWordsForUnderLine)}
+                                                    </span>
+                                                    <div className="flex-shrink-0">
+                                                        <AudioButton 
+                                                            text={sentence.english} 
+                                                            className="text-indigo-600 hover:text-indigo-700 p-2 rounded-full hover:bg-indigo-50 transition-all duration-200" 
+                                                            title={`השמע משפט ${index + 1}`}
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
                                         </Tooltip>
                                     </motion.div>
@@ -228,10 +237,10 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
                                         className="inline-flex items-center gap-3 px-6 py-3 rounded-full font-medium transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700"
                                     >
                                         <CheckCircle className="w-5 h-5" />
-                                        <span>סיימתי לקרוא - בוא נבדוק הבנה</span>
+                                        <span>סיימתי לקרוא!!</span>
                                     </button>
                                     <p className="text-sm text-gray-500 mt-2">
-                                        מוכן לבדוק כמה הבנת מהסיפור?
+                                        מוכן לבדוק את ההבנה שלך?
                                     </p>
                                 </motion.div>
                             )}
@@ -241,7 +250,7 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
 
                 <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50">
                     <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">לחץ על המשפטים לתרגום</span>
+                        <span className="text-sm text-gray-500">לחץ על המשפטים לתרגום ועל הרמקול להשמעה</span>
                         <div className="h-1 w-24 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"></div>
                     </div>
                 </div>

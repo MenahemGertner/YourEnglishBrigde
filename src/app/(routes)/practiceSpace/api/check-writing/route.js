@@ -35,7 +35,7 @@ async function checkWritingWithGPT(sentence, difficultWords = [], retryCount = 0
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-chat-latest',
         max_tokens: 300,
         temperature: 0.3,
         messages: [

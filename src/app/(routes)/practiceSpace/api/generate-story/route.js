@@ -35,7 +35,7 @@ async function generateStoryWithGPT(words, retryCount = 0) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-chat-latest',
         max_tokens: 600,
         temperature: 0.7,
         messages: [
@@ -84,10 +84,11 @@ function createStoryPrompt(words) {
 
 REQUIREMENTS:
 1. The story should be cohesive and logically structured, with a clear beginning, middle, and end.
-2. Incorporate all of these English words in a natural and meaningful way: ${wordsList}
-3. You may use any form of the words (plural, -ing, -ed, etc).
-4. After the story, provide a Hebrew translation for each sentence.
-5. Return ONLY valid JSON. No additional explanation or comments.
+2. Use SIMPLE, BEGINNER-LEVEL English vocabulary and grammar structures.
+3. Incorporate all of these English words in a natural and meaningful way: ${wordsList}
+4. You may use any form of the words (plural, -ing, -ed, etc).
+5. After the story, provide a Hebrew translation for each sentence.
+6. Return ONLY valid JSON. No additional explanation or comments.
 {
   "sentences": [
     {"english": "sentence", "hebrew": "תרגום"},

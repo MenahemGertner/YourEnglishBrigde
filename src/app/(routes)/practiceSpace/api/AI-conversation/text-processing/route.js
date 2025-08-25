@@ -96,7 +96,7 @@ TASK: Create an encouraging wrap-up message that:
 STRUCTURE:
 1. First, respond naturally to what the student just said (1 sentence)
 2. Then transition to closing with praise for their effort
-3. IF the student used any challenging words well during the conversation, mention one of them specifically with praise
+3. 3. IF the student personally used any challenging words in their own responses during the conversation, mention one of them specifically with praise
 4. End with an encouraging goodbye
 
 KEEP IT: Short, positive, simple language except for vocabulary words
@@ -159,7 +159,7 @@ async function processTextWithGPT(text, conversationContext = [], challengingWor
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-chat-latest',
         max_tokens: 600,
         temperature: 0.5,
         messages: messages

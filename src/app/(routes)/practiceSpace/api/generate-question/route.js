@@ -35,7 +35,7 @@ async function generateQuestionWithGPT(sentences, retryCount = 0) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-5-chat-latest',
         max_tokens: 400,
         temperature: 0.7,
         messages: [
