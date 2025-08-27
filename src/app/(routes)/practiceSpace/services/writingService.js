@@ -1,20 +1,15 @@
-// writingService.js
+// writingService.js - גרסה משופרת
 class WritingService {
     /**
      * בדיקת טקסט אנגלית
-     * @param {string} text - הטקסט לבדיקה
-     * @returns {boolean} - האם הטקסט באנגלית
      */
     static isEnglishText(text) {
-        // בדיקה בסיסית - רק תווים לטיניים, מספרים, רווחים וסימני פיסוק
         const englishRegex = /^[a-zA-Z0-9\s.,!?'"()-]+$/;
         return englishRegex.test(text);
     }
 
     /**
      * ולידציה של הקלט
-     * @param {string} value - הערך לולידציה
-     * @returns {string} - הודעת שגיאה או מחרוזת רק אם יש שגיאה
      */
     static validateInput(value) {
         if (!value.trim()) {
@@ -34,9 +29,6 @@ class WritingService {
 
     /**
      * בדיקת התשובה דרך API
-     * @param {string} sentence - המשפט לבדיקה
-     * @param {Array} difficultWords - מילים קשות (אופציונלי)
-     * @returns {Promise<Object>} - תוצאת הבדיקה
      */
     static async checkWriting(sentence, difficultWords = []) {
         if (!sentence.trim()) {
@@ -71,7 +63,6 @@ class WritingService {
         } catch (error) {
             console.error('Error checking writing:', error);
             
-            // טיפול בשגיאות ספציפיות
             let errorMessage = 'אירעה שגיאה בבדיקת התשובה. נסה שוב.';
             
             if (error.message.includes('Failed to fetch')) {
@@ -79,7 +70,6 @@ class WritingService {
             } else if (error.message.includes('timeout')) {
                 errorMessage = 'הבדיקה נמשכת יותר מדי זמן. נסה שוב.';
             } else if (error.message.startsWith('אנא')) {
-                // זו שגיאת ולידציה שלנו
                 errorMessage = error.message;
             }
 
@@ -88,37 +78,35 @@ class WritingService {
     }
 
     /**
-     * קביעת סוג הפידבק על בסיס התשובה
-     * @param {Object} apiResponse - התשובה מה-API
-     * @returns {string} - סוג הפידבק: 'success', 'error', 'info'
+     * קביעת סוג הפידבק על בסיס התשובה - מערכת 3 רמות משופרת
      */
     static getFeedbackType(apiResponse) {
-        if (apiResponse.score === 'good' && !apiResponse.hasErrors) {
+        const { score, hasErrors, errorCount = 0, positivePoints = 0 } = apiResponse;
+
+        // אם המשפט מצוין (ללא שגיאות או עם שגיאה קטנה אחת בלבד)
+        if (score === 'excellent' || (score === 'good' && (!hasErrors || errorCount <= 1))) {
             return 'success';
-        } else if (apiResponse.hasErrors) {
-            return 'error';
-        } else {
-            return 'info';
         }
+        
+        // אם יש כמה שגיאות אבל גם דברים חיוביים
+        if ((score === 'good' || score === 'fair') && hasErrors && errorCount <= 3) {
+            return 'warning';
+        }
+        
+        // בכל מקרה אחר - צריך שיפור משמעותי
+        return 'info';
     }
 
     /**
-     * בדיקה מלאה של המשפט - משלבת ולידציה ובדיקה
-     * @param {string} sentence - המשפט לבדיקה
-     * @param {Array} difficultWords - מילים קשות
-     * @returns {Promise<Object>} - תוצאת הבדיקה המלאה
+     * בדיקה מלאה של המשפט
      */
     static async performFullCheck(sentence, difficultWords = []) {
-        // בדיקת ולידציה מקדימה
         const validationError = this.validateInput(sentence);
         if (validationError) {
             throw new Error(validationError);
         }
 
-        // בדיקה דרך API
         const apiResponse = await this.checkWriting(sentence, difficultWords);
-        
-        // קביעת סוג הפידבק
         const feedbackType = this.getFeedbackType(apiResponse);
 
         return {

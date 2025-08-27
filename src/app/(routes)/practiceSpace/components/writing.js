@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
+import { Edit, AlertCircle, CheckCircle2, Loader2, Lightbulb, RotateCcw } from 'lucide-react';
 import WritingService from '../services/writingService';
 
 const Writing = ({ onPracticeCompleted }) => {
@@ -8,7 +8,7 @@ const Writing = ({ onPracticeCompleted }) => {
     const [feedback, setFeedback] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showFeedback, setShowFeedback] = useState(false);
-    const [feedbackType, setFeedbackType] = useState(''); // 'success', 'error', 'info'
+    const [feedbackType, setFeedbackType] = useState(''); // 'success', 'warning', 'info'
     const [validationError, setValidationError] = useState('');
     const [hasCompletedPractice, setHasCompletedPractice] = useState(false);
 
@@ -26,7 +26,7 @@ const Writing = ({ onPracticeCompleted }) => {
     const checkAnswer = async () => {
         if (!userInput.trim()) {
             setFeedback('אנא כתוב משפט לפני הבדיקה');
-            setFeedbackType('error');
+            setFeedbackType('info');
             setShowFeedback(true);
             return;
         }
@@ -54,7 +54,7 @@ const Writing = ({ onPracticeCompleted }) => {
             console.error('Error in checkAnswer:', error);
             
             setFeedback(error.message);
-            setFeedbackType('error');
+            setFeedbackType('info');
             setShowFeedback(true);
 
             // סימון השלמת התרגול גם במקרה של שגיאה
@@ -70,25 +70,37 @@ const Writing = ({ onPracticeCompleted }) => {
         }
     };
 
+    const resetText = () => {
+        setUserInput('');
+        setFeedback('');
+        setShowFeedback(false);
+        setFeedbackType('');
+        setValidationError('');
+    };
+
     const getFeedbackIcon = () => {
         switch (feedbackType) {
             case 'success':
                 return <CheckCircle2 className="w-5 h-5" />;
-            case 'error':
+            case 'warning':
                 return <AlertCircle className="w-5 h-5" />;
+            case 'info':
+                return <Lightbulb className="w-5 h-5" />;
             default:
-                return <AlertCircle className="w-5 h-5" />;
+                return <Lightbulb className="w-5 h-5" />;
         }
     };
 
     const getFeedbackStyles = () => {
         switch (feedbackType) {
             case 'success':
-                return 'bg-green-50 text-green-600';
-            case 'error':
-                return 'bg-red-50 text-red-600';
+                return 'bg-green-50 text-green-700 border-green-200';
+            case 'warning':
+                return 'bg-amber-50 text-amber-700 border-amber-200';
+            case 'info':
+                return 'bg-blue-50 text-blue-700 border-blue-200';
             default:
-                return 'bg-blue-50 text-blue-600';
+                return 'bg-blue-50 text-blue-700 border-blue-200';
         }
     };
 
@@ -114,7 +126,7 @@ const Writing = ({ onPracticeCompleted }) => {
                 </h1>
                 
                 <p className="text-md font-medium text-gray-600 max-w-2xl mx-auto">
-                    כתוב משפט באנגלית שיכלול לפחות 2 מילים מתוך רשימת המילים הקשות שלך
+                    נסה לכתוב משפט תקני באנגלית, שיכלול לפחות מילה אחת מתוך רשימת המילים המאתגרות שלך.
                 </p>
             </div>
 
@@ -185,13 +197,30 @@ const Writing = ({ onPracticeCompleted }) => {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    className={`flex items-start space-x-3 p-4 rounded-lg w-full max-w-2xl ${getFeedbackStyles()}`}
+                                    className="w-full max-w-2xl space-y-4"
                                 >
-                                    <div className="flex-shrink-0 mt-0.5">
-                                        {getFeedbackIcon()}
+                                    {/* משוב */}
+                                    <div className={`flex items-start space-x-3 p-4 rounded-lg border-2 ${getFeedbackStyles()}`}>
+                                        <div className="flex-shrink-0 mt-0.5">
+                                            {getFeedbackIcon()}
+                                        </div>
+                                        <div className="flex-1" dir='rtl'>
+                                            <p className="text-sm leading-relaxed">{feedback}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1" dir='rtl'>
-                                        <p className="text-sm leading-relaxed">{feedback}</p>
+                                    
+                                    {/* כפתור איפוס */}
+                                    <div className="flex justify-center">
+                                        <motion.button
+                                            onClick={resetText}
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                                            dir="rtl"
+                                        >
+                                            <RotateCcw className="w-4 h-4 ml-2" />
+                                            <span>נסה משפט חדש</span>
+                                        </motion.button>
                                     </div>
                                 </motion.div>
                             )}
@@ -199,17 +228,24 @@ const Writing = ({ onPracticeCompleted }) => {
                     </div>
                 </div>
 
-                {/* Tips Section */}
+                {/* Enhanced Tips Section */}
                 <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50">
+                    {/* טיפ חדש למילים קשות */}
+                    
+                    
+                    {/* טיפים כלליים */}
                     <div className="flex flex-col md:flex-row gap-4 justify-center">
                         <div className="flex items-center space-x-2 text-gray-600">
-                            <span className="text-sm">✍️ השתמש בלפחות 2 מילים מהרשימה</span>
+                            <span className="text-sm">✍️ השתמש בלפחות מילה אחת מהרשימה</span>
                         </div>
                         <div className="flex items-center space-x-2 text-gray-600">
                             <span className="text-sm">📖 שים לב לדקדוק ולמבנה המשפט</span>
                         </div>
                         <div className="flex items-center space-x-2 text-gray-600">
                             <span className="text-sm">🎯 נסה להיות יצירתי וברור</span>
+                        </div>
+                        <div className="flex items-center space-x-2 text-gray-600">
+                            <span className="text-sm">⏰ התנסה בזמנים שונים</span>
                         </div>
                     </div>
                 </div>
