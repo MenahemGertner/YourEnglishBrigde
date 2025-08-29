@@ -124,7 +124,19 @@ const CheckYourLevel = () => {
                           ? "הרמה שלך היא רמת 'מתקדמים'" 
                           : `הרמה שלך היא רמה ${userLevel}`}
                     </p>
-                    <p className="text-gray-600 mb-6">{message}</p>
+                    <p className="text-gray-600 mb-4">{message}</p>
+                    
+                    {/* הערה על גמישות בבחירת רמה */}
+                    <div className="bg-blue-50 border-r-4 border-blue-400 p-4 mb-6 rounded">
+                      <p className="text-sm text-blue-700">
+                        {userLevel === 0 
+                          ? "רמת 'מתחילים' היא המומלצת עבורך, אך תוכל בהמשך להחליף רמה בכל עת."
+                          : userLevel === 6 
+                            ? "רמת 'מתקדמים' היא המומלצת עבורך, אך תוכל בהמשך להחליף רמה בכל עת."
+                            : `רמה ${userLevel} היא המומלצת עבורך, אך תוכל בהמשך להחליף רמה בכל עת.`}
+                      </p>
+                    </div>
+                    
                     <Link
                       href={linkUrl}
                       className="inline-block bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-600 hover:from-indigo-600 hover:via-blue-600 hover:to-indigo-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 ease-in-out transform hover:scale-105 shadow-lg"
