@@ -111,6 +111,7 @@ const PracticeSpaceClient = ({ wordsData }) => {
                     <div className="space-y-8">
                         <AIVoiceChatComponent
                         words={readingData.words}
+                        inflections={readingData.inflections}
                         {...commonProps}
                         />
                     </div>

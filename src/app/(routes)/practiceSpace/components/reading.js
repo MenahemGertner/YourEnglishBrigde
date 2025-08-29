@@ -194,36 +194,32 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
                                 </div>
                             )}
                             <div className="space-y-6">
-                                {sentences.map((sentence, index) => (
-                                    <motion.div
-                                        key={index}
-                                        initial={{ opacity: 0, x: -20 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        onHoverStart={() => setActiveIndex(index)}
-                                        onHoverEnd={() => setActiveIndex(null)}
-                                    >
-                                        <Tooltip content={sentence.hebrew}>
-                                            <div className={`p-4 rounded-lg transition-all duration-200 ${
-                                                activeIndex === index ? 'bg-indigo-50 shadow-md' : 'hover:bg-gray-50'
-                                            }`}>
-                                                <div className="flex items-center justify-between gap-3">
-                                                    <span className="text-lg leading-relaxed text-gray-800 block text-left flex-1" dir="ltr">
-                                                        {underLine(sentence.english, allWordsForUnderLine)}
-                                                    </span>
-                                                    <div className="flex-shrink-0">
-                                                        <AudioButton 
-                                                            text={sentence.english} 
-                                                            className="text-indigo-600 hover:text-indigo-700 p-2 rounded-full hover:bg-indigo-50 transition-all duration-200" 
-                                                            title={`השמע משפט ${index + 1}`}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </Tooltip>
-                                    </motion.div>
-                                ))}
-                            </div>
+    {sentences.map((sentence, index) => (
+        <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            onHoverStart={() => setActiveIndex(index)}
+            onHoverEnd={() => setActiveIndex(null)}
+        >
+            <div className={`p-4 rounded-lg transition-all duration-200 ${
+                activeIndex === index ? 'bg-indigo-50 shadow-md' : 'hover:bg-gray-50'
+            }`}>
+                <div className="flex items-center justify-between gap-3">
+                    <Tooltip content={sentence.hebrew}>
+                        <span className="text-lg leading-relaxed text-gray-800 block text-left flex-1" dir="ltr">
+                            {underLine(sentence.english, allWordsForUnderLine)}
+                        </span>
+                    </Tooltip>
+                    <div className="flex-shrink-0">
+                        <AudioButton text={sentence.english}/>
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    ))}
+</div>
 
                             {sentences.length > 0 && (
                                 <motion.div 

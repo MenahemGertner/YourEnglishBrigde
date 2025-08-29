@@ -37,6 +37,47 @@ class VoiceChatService {
     }
   }
 
+  // פונקציה לספירת הודעות שלמות - פונקציה מרכזית יחידה
+  getCompletedMessages(conversationHistory) {
+    return conversationHistory.filter(msg => {
+      return msg.status === 'completed' && 
+             msg.text && 
+             msg.text.trim() !== '' &&
+             !msg.text.includes('מקליט...') && 
+             !msg.text.includes('מעבד...') &&
+             msg.text !== 'מקליט...' &&
+             msg.text !== 'מעבד...';
+    });
+  }
+
+  // פונקציה לבדיקה האם השיחה צריכה להסתיים
+  shouldEndChat(conversationHistory) {
+    const completedMessages = this.getCompletedMessages(conversationHistory);
+    return completedMessages.length >= 7; // AI פתח (1) + 4 זוגות (8) = 9
+  }
+
+  // פונקציה ליצירת הודעת פתיחה - עברה מהקומפוננטה
+  async generateOpeningMessage(words) {
+    try {
+      if (!words || words.length === 0) {
+        return "Hello! I'm excited to practice English with you. How are you doing today?";
+      }
+
+      const response = await this.generateOpeningMessageWithWords(words);
+      return response;
+    } catch (error) {
+      console.error('Error generating opening message:', error);
+      return "Hello! I'm excited to practice English with you. How are you doing today?";
+    }
+  }
+
+  // בדיקת שלב השיחה - עברה מהקומפוננטה
+  getChatStage(conversationHistory) {
+    const completedMessages = this.getCompletedMessages(conversationHistory);
+    const isLastUserTurn = completedMessages.length === 7;
+    return isLastUserTurn ? 'closing' : 'middle';
+  }
+
   // הקלטת אודיו - מתחיל הקלטה
   async startRecording() {
     try {
@@ -169,15 +210,12 @@ class VoiceChatService {
       // 3. יצירת הקשר השיחה עם ההיסטוריה הקיימת
       const conversationContext = this.buildConversationContext(conversationHistory);
 
-      // 4. בדיקה איזה שלב בשיחה (האם זה הפעם האחרונה של המשתמש)
-      const completedMessages = this.getCompletedMessages(conversationHistory);
-      const isLastUserTurn = completedMessages.length === 7; // זו תהיה הודעה מספר 8
-      const stage = isLastUserTurn ? 'closing' : 'middle';
+      // 4. בדיקה איזה שלב בשיחה
+      const stage = this.getChatStage(conversationHistory);
 
       console.log('Processing user voice:', {
         userText,
-        completedMessagesCount: completedMessages.length,
-        isLastUserTurn,
+        completedMessagesCount: this.getCompletedMessages(conversationHistory).length,
         stage
       });
 
@@ -202,19 +240,6 @@ class VoiceChatService {
         error: error.message
       };
     }
-  }
-
-  // פונקציה לספירת הודעות שלמות
-  getCompletedMessages(conversationHistory) {
-    return conversationHistory.filter(msg => {
-      return msg.status === 'completed' && 
-             msg.text && 
-             msg.text.trim() !== '' &&
-             !msg.text.includes('מקליט...') && 
-             !msg.text.includes('מעבד...') &&
-             msg.text !== 'מקליט...' &&
-             msg.text !== 'מעבד...';
-    });
   }
 
   // STT - המרת קול לטקסט

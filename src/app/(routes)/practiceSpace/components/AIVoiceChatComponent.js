@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Mic, Square, Bot, User, RotateCcw } from 'lucide-react';
 import voiceChatService from '../services/voiceChatService';
+import underLine from '@/components/features/UnderLine';
 
-const AIVoiceChatComponent = ({ words, onPracticeCompleted }) => {
+const AIVoiceChatComponent = ({ words, inflections, onPracticeCompleted }) => {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -12,6 +13,9 @@ const AIVoiceChatComponent = ({ words, onPracticeCompleted }) => {
   const [conversationHistory, setConversationHistory] = useState([]);
   const [currentTurn, setCurrentTurn] = useState('');
   const [error, setError] = useState(null);
+
+  // מחשב מערך של כל המילים להדגשה
+  const allWordsForUnderLine = [...(words || []), ...(inflections || [])];
 
   // ניקוי משאבים בעת סגירת הקומפוננטה
   useEffect(() => {
@@ -28,23 +32,9 @@ const AIVoiceChatComponent = ({ words, onPracticeCompleted }) => {
     
     // AI מתחיל את השיחה עם הודעת פתיחה מותאמת למילים
     setTimeout(async () => {
-      const openingMessage = await generateOpeningMessage(words);
+      const openingMessage = await voiceChatService.generateOpeningMessage(words);
       await speakAIMessage(openingMessage);
     }, 1000);
-  };
-
-  const generateOpeningMessage = async (challengingWords) => {
-    try {
-      if (!challengingWords || challengingWords.length === 0) {
-        return "Hello! I'm excited to practice English with you. How are you doing today?";
-      }
-
-      const response = await voiceChatService.generateOpeningMessageWithWords(challengingWords);
-      return response;
-    } catch (error) {
-      console.error('Error generating opening message:', error);
-      return "Hello! I'm excited to practice English with you. How are you doing today?";
-    }
   };
 
   const speakAIMessage = async (message) => {
@@ -156,24 +146,12 @@ const AIVoiceChatComponent = ({ words, onPracticeCompleted }) => {
         setConversationHistory(updatedHistory);
         setIsProcessing(false);
         
-        // בדיקה האם זה הפעם האחרונה של המשתמש (פעם מספר 8)
-        const completedMessages = getCompletedMessages([
-          ...updatedHistory,
-          { text: result.aiResponse, status: 'completed', speaker: 'ai' }
-        ]);
-        
-        console.log('Completed messages count will be:', completedMessages.length);
-        
         // AI מגיב
         setTimeout(async () => {
           await speakAIMessage(result.aiResponse);
           
           // בדיקה האם השיחה צריכה להסתיים - אחרי שה-AI הגיב
-          const finalCompletedMessages = getCompletedMessages(conversationHistory);
-          const shouldEndNow = finalCompletedMessages.length >= 7; // AI פתח (1) + 4 זוגות (8) = 9
-          
-          console.log('Final completed messages:', finalCompletedMessages.length);
-          console.log('Should end now:', shouldEndNow);
+          const shouldEndNow = voiceChatService.shouldEndChat(conversationHistory);
           
           if (shouldEndNow) {
             setTimeout(() => {
@@ -204,19 +182,6 @@ const AIVoiceChatComponent = ({ words, onPracticeCompleted }) => {
     }
   };
 
-  // פונקציה לספירת הודעות שלמות
-  const getCompletedMessages = (history) => {
-    return history.filter(msg => {
-      return msg.status === 'completed' &&
-             msg.text && 
-             msg.text.trim() !== '' &&
-             !msg.text.includes('מקליט...') && 
-             !msg.text.includes('מעבד...') &&
-             msg.text !== 'מקליט...' &&
-             msg.text !== 'מעבד...';
-    });
-  };
-
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -235,11 +200,11 @@ const AIVoiceChatComponent = ({ words, onPracticeCompleted }) => {
         </motion.div>
         
         <h1 className="text-3xl font-bold text-center mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          שיחה קולית עם AI ללימוד אנגלית
+          שיחה קולית עם AI לשיפור השמיעה והדיבור
         </h1>
         
         <p className="text-md font-medium text-gray-600 max-w-2xl mx-auto">
-          נהל שיחה קולית באנגלית עם הבינה המלאכותית שלנו ושפר את כישורי הדיבור שלך
+          נהל שיחה קולית באנגלית עם ה AI שלנו, ושפר את כישורי ההבנה והביטוי שלך.
         </p>
       </div>
 
@@ -439,7 +404,13 @@ const AIVoiceChatComponent = ({ words, onPracticeCompleted }) => {
                           <div className={`text-xs text-gray-600 px-2 max-w-full break-words ${
                             item.speaker === 'user' ? 'text-right' : 'text-left'
                           }`}>
-                            {item.text}
+                            {/* השתמש בפונקציית underLine עבור כל הטקסטים פרט לטקסטי עיבוד */}
+                            {item.text && 
+                             (item.text !== 'מקליט...' && item.text !== 'מעבד...') ? (
+                              underLine(item.text, allWordsForUnderLine)
+                            ) : (
+                              item.text
+                            )}
                           </div>
                         </div>
                       </motion.div>
@@ -462,15 +433,18 @@ const AIVoiceChatComponent = ({ words, onPracticeCompleted }) => {
 
         {/* Tips Section */}
         <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50">
-          <div className="flex flex-col md:flex-row gap-4 justify-center">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 justify-center">
             <div className="flex items-center space-x-2 text-gray-600">
-              <span className="text-sm">🎤 דבר בבירור ובביטחון</span>
+              <span className="text-sm">🎤 דבר בקצב רגוע ובטוח</span>
             </div>
             <div className="flex items-center space-x-2 text-gray-600">
-              <span className="text-sm">👂 האזן בקשב לתגובות AI</span>
+              <span className="text-sm">🔇 שמור על סביבה שקטה</span>
+            </div>
+             <div className="flex items-center space-x-2 text-gray-600">
+              <span className="text-sm">✨ שלב את המילים המאתגרות בשיחה</span>
             </div>
             <div className="flex items-center space-x-2 text-gray-600">
-              <span className="text-sm">🚀 שפר את הבטיחות בדיבור</span>
+              <span className="text-sm">❓ בקש הסבר מה AI אם משהו לא ברור</span>
             </div>
           </div>
         </div>
