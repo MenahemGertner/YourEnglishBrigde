@@ -4,15 +4,15 @@ import React from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { updateSequencePosition } from '../actions/updateSequencePosition';
-import { getStartingIndexForCategory } from '../../helpers/reviewHelperFunctions';
-import { ResetDialog, PositionDialog } from './sequenceDialogs';
+import { getStartingIndexForCategory, categories } from '../../helpers/reviewHelperFunctions';
+import { LevelResetDialog, PositionDialog } from './sequenceDialogs';
 import GradientCat from './GradientCat';
 
 function SequenceReset() {
   const router = useRouter();
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = React.useState(false);
-  const [showResetDialog, setShowResetDialog] = React.useState(false);
+  const [showLevelResetDialog, setShowLevelResetDialog] = React.useState(false);
   const [showPositionDialog, setShowPositionDialog] = React.useState(false);
   const [position, setPosition] = React.useState('');
   const [error, setError] = React.useState('');
@@ -20,22 +20,49 @@ function SequenceReset() {
   const containerRef = React.useRef(null);
   const tooltipRef = React.useRef(null);
 
+  // Get current category from URL
+  const getCurrentCategory = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('category') || '300';
+  };
+
+  // Get current level index (0-4)
+  const getCurrentLevelIndex = () => {
+    const currentCategory = getCurrentCategory();
+    return categories.indexOf(currentCategory);
+  };
+
   const handleCatClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setIsOpen(!isOpen);
   };
 
-  const handleResetConfirm = async () => {
+  const handleLevelReset = async (levelAction) => {
     if (!session?.user?.id) {
       setError('נא להתחבר כדי להמשיך');
       return;
     }
 
     try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const currentCategory = urlParams.get('category') || '300';
-      const startingIndex = getStartingIndexForCategory(currentCategory);
+      const currentLevelIndex = getCurrentLevelIndex();
+      let targetCategory;
+      
+      switch (levelAction) {
+        case 'previous':
+          targetCategory = categories[currentLevelIndex - 1];
+          break;
+        case 'current':
+          targetCategory = categories[currentLevelIndex];
+          break;
+        case 'next':
+          targetCategory = categories[currentLevelIndex + 1];
+          break;
+        default:
+          throw new Error('פעולה לא חוקית');
+      }
+
+      const startingIndex = getStartingIndexForCategory(targetCategory);
       
       const result = await updateSequencePosition(session.user.id, startingIndex, true);
       
@@ -43,11 +70,11 @@ function SequenceReset() {
         throw new Error(result.error);
       }
 
-      router.push(`/words?index=${startingIndex}&category=${currentCategory}`);
+      router.push(`/words?index=${startingIndex}&category=${targetCategory}`);
     } catch (err) {
       setError(err.message);
     } finally {
-      setShowResetDialog(false);
+      setShowLevelResetDialog(false);
       setIsOpen(false);
     }
   };
@@ -144,16 +171,16 @@ function SequenceReset() {
             <div className="space-y-3">
               <button 
                 className="w-full py-2 px-4 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-900 transition-colors duration-200 text-sm font-medium"
-                onClick={() => setShowResetDialog(true)}
+                onClick={() => setShowLevelResetDialog(true)}
               >
-                לתחילת הרשימה
+                מעבר לרמה אחרת
               </button>
               
               <button 
                 className="w-full py-2 px-4 bg-blue-50 hover:bg-blue-100 rounded-md text-blue-900 transition-colors duration-200 text-sm font-medium"
                 onClick={() => setShowPositionDialog(true)}
               >
-                לבחור מיקום אחר ברשימה
+                מעבר לפי מספר מילה
               </button>
             </div>
             
@@ -162,10 +189,11 @@ function SequenceReset() {
         )}
       </div>
 
-      <ResetDialog 
-        isOpen={showResetDialog}
-        onClose={() => setShowResetDialog(false)}
-        onConfirm={handleResetConfirm}
+      <LevelResetDialog 
+        isOpen={showLevelResetDialog}
+        onClose={() => setShowLevelResetDialog(false)}
+        onLevelReset={handleLevelReset}
+        currentLevelIndex={getCurrentLevelIndex()}
         error={error}
       />
 
