@@ -208,9 +208,13 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
             }`}>
                 <div className="flex items-center justify-between gap-3">
                     <Tooltip content={sentence.hebrew}>
-                        <span className="text-lg leading-relaxed text-gray-800 block text-left flex-1" dir="ltr">
-                            {underLine(sentence.english, allWordsForUnderLine)}
-                        </span>
+                        <div
+  dir="ltr"
+  className="text-left w-full block whitespace-pre-wrap text-lg leading-relaxed text-gray-800"
+>
+  {underLine(sentence.english, allWordsForUnderLine)}
+</div>
+
                     </Tooltip>
                     <div className="flex-shrink-0">
                         <AudioButton text={sentence.english}/>

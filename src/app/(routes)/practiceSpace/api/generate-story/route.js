@@ -35,7 +35,7 @@ async function generateStoryWithGPT(words, retryCount = 0) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-5-chat-latest',
+        model: 'gpt-4',
         max_tokens: 600,
         temperature: 0.7,
         messages: [
@@ -80,24 +80,24 @@ async function generateStoryWithGPT(words, retryCount = 0) {
 function createStoryPrompt(words) {
   const wordsList = words.join(', ');
 
-  return `Write a fluent and engaging 5-sentence story that flows naturally as one narrative.
+  return `Write a short, friendly paragraph (5–6 sentences) in beginner-level English.
+
+SPEAKER'S VOICE: Imagine this is a friendly English teacher talking to a student. Keep the tone warm and personal.
 
 REQUIREMENTS:
-1. The story should be cohesive and logically structured, with a clear beginning, middle, and end.
-2. Use SIMPLE, BEGINNER-LEVEL English vocabulary and grammar structures.
-3. Incorporate all of these English words in a natural and meaningful way: ${wordsList}
-4. You may use any form of the words (plural, -ing, -ed, etc).
-5. After the story, provide a Hebrew translation for each sentence.
-6. Return ONLY valid JSON. No additional explanation or comments.
+1. The paragraph should feel like someone is sharing a small story or thought with the learner.
+2. Use simple vocabulary and grammar.
+3. Gently include 3–5 words from the following list, if they fit naturally: ${wordsList}
+4. After the paragraph, provide a sentence-by-sentence Hebrew translation.
+5. Return ONLY valid JSON, no explanations.
+
 {
   "sentences": [
     {"english": "sentence", "hebrew": "תרגום"},
-    {"english": "sentence", "hebrew": "תרגום"},
-    {"english": "sentence", "hebrew": "תרגום"},
-    {"english": "sentence", "hebrew": "תרגום"},
-    {"english": "sentence", "hebrew": "תרגום"}
+    ...
   ]
-}`;
+}
+`;
 }
 
 function parseStoryResponse(responseText) {
