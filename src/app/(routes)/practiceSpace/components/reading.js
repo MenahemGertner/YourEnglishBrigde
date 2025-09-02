@@ -206,16 +206,14 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
             <div className={`p-4 rounded-lg transition-all duration-200 ${
                 activeIndex === index ? 'bg-indigo-50 shadow-md' : 'hover:bg-gray-50'
             }`}>
-                <div className="flex items-center justify-between gap-3">
-                    <Tooltip content={sentence.hebrew}>
-                        <div
-  dir="ltr"
-  className="text-left w-full block whitespace-pre-wrap text-lg leading-relaxed text-gray-800"
->
-  {underLine(sentence.english, allWordsForUnderLine)}
-</div>
-
-                    </Tooltip>
+                <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                        <Tooltip content={sentence.hebrew}>
+                            <div className="text-lg leading-relaxed text-gray-800 text-left" dir="ltr" style={{ direction: 'ltr' }}>
+                                {underLine(sentence.english, allWordsForUnderLine)}
+                            </div>
+                        </Tooltip>
+                    </div>
                     <div className="flex-shrink-0">
                         <AudioButton text={sentence.english}/>
                     </div>
