@@ -229,26 +229,22 @@ const Writing = ({ onPracticeCompleted }) => {
                 </div>
 
                 {/* Enhanced Tips Section */}
-                <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50">
-                    {/* טיפ חדש למילים קשות */}
-                    
-                    
-                    {/* טיפים כלליים */}
-                    <div className="flex flex-col md:flex-row gap-4 justify-center">
-                        <div className="flex items-center space-x-2 text-gray-600">
-                            <span className="text-sm">✍️ השתמש בלפחות מילה אחת מהרשימה</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-gray-600">
-                            <span className="text-sm">📖 שים לב לדקדוק ולמבנה המשפט</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-gray-600">
-                            <span className="text-sm">🎯 נסה להיות יצירתי וברור</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-gray-600">
-                            <span className="text-sm">⏰ התנסה בזמנים שונים</span>
-                        </div>
-                    </div>
-                </div>
+                <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50">                     
+    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 justify-center">                         
+        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
+            <span className="text-sm">✍️ השתמש בלפחות מילה אחת מהרשימה</span>                         
+        </div>                         
+        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
+            <span className="text-sm">📖 שים לב לדקדוק ולמבנה המשפט</span>                         
+        </div>                         
+        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
+            <span className="text-sm">🎯 נסה להיות יצירתי וברור</span>                         
+        </div>                         
+        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
+            <span className="text-sm">⏰ התנסה בזמנים שונים</span>                         
+        </div>                     
+    </div>                 
+</div>
             </motion.div>
         </motion.div>
     );
