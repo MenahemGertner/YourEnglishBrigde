@@ -35,7 +35,7 @@ async function generateStoryWithGPT(words, retryCount = 0) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-5-chat-latest',
         max_tokens: 600,
         temperature: 0.7,
         messages: [
@@ -87,17 +87,16 @@ SPEAKER'S VOICE: Imagine this is a friendly English teacher talking to a student
 REQUIREMENTS:
 1. The paragraph should feel like someone is sharing a small story or thought with the learner.
 2. Use simple vocabulary and grammar.
-3. Gently include 3–5 words from the following list, if they fit naturally: ${wordsList}
-4. After the paragraph, provide a sentence-by-sentence Hebrew translation.
+3. Gently include 3–5 words from the following list, or their inflections (ed, ing, est, etc), if they fit naturally: ${wordsList}
+4. After the paragraph, provide a sentence-by-sentence Hebrew translation. Focus on simultaneous and natural translation that captures the meaning and context.
 5. Return ONLY valid JSON, no explanations.
 
 {
-  "sentences": [
-    {"english": "sentence", "hebrew": "תרגום"},
-    ...
-  ]
-}
-`;
+ "sentences": [
+   {"english": "sentence", "hebrew": "תרגום"},
+   ...
+ ]
+}`;
 }
 
 function parseStoryResponse(responseText) {
