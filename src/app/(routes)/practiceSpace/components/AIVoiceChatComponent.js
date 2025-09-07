@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Mic, Square, Bot, User, RotateCcw } from 'lucide-react';
 import voiceChatService from '../services/voiceChatService';
 import underLine from '@/components/features/UnderLine';
+import SpeedToggle from './speedToggle'
 
 const AIVoiceChatComponent = ({ words, inflections, onPracticeCompleted }) => {
   const [isListening, setIsListening] = useState(false);
@@ -13,6 +14,13 @@ const AIVoiceChatComponent = ({ words, inflections, onPracticeCompleted }) => {
   const [conversationHistory, setConversationHistory] = useState([]);
   const [currentTurn, setCurrentTurn] = useState('');
   const [error, setError] = useState(null);
+  const [speechSpeed, setSpeechSpeed] = useState(1.0);
+  
+
+// פונקציה לטיפול בשינוי מהירות
+const handleSpeedChange = (speedValue) => {
+  voiceChatService.setSpeechSpeed(speedValue);
+};
 
   // מחשב מערך של כל המילים להדגשה
   const allWordsForUnderLine = [...(words || []), ...(inflections || [])];
@@ -224,6 +232,7 @@ const AIVoiceChatComponent = ({ words, inflections, onPracticeCompleted }) => {
           </button>
         </motion.div>
       )}
+      <SpeedToggle onSpeedChange={handleSpeedChange}/>
 
       {/* Main Content Card */}
       <motion.div 

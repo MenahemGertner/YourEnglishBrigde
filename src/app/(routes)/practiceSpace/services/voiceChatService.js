@@ -6,7 +6,11 @@ class VoiceChatService {
     this.audioChunks = [];
     this.isRecording = false;
     this.audioElement = null;
+    this.speechSpeed = 1.0;
   }
+  setSpeechSpeed(speed) {
+  this.speechSpeed = speed;
+}
 
   // פונקציה ליצירת הודעת פתיחה עם מילים מאתגרות
   async generateOpeningMessageWithWords(challengingWords) {
@@ -145,7 +149,7 @@ class VoiceChatService {
           text: text,
           voice: 'alloy',
           model: 'tts-1',
-          speed: 1.0
+          speed: this.speechSpeed || 1.0
         }),
       });
 
