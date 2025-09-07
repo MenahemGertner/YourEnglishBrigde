@@ -1,14 +1,22 @@
 require('dotenv').config(); // טוען את מפתח ה-API מהסביבה
 
 export async function POST(request) {
-  const { words } = await request.json();
+  const { words, options } = await request.json();
 
   if (!words || !Array.isArray(words) || words.length === 0) {
     return Response.json({ message: 'Words array is required' }, { status: 400 });
   }
 
+  // חילוץ רמת הקושי מהאפשרויות (ברירת מחדל: 3)
+  const level = options?.level || 3;
+
+  // וולידציה של רמת הקושי
+  if (typeof level !== 'number' || level < 1 || level > 5) {
+    return Response.json({ message: 'Level must be a number between 1 and 5' }, { status: 400 });
+  }
+
   try {
-    const story = await generateStoryWithGPT(words);
+    const story = await generateStoryWithGPT(words, level);
     return Response.json({ story });
   } catch (error) {
     console.error('Error generating story:', error);
@@ -19,11 +27,11 @@ export async function POST(request) {
   }
 }
 
-async function generateStoryWithGPT(words, retryCount = 0) {
+async function generateStoryWithGPT(words, level = 3, retryCount = 0) {
   const MAX_RETRIES = 2;
   const OPENAI_TIMEOUT = 20000; // 20 שניות
 
-  const prompt = createStoryPrompt(words);
+  const prompt = createStoryPrompt(words, level);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), OPENAI_TIMEOUT);
 
@@ -70,23 +78,23 @@ async function generateStoryWithGPT(words, retryCount = 0) {
     if (retryCount < MAX_RETRIES && (error.name === 'AbortError' || error.message.includes('timeout'))) {
       console.log(`Retrying GPT story generation, attempt ${retryCount + 1}`);
       await new Promise(resolve => setTimeout(resolve, 1000));
-      return generateStoryWithGPT(words, retryCount + 1);
+      return generateStoryWithGPT(words, level, retryCount + 1);
     }
 
     throw error;
   }
 }
 
-function createStoryPrompt(words) {
+function createStoryPrompt(words, level) {
   const wordsList = words.join(', ');
 
-  return `Write a short, friendly paragraph (5–6 sentences) in beginner-level English.
+  return `Write a short, friendly paragraph (5–6 sentences) in English.
 
 SPEAKER'S VOICE: Imagine this is a friendly English teacher talking to a student. Keep the tone warm and personal.
 
 REQUIREMENTS:
 1. The paragraph should feel like someone is sharing a small story or thought with the learner.
-2. Use simple vocabulary and grammar.
+2. Assuming level 1 is very basic English and level 5 is very advanced English, write the story at level ${level}.
 3. Gently include 3–5 words from the following list, or their inflections (ed, ing, est, etc), if they fit naturally: ${wordsList}
 4. After the paragraph, provide a sentence-by-sentence Hebrew translation. Focus on simultaneous and natural translation that captures the meaning and context.
 5. Return ONLY valid JSON, no explanations.
@@ -103,7 +111,7 @@ function parseStoryResponse(responseText) {
   try {
     const parsed = JSON.parse(responseText.trim());
 
-    if (parsed.sentences && Array.isArray(parsed.sentences) && parsed.sentences.length === 5) {
+    if (parsed.sentences && Array.isArray(parsed.sentences) && parsed.sentences.length >= 4) {
       return parsed;
     }
   } catch (error) {
@@ -125,8 +133,8 @@ function parseStoryResponse(responseText) {
       throw new Error('Parsed object missing "sentences" array');
     }
 
-    if (parsed.sentences.length !== 5) {
-      console.warn(`Expected 5 sentences, got ${parsed.sentences.length}`);
+    if (parsed.sentences.length < 4) {
+      console.warn(`Expected at least 4 sentences, got ${parsed.sentences.length}`);
     }
 
     return parsed;

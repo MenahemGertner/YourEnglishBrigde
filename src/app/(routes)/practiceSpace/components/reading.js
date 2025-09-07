@@ -6,6 +6,7 @@ import AudioButton from '@/components/features/AudioButton';
 import Tooltip from '@/components/features/Tooltip';
 import underLine from '@/components/features/UnderLine';
 import ReadingComprehension from './readingComprehension';
+import StoryLevelSelector from './StoryLevelSelector'; // הקומפוננטה החדשה
 import { BookOpen, Info, RefreshCw, Wand2, CheckCircle } from 'lucide-react';
 import { generateStoryFromWords } from '../services/generateStory';
 import questionService from '../services/questionService';
@@ -18,12 +19,15 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
     const [hasGenerated, setHasGenerated] = useState(false);
     const [showComprehension, setShowComprehension] = useState(false);
     
+    // מצב רמת הקושי
+    const [storyLevel, setStoryLevel] = useState(3); // רמה בינונית כברירת מחדל
+    
     // מצב השאלה
     const [question, setQuestion] = useState(null);
     const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
     const [questionError, setQuestionError] = useState(null);
 
-    // Generate story - simplified logic
+    // Generate story - with level parameter
     const generateStory = async () => {
         if (!words?.length) return;
 
@@ -35,7 +39,8 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
         setQuestionError(null);
 
         try {
-            const storyData = await generateStoryFromWords(words);
+            // שליחת רמת הקושי כפרמטר
+            const storyData = await generateStoryFromWords(words, { level: storyLevel });
             setSentences(storyData.sentences);
             setHasGenerated(true);
         } catch (error) {
@@ -86,10 +91,26 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
         }
     }, [sentences, question, isGeneratingQuestion]);
 
+    // Regenerate story when level changes
+    useEffect(() => {
+        if (hasGenerated) {
+            generateStory();
+        }
+    }, [storyLevel]);
+
     // Regenerate story
     const handleRegenerateStory = () => {
         setHasGenerated(false);
         generateStory();
+    };
+
+    // טיפול בשינוי רמת הקושי
+    const handleLevelChange = (newLevel) => {
+        setStoryLevel(newLevel);
+        // אם כבר יש סיפור, נגנרט מחדש
+        if (hasGenerated) {
+            setHasGenerated(false);
+        }
     };
 
     // מעבר לשאלה
@@ -148,6 +169,22 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
                 </div>
             </div>
 
+            {/* בורר רמת הקושי - מוצג רק כשיש מילים */}
+            {words?.length > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="mb-8"
+                >
+                    <StoryLevelSelector
+                        selectedLevel={storyLevel}
+                        onLevelChange={handleLevelChange}
+                        disabled={isGenerating}
+                    />
+                </motion.div>
+            )}
+
             <motion.div 
                 className="bg-white rounded-2xl shadow-xl overflow-hidden"
                 whileHover={{ scale: 1.01 }}
@@ -194,34 +231,34 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
                                 </div>
                             )}
                             <div className="space-y-6">
-    {sentences.map((sentence, index) => (
-        <motion.div
-            key={index}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            onHoverStart={() => setActiveIndex(index)}
-            onHoverEnd={() => setActiveIndex(null)}
-        >
-            <div className={`p-4 rounded-lg transition-all duration-200 ${
-                activeIndex === index ? 'bg-indigo-50 shadow-md' : 'hover:bg-gray-50'
-            }`}>
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                        <Tooltip content={sentence.hebrew}>
-                            <div className="text-lg leading-relaxed text-gray-800 text-left" dir="ltr" style={{ direction: 'ltr' }}>
-                                {underLine(sentence.english, allWordsForUnderLine)}
+                                {sentences.map((sentence, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: index * 0.1 }}
+                                        onHoverStart={() => setActiveIndex(index)}
+                                        onHoverEnd={() => setActiveIndex(null)}
+                                    >
+                                        <div className={`p-4 rounded-lg transition-all duration-200 ${
+                                            activeIndex === index ? 'bg-indigo-50 shadow-md' : 'hover:bg-gray-50'
+                                        }`}>
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex-1">
+                                                    <Tooltip content={sentence.hebrew}>
+                                                        <div className="text-lg leading-relaxed text-gray-800 text-left" dir="ltr" style={{ direction: 'ltr' }}>
+                                                            {underLine(sentence.english, allWordsForUnderLine)}
+                                                        </div>
+                                                    </Tooltip>
+                                                </div>
+                                                <div className="flex-shrink-0">
+                                                    <AudioButton text={sentence.english}/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
                             </div>
-                        </Tooltip>
-                    </div>
-                    <div className="flex-shrink-0">
-                        <AudioButton text={sentence.english}/>
-                    </div>
-                </div>
-            </div>
-        </motion.div>
-    ))}
-</div>
 
                             {sentences.length > 0 && (
                                 <motion.div 
