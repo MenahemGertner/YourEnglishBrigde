@@ -244,13 +244,14 @@ export default function LoginButton() {
                 onClick={handleSignOut}
                 className="
                   flex items-center gap-3 w-full
-                  px-5 py-3 text-right
+                  px-8 py-3 text-right
                   text-red-600 hover:bg-red-50
                   transition-colors duration-200
                 "
               >
-                <LogOut className="w-5 h-5" />
+                
                 <span>התנתקות</span>
+                <LogOut className="w-5 h-5" />
               </button>
             </div>
           </div>
