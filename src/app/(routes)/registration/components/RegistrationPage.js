@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ArrowRight, Check, AlertCircle } from 'lucide-react';
 import { signIn } from "next-auth/react";
+import SuccessModal from './successModal';
 
 export default function RegistrationPage() {
   const searchParams = useSearchParams();
@@ -11,6 +12,8 @@ export default function RegistrationPage() {
   const [userImage, setUserImage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [registrationData, setRegistrationData] = useState(null);
 
   useEffect(() => {
     const email = searchParams.get('email');
@@ -30,6 +33,12 @@ export default function RegistrationPage() {
   }, [searchParams]);
 
   const handlePlanSelection = async (planId) => {
+    // בדיקה אם זה מנוי בתשלום - חסימה זמנית
+    if (planId === 'monthly' || planId === 'semi-annual') {
+      setError('האתר נמצא בהרצה וכרגע אין אפשרות למנוי בתשלום. אנא בחר באפשרות ההתנסות החינמית.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
   
@@ -52,20 +61,37 @@ export default function RegistrationPage() {
       if (!response.ok) {
         throw new Error(data.error || 'Registration failed');
       }
-  
-      setIsLoading(true);
-      alert('ההרשמה הושלמה בהצלחה! נעביר אותך לאימות קצר לצורך כניסה למערכת.');
-      
-      await signIn('google', { 
-        redirect: true,
-        callbackUrl: '/levelSelection?showWelcome=true'
+
+      // שמירת נתוני ההרשמה להצגה במודאל
+      setRegistrationData({
+        user: data.user,
+        subscription: data.subscription,
+        selectedPlan: planId
       });
-  
+
+      // הצגת מודאל ההצלחה
+      setShowSuccessModal(true);
+
     } catch (err) {
       console.error('Registration error:', err);
       setError('אירעה שגיאה בתהליך ההרשמה. אנא נסה שוב.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSuccessModalClose = async () => {
+    setShowSuccessModal(false);
+    
+    // כאן מתחיל התהליך של זיהוי Google
+    try {
+      await signIn('google', { 
+        redirect: true,
+        callbackUrl: '/levelSelection?showWelcome=true'
+      });
+    } catch (error) {
+      console.error('Sign in error:', error);
+      setError('אירעה שגיאה בתהליך ההתחברות');
     }
   };
 
@@ -95,6 +121,7 @@ export default function RegistrationPage() {
       planId: 'semi-annual'
     }
   ];
+
   const getFirstName = (fullName) => {
     if (!fullName) return '';
     return fullName.split(' ')[0];
@@ -165,27 +192,36 @@ export default function RegistrationPage() {
               <div className="p-6 pt-0">
                 <button
                   onClick={() => handlePlanSelection(plan.planId)}
-                  className={`w-full py-2 px-4 rounded transition-all ${
+                  disabled={isLoading}
+                  className={`w-full py-2 px-4 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     plan.isPopular
                       ? 'bg-blue-500 hover:bg-blue-600 text-white'
                       : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
                   }`}
                 >
-                  בחר תכנית זו
+                  {isLoading ? 'מעבד...' : 'בחר תכנית זו'}
                 </button>
               </div>
             </div>
           ))}
         </div>
   
-        {isLoading && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded">
+        {isLoading && !showSuccessModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
+            <div className="bg-white p-6 rounded-lg">
               <p className="text-lg">מעבד את בקשתך...</p>
             </div>
           </div>
         )}
+
+        {/* Success Modal */}
+        <SuccessModal 
+          isOpen={showSuccessModal}
+          onClose={handleSuccessModalClose}
+          userInfo={registrationData?.user}
+          subscriptionInfo={registrationData?.subscription}
+        />
       </div>
     </div>
-  )
+  );
 }
