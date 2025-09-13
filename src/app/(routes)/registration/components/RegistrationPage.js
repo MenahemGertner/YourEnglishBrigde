@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowRight, Check, AlertCircle } from 'lucide-react';
+import { ArrowRight, Check, AlertCircle, X } from 'lucide-react';
 import { signIn } from "next-auth/react";
 import SuccessModal from './successModal';
 
@@ -14,6 +14,11 @@ export default function RegistrationPage() {
   const [error, setError] = useState('');
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registrationData, setRegistrationData] = useState(null);
+  
+  // States for coupon modal
+  const [showCouponModal, setShowCouponModal] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponError, setCouponError] = useState('');
 
   useEffect(() => {
     const email = searchParams.get('email');
@@ -39,6 +44,31 @@ export default function RegistrationPage() {
       return;
     }
 
+    // אם זה המסלול החינמי, נפתח את מודאל הקופון
+    if (planId === 'free') {
+      setShowCouponModal(true);
+      setCouponCode('');
+      setCouponError('');
+      return;
+    }
+
+    // המשך הטיפול הרגיל לתכניות אחרות (אם יהיו)
+    await proceedWithRegistration(planId);
+  };
+
+  const handleCouponSubmit = async () => {
+    // בדיקת הקוד
+    if (couponCode !== '13579') {
+      setCouponError('הקוד אינו תקין, נסה שנית');
+      return;
+    }
+
+    // אם הקוד תקין, נסגור את המודאל ונמשיך להרשמה
+    setShowCouponModal(false);
+    await proceedWithRegistration('free');
+  };
+
+  const proceedWithRegistration = async (planId) => {
     setIsLoading(true);
     setError('');
   
@@ -93,6 +123,12 @@ export default function RegistrationPage() {
       console.error('Sign in error:', error);
       setError('אירעה שגיאה בתהליך ההתחברות');
     }
+  };
+
+  const closeCouponModal = () => {
+    setShowCouponModal(false);
+    setCouponCode('');
+    setCouponError('');
   };
 
   const plans = [
@@ -210,6 +246,57 @@ export default function RegistrationPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
             <div className="bg-white p-6 rounded-lg">
               <p className="text-lg">מעבד את בקשתך...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Coupon Code Modal */}
+        {showCouponModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold">הזן קוד קופון</h3>
+                <button
+                  onClick={closeCouponModal}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              
+              <p className="text-gray-600 mb-4 text-right">
+                על מנת להמשיך עם המסלול החינמי, יש להזין קוד קופון:
+              </p>
+              
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="הזן קוד קופון"
+                className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-right"
+                dir="rtl"
+              />
+              
+              {couponError && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-right">
+                  {couponError}
+                </div>
+              )}
+              
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={closeCouponModal}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                >
+                  ביטול
+                </button>
+                <button
+                  onClick={handleCouponSubmit}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  אישור
+                </button>
+              </div>
             </div>
           </div>
         )}
