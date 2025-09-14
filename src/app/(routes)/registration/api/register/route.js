@@ -1,11 +1,10 @@
 import { supabaseAdmin } from '@/lib/db/supabase';
 import { NextResponse } from 'next/server';
-// ✅ הוספת ה-import החדש
 import { sendWelcomeEmail } from '@/lib/email/mailer';
 
 export async function POST(req) {
   try {
-    const { email, name, avatar_url, planId } = await req.json();
+    const { email, name, avatar_url, planId, couponCode } = await req.json();
 
     // בדיקה אם המשתמש נכנס דרך Google
     if (!email || !name) {
@@ -22,6 +21,32 @@ export async function POST(req) {
         { error: 'סוג מנוי לא תקין' },
         { status: 400 }
       );
+    }
+
+    // בדיקת קופון אם נדרש
+    let validatedCoupon = null;
+    if (planId === 'free' && couponCode) {
+      // אם זה לא הקוד המנהלי הישן, בדוק במסד הנתונים
+      if (couponCode !== '13579') {
+        const { data: coupon, error: couponError } = await supabaseAdmin
+          .schema('public')
+          .from('coupons')
+          .select('*')
+          .eq('code', couponCode)
+          .eq('email', email.toLowerCase())
+          .eq('is_used', false)
+          .gt('expires_at', new Date().toISOString())
+          .single();
+
+        if (couponError || !coupon) {
+          return NextResponse.json(
+            { error: 'קוד קופון לא תקין או פג תוקף' },
+            { status: 400 }
+          );
+        }
+
+        validatedCoupon = coupon;
+      }
     }
 
     // בדיקה אם המשתמש קיים עם schema מפורש
@@ -76,7 +101,7 @@ export async function POST(req) {
     const subscriptionMapping = {
       'free': {
         type: 'free',
-        durationDays: 14
+        durationDays: 90
       },
       'monthly': {
         type: 'premium', 
@@ -128,23 +153,39 @@ export async function POST(req) {
 
     console.log('Subscription created successfully:', newSubscription);
 
-    // ✅ שליחת מייל ברכה - החלק החדש!
+    // סימון הקופון כמשומש אם זה לא הקוד המנהלי
+    if (validatedCoupon) {
+      const { error: updateCouponError } = await supabaseAdmin
+        .schema('public')
+        .from('coupons')
+        .update({
+          is_used: true,
+          used_at: new Date().toISOString()
+        })
+        .eq('id', validatedCoupon.id);
+
+      if (updateCouponError) {
+        console.error('Error marking coupon as used:', updateCouponError);
+        // לא נכשיל את כל התהליך בגלל זה, רק לוג
+      } else {
+        console.log(`✅ Coupon ${validatedCoupon.code} marked as used`);
+      }
+    }
+
+    // שליחת מייל ברכה
     try {
       await sendWelcomeEmail(email, name);
       console.log('✅ Welcome email sent successfully to:', email);
     } catch (emailError) {
       // חשוב: אם המייל נכשל, המשתמש עדיין נרשם בהצלחה!
       console.error('⚠️ Failed to send welcome email, but registration completed:', emailError.message);
-      
-      // אפשר להוסיף כאן שמירה של המייל הכושל לטבלת queue לניסיון מאוחר יותר
-      // או לשלוח התראה למנהל המערכת
     }
 
     return NextResponse.json({
       user: newUser,
       subscription: newSubscription,
       message: 'המשתמש והמנוי נוצרו בהצלחה',
-      // ✅ מידע על שליחת המייל (אופציונלי)
+      couponUsed: validatedCoupon ? validatedCoupon.code : (couponCode === '13579' ? 'ADMIN' : null),
       emailSent: true // או false אם נכשל
     });
 

@@ -19,6 +19,7 @@ export default function RegistrationPage() {
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [couponError, setCouponError] = useState('');
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   useEffect(() => {
     const email = searchParams.get('email');
@@ -56,16 +57,65 @@ export default function RegistrationPage() {
     await proceedWithRegistration(planId);
   };
 
+  const validateCoupon = async (code) => {
+    try {
+      const response = await fetch('/registration/api/validate-coupon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          couponCode: code,
+          email: userEmail
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Coupon validation failed');
+      }
+
+      return data.valid;
+    } catch (error) {
+      console.error('Coupon validation error:', error);
+      throw error;
+    }
+  };
+
   const handleCouponSubmit = async () => {
-    // בדיקת הקוד
-    if (couponCode !== '13579') {
-      setCouponError('הקוד אינו תקין, נסה שנית');
+    if (!couponCode.trim()) {
+      setCouponError('אנא הזן קוד קופון');
       return;
     }
 
-    // אם הקוד תקין, נסגור את המודאל ונמשיך להרשמה
-    setShowCouponModal(false);
-    await proceedWithRegistration('free');
+    setValidatingCoupon(true);
+    setCouponError('');
+
+    try {
+      // בדיקת הקוד המנהלי הישן
+      if (couponCode === '13579') {
+        setShowCouponModal(false);
+        await proceedWithRegistration('free');
+        return;
+      }
+
+      // בדיקת קופון במערכת החדשה
+      const isValid = await validateCoupon(couponCode);
+      
+      if (isValid) {
+        setShowCouponModal(false);
+        await proceedWithRegistration('free');
+      } else {
+        setCouponError('הקוד אינו תקין או שפג תוקפו');
+      }
+
+    } catch (error) {
+      console.error('Coupon validation error:', error);
+      setCouponError('שגיאה בבדיקת הקוד. נסה שוב.');
+    } finally {
+      setValidatingCoupon(false);
+    }
   };
 
   const proceedWithRegistration = async (planId) => {
@@ -82,7 +132,8 @@ export default function RegistrationPage() {
           email: userEmail,
           name: userName,
           avatar_url: userImage,
-          planId
+          planId,
+          couponCode: couponCode || null // שולח את קוד הקופון אם קיים
         }),
       });
   
@@ -135,7 +186,7 @@ export default function RegistrationPage() {
     {
       title: 'התנסות חינם',
       price: '0',
-      duration: '14 יום',
+      duration: '3 חודשים',
       features: ['גישה מלאה למדריך האישי', 'תמיכה בסיסית'],
       isPopular: false,
       planId: 'free'
@@ -152,7 +203,7 @@ export default function RegistrationPage() {
       title: 'חצי שנתי',
       price: '399',
       duration: '6 חודשים',
-      features: ['גישה מלאה למדריך האישי', 'תמיכה VIP', 'הטבות בלעדיות', 'חיסכון של 195 ש״ח'],
+      features: ['גישה מלאה למדריך האישי', 'תמיכה VIP', 'מחוייבות לתהליך'],
       isPopular: true,
       planId: 'semi-annual'
     }
@@ -259,6 +310,7 @@ export default function RegistrationPage() {
                 <button
                   onClick={closeCouponModal}
                   className="text-gray-400 hover:text-gray-600"
+                  disabled={validatingCoupon}
                 >
                   <X className="h-6 w-6" />
                 </button>
@@ -271,15 +323,22 @@ export default function RegistrationPage() {
               <input
                 type="text"
                 value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 placeholder="הזן קוד קופון"
-                className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-right"
-                dir="rtl"
+                className="w-full p-3 border border-gray-300 rounded-lg mb-4 text-right font-mono tracking-wider"
+                dir="ltr"
+                disabled={validatingCoupon}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleCouponSubmit();
+                  }
+                }}
               />
               
               {couponError && (
-                <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-right">
-                  {couponError}
+                <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-right flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <span>{couponError}</span>
                 </div>
               )}
               
@@ -287,14 +346,19 @@ export default function RegistrationPage() {
                 <button
                   onClick={closeCouponModal}
                   className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  disabled={validatingCoupon}
                 >
                   ביטול
                 </button>
                 <button
                   onClick={handleCouponSubmit}
-                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                  disabled={validatingCoupon || !couponCode.trim()}
+                  className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
-                  אישור
+                  {validatingCoupon && (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  )}
+                  {validatingCoupon ? 'בודק...' : 'אישור'}
                 </button>
               </div>
             </div>

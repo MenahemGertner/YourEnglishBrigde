@@ -1,6 +1,7 @@
 // /lib/email/mailer.js
 import { resend, emailConfig, createSender } from './config.js';
 import { createWelcomeTemplate, welcomeEmailSubject } from './templates/welcome.js';
+import { createCouponTemplate, couponEmailSubject } from './templates/coupon.js';
 
 /**
  * שליחת מייל ברכה למשתמש חדש
@@ -17,7 +18,7 @@ export async function sendWelcomeEmail(email, name) {
 
     // יצירת תבנית המייל
     const htmlContent = createWelcomeTemplate(name, email);
-    
+        
     // הגדרות המייל
     const emailData = {
       from: createSender(emailConfig.siteName, emailConfig.defaultFrom),
@@ -67,6 +68,75 @@ export async function sendWelcomeEmail(email, name) {
 }
 
 /**
+ * שליחת מייל עם קוד קופון
+ * @param {string} email - כתובת המייל של הנמען
+ * @param {string} couponCode - קוד הקופון
+ * @param {Date} expiresAt - תאריך תפוגה של הקופון
+ * @returns {Promise<Object>} תוצאת השליחה
+ */
+export async function sendCouponEmail(email, couponCode, expiresAt) {
+  try {
+    // בדיקת תקינות הפרמטרים
+    if (!email || !couponCode || !expiresAt) {
+      throw new Error('Email, couponCode, and expiresAt are required');
+    }
+
+    // יצירת תבנית המייל
+    const htmlContent = createCouponTemplate(couponCode, expiresAt);
+        
+    // הגדרות המייל
+    const emailData = {
+      from: createSender(emailConfig.siteName, emailConfig.defaultFrom),
+      to: email,
+      subject: couponEmailSubject,
+      html: htmlContent,
+    };
+
+    if (emailConfig.enableLogging) {
+      console.log(`📧 Sending coupon email to: ${email} with code: ${couponCode}`);
+    }
+
+    // שליחה דרך Resend
+    const result = await resend.emails.send(emailData);
+
+    // לוג הצלחה
+    if (emailConfig.enableLogging) {
+      console.log(`✅ Coupon email sent successfully to ${email}`, {
+        id: result.data?.id,
+        recipient: email,
+        couponCode: couponCode
+      });
+    }
+
+    return {
+      success: true,
+      messageId: result.data?.id,
+      recipient: email,
+      couponCode: couponCode,
+      type: 'coupon'
+    };
+
+  } catch (error) {
+    // טיפול בשגיאות
+    console.error(`❌ Failed to send coupon email to ${email}:`, {
+      error: error.message,
+      stack: error.stack,
+      recipient: email,
+      couponCode: couponCode
+    });
+
+    // יצירת שגיאה מובנית
+    const emailError = new Error(`Failed to send coupon email: ${error.message}`);
+    emailError.type = 'EMAIL_ERROR';
+    emailError.originalError = error;
+    emailError.recipient = email;
+    emailError.couponCode = couponCode;
+
+    throw emailError;
+  }
+}
+
+/**
  * שליחת מייל כללי (פונקציית עזר לעתיד)
  * @param {Object} emailOptions - אפשרויות המייל
  * @param {string} emailOptions.to - כתובת המייל של הנמען
@@ -106,7 +176,7 @@ export async function sendEmail({ to, subject, html, from = null }) {
 
   } catch (error) {
     console.error(`❌ Failed to send email to ${to}:`, error.message);
-    
+        
     const emailError = new Error(`Failed to send email: ${error.message}`);
     emailError.type = 'EMAIL_ERROR';
     emailError.originalError = error;
@@ -143,4 +213,12 @@ export async function testEmailConnection() {
     console.error('❌ Email service connection failed:', error.message);
     return false;
   }
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    sendWelcomeEmail,
+    sendCouponEmail,
+    sendEmail,
+    testEmailConnection
+  };
 }
