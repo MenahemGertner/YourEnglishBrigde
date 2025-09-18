@@ -267,7 +267,7 @@ class VoiceChatService {
       return data.transcription;
     } catch (error) {
       console.error('STT Error:', error);
-      throw new Error('שגיאה בהמרת הקול לטקסט: ' + error.message);
+      throw new Error('שגיאה בהמרת הקול לטקסט, אנא נסה שנית.');
     }
   }
 
