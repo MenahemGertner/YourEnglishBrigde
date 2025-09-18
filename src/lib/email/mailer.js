@@ -1,7 +1,7 @@
 // /lib/email/mailer.js
 import { resend, emailConfig, createSender } from './config.js';
 import { createWelcomeTemplate, welcomeEmailSubject } from './templates/welcome.js';
-import { createCouponTemplate, couponEmailSubject } from './templates/coupon.js';
+import { createNotificationTemplate, notificationEmailSubject } from './templates/notification.js';
 
 /**
  * שליחת מייל ברכה למשתמש חדש
@@ -18,7 +18,7 @@ export async function sendWelcomeEmail(email, name) {
 
     // יצירת תבנית המייל
     const htmlContent = createWelcomeTemplate(name, email);
-        
+    
     // הגדרות המייל
     const emailData = {
       from: createSender(emailConfig.siteName, emailConfig.defaultFrom),
@@ -68,75 +68,6 @@ export async function sendWelcomeEmail(email, name) {
 }
 
 /**
- * שליחת מייל עם קוד קופון
- * @param {string} email - כתובת המייל של הנמען
- * @param {string} couponCode - קוד הקופון
- * @param {Date} expiresAt - תאריך תפוגה של הקופון
- * @returns {Promise<Object>} תוצאת השליחה
- */
-export async function sendCouponEmail(email, couponCode, expiresAt) {
-  try {
-    // בדיקת תקינות הפרמטרים
-    if (!email || !couponCode || !expiresAt) {
-      throw new Error('Email, couponCode, and expiresAt are required');
-    }
-
-    // יצירת תבנית המייל
-    const htmlContent = createCouponTemplate(couponCode, expiresAt);
-        
-    // הגדרות המייל
-    const emailData = {
-      from: createSender(emailConfig.siteName, emailConfig.defaultFrom),
-      to: email,
-      subject: couponEmailSubject,
-      html: htmlContent,
-    };
-
-    if (emailConfig.enableLogging) {
-      console.log(`📧 Sending coupon email to: ${email} with code: ${couponCode}`);
-    }
-
-    // שליחה דרך Resend
-    const result = await resend.emails.send(emailData);
-
-    // לוג הצלחה
-    if (emailConfig.enableLogging) {
-      console.log(`✅ Coupon email sent successfully to ${email}`, {
-        id: result.data?.id,
-        recipient: email,
-        couponCode: couponCode
-      });
-    }
-
-    return {
-      success: true,
-      messageId: result.data?.id,
-      recipient: email,
-      couponCode: couponCode,
-      type: 'coupon'
-    };
-
-  } catch (error) {
-    // טיפול בשגיאות
-    console.error(`❌ Failed to send coupon email to ${email}:`, {
-      error: error.message,
-      stack: error.stack,
-      recipient: email,
-      couponCode: couponCode
-    });
-
-    // יצירת שגיאה מובנית
-    const emailError = new Error(`Failed to send coupon email: ${error.message}`);
-    emailError.type = 'EMAIL_ERROR';
-    emailError.originalError = error;
-    emailError.recipient = email;
-    emailError.couponCode = couponCode;
-
-    throw emailError;
-  }
-}
-
-/**
  * שליחת מייל כללי (פונקציית עזר לעתיד)
  * @param {Object} emailOptions - אפשרויות המייל
  * @param {string} emailOptions.to - כתובת המייל של הנמען
@@ -176,7 +107,7 @@ export async function sendEmail({ to, subject, html, from = null }) {
 
   } catch (error) {
     console.error(`❌ Failed to send email to ${to}:`, error.message);
-        
+    
     const emailError = new Error(`Failed to send email: ${error.message}`);
     emailError.type = 'EMAIL_ERROR';
     emailError.originalError = error;
@@ -214,11 +145,73 @@ export async function testEmailConnection() {
     return false;
   }
 }
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    sendWelcomeEmail,
-    sendCouponEmail,
-    sendEmail,
-    testEmailConnection
-  };
+
+/**
+ * שליחת מייל התראה על סיום מנוי
+ * @param {string} email - כתובת המייל של המשתמש
+ * @param {string} name - שם המשתמש
+ * @param {string} endDate - תאריך סיום המנוי
+ * @param {string} subscriptionType - סוג המנוי
+ * @returns {Promise<Object>} תוצאת השליחה
+ */
+export async function sendSubscriptionNotification(email, name, endDate, subscriptionType = 'פרימיום') {
+  try {
+    // בדיקת תקינות הפרמטרים
+    if (!email || !name || !endDate) {
+      throw new Error('Email, name and endDate are required');
+    }
+
+    // יצירת תבנית המייל
+    const htmlContent = createNotificationTemplate(name, email, endDate, subscriptionType);
+        
+    // הגדרות המייל
+    const emailData = {
+      from: createSender(emailConfig.siteName, emailConfig.defaultFrom),
+      to: email,
+      subject: notificationEmailSubject,
+      html: htmlContent,
+    };
+
+    if (emailConfig.enableLogging) {
+      console.log(`📧 Sending subscription notification to: ${email}`);
+    }
+
+    // שליחה דרך Resend
+    const result = await resend.emails.send(emailData);
+
+    // לוג הצלחה
+    if (emailConfig.enableLogging) {
+      console.log(`✅ Subscription notification sent successfully to ${email}`, {
+        id: result.data?.id,
+        recipient: email,
+        endDate: endDate
+      });
+    }
+
+    return {
+      success: true,
+      messageId: result.data?.id,
+      recipient: email,
+      type: 'subscription_notification',
+      endDate: endDate
+    };
+
+  } catch (error) {
+    // טיפול בשגיאות
+    console.error(`❌ Failed to send subscription notification to ${email}:`, {
+      error: error.message,
+      stack: error.stack,
+      recipient: email,
+      endDate: endDate
+    });
+
+    // יצירת שגיאה מובנית
+    const emailError = new Error(`Failed to send subscription notification: ${error.message}`);
+    emailError.type = 'EMAIL_ERROR';
+    emailError.originalError = error;
+    emailError.recipient = email;
+    emailError.endDate = endDate;
+
+    throw emailError;
+  }
 }
