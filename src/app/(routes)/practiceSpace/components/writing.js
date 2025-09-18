@@ -12,8 +12,16 @@ const Writing = ({ onPracticeCompleted }) => {
     const [validationError, setValidationError] = useState('');
     const [hasCompletedPractice, setHasCompletedPractice] = useState(false);
 
+    const MAX_CHARACTERS = 120;
+
     const handleInputChange = (e) => {
         const value = e.target.value;
+        
+        // הגבלת אורך הטקסט
+        if (value.length > MAX_CHARACTERS) {
+            return; // לא מאפשר הזנה מעבר לגבול
+        }
+
         setUserInput(value);
         setShowFeedback(false);
         setFeedback('');
@@ -104,6 +112,13 @@ const Writing = ({ onPracticeCompleted }) => {
         }
     };
 
+    const getCharacterCountColor = () => {
+        const remaining = MAX_CHARACTERS - userInput.length;
+        if (remaining <= 20) return 'text-red-500';
+        if (remaining <= 40) return 'text-amber-500';
+        return 'text-green-500';
+    };
+
     return (
         <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -148,29 +163,42 @@ const Writing = ({ onPracticeCompleted }) => {
                 <div className="p-8">
                     <div className="flex flex-col items-center space-y-6">
                         <div className="w-full max-w-2xl">
-                            <textarea
-                                value={userInput}
-                                onChange={handleInputChange}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && e.ctrlKey) {
-                                        checkAnswer();
-                                    }
-                                }}
-                                className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none ${
-                                    validationError 
-                                        ? 'border-red-300 focus:border-red-500' 
-                                        : 'border-gray-300 focus:border-indigo-500'
-                                }`}
-                                placeholder="Write your sentence in English here..."
-                                rows="4"
-                                disabled={isLoading}
-                            />
+                            <div className="relative">
+                                <textarea
+                                    value={userInput}
+                                    onChange={handleInputChange}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && e.ctrlKey) {
+                                            checkAnswer();
+                                        }
+                                    }}
+                                    className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none ${
+                                        validationError 
+                                            ? 'border-red-300 focus:border-red-500' 
+                                            : 'border-gray-300 focus:border-indigo-500'
+                                    }`}
+                                    placeholder="Write your sentence in English here..."
+                                    rows="3"
+                                    disabled={isLoading}
+                                />
+                                
+                                {/* Character Counter */}
+                                <div className="absolute bottom-2 left-2">
+                                    <span className={`text-xs font-medium ${getCharacterCountColor()}`}>
+                                        {userInput.length}/{MAX_CHARACTERS}
+                                    </span>
+                                </div>
+                            </div>
+                            
                             {validationError && (
                                 <p className="text-red-500 text-sm mt-2">{validationError}</p>
                             )}
-                            <p className="text-sm text-gray-500 mt-2 text-center">
-                                Ctrl + Enter לבדיקה מהירה
-                            </p>
+                            
+                            <div className="flex justify-between items-center mt-2">
+                                <p className="text-sm text-gray-500">
+                                    Ctrl + Enter לבדיקה מהירה
+                                </p>
+                            </div>
                         </div>
 
                         <motion.button
@@ -230,21 +258,21 @@ const Writing = ({ onPracticeCompleted }) => {
 
                 {/* Enhanced Tips Section */}
                 <div className="p-6 bg-gradient-to-r from-indigo-50 to-purple-50">                     
-    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 justify-center">                         
-        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
-            <span className="text-sm">✍️ השתמש בלפחות מילה אחת מהרשימה</span>                         
-        </div>                         
-        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
-            <span className="text-sm">📖 שים לב לדקדוק ולמבנה המשפט</span>                         
-        </div>                         
-        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
-            <span className="text-sm">🎯 נסה להיות יצירתי וברור</span>                         
-        </div>                         
-        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
-            <span className="text-sm">⏰ התנסה בזמנים שונים</span>                         
-        </div>                     
-    </div>                 
-</div>
+                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 justify-center">                         
+                        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
+                            <span className="text-sm">✍️ השתמש בלפחות מילה אחת מהרשימה</span>                         
+                        </div>                         
+                        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
+                            <span className="text-sm">📖 שים לב לדקדוק ולמבנה המשפט</span>                         
+                        </div>                         
+                        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
+                            <span className="text-sm">🎯 נסה להיות יצירתי וברור</span>                         
+                        </div>                         
+                        <div className="flex items-center space-x-2 text-gray-600" dir="rtl">                             
+                            <span className="text-sm">⏰ התנסה בזמנים שונים</span>                         
+                        </div>                     
+                    </div>                 
+                </div>
             </motion.div>
         </motion.div>
     );
