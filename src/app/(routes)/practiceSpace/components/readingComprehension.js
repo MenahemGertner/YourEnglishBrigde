@@ -74,10 +74,6 @@ const ReadingComprehension = ({
         }
     };
 
-    const resetQuestion = () => {
-        generateQuestion();
-    };
-
     // בדיקת תקינות הסיפור
     const storyValidation = questionService.validateStory(story);
     if (!storyValidation.isValid && !loading) {
@@ -237,16 +233,7 @@ const ReadingComprehension = ({
                                     >
                                         בדוק תשובה
                                     </motion.button>
-                                ) : (
-                                    <motion.button
-                                        onClick={resetQuestion}
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="px-8 py-3 bg-purple-600 text-white rounded-full font-medium hover:bg-purple-700 transition-colors"
-                                    >
-                                        שאלה חדשה
-                                    </motion.button>
-                                )}
+                                ) : null}
                             </div>
 
                             {/* Result Message */}
