@@ -109,7 +109,7 @@ const CheckYourLevel = () => {
                   linkUrl = "/underConstruction";
                 } else if (userLevel > 0 && userLevel < 6) {
                   message = `יש לך בסיס טוב! נעזור לך להתקדם לרמה הבאה.`;
-                  linkUrl = `/words?index=${userLevel*500-499}&category=${userLevel*500}`;
+                  linkUrl = `/words?index=${userLevel*300-299}&category=${userLevel*300}`;
                 } else if (userLevel === 6) {
                   message = "מעולה! יש לך שליטה מצוינת באנגלית, תוכל להמשיך לרמת 'מתקדמים'!";
                   linkUrl = "/underConstruction";
