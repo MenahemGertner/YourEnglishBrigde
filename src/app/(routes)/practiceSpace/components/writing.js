@@ -114,8 +114,10 @@ const Writing = ({ onPracticeCompleted }) => {
 
     const getCharacterCountColor = () => {
         const remaining = MAX_CHARACTERS - userInput.length;
-        if (remaining <= 20) return 'text-red-500';
-        if (remaining <= 40) return 'text-amber-500';
+        if (remaining < 20) return 'text-red-500';
+        if (remaining < 40) return 'text-amber-500';
+        if (remaining >= 100) return 'text-red-500';
+        if (remaining >= 80) return 'text-amber-500';
         return 'text-green-500';
     };
 
