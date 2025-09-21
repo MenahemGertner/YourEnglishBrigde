@@ -1,40 +1,29 @@
 'use server'
 
 import { intervals, PRACTICE_THRESHOLD, categories } from '../helpers/reviewHelperFunctions';
-import { createServerClient } from '@/lib/db/supabase';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/db/supabase';
+import { requireAuthAndOwnership } from '@/utils/auth-helpers';
 import { getWordByIndex } from '@/lib/db/getWordByIndex';
-
 
 export async function updateWordAndGetNext(userId, wordId, level, category) {
   try {
-    if (!userId) throw new Error('נדרש מזהה משתמש');
+    // בדיקות בסיסיות
     if (!wordId || !category) throw new Error('נדרש מזהה מילה וקטגוריה');
     if (!level || !Number.isInteger(level) || level < 1 || level > 4) {
       throw new Error('רמת קושי לא תקינה');
     }
 
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.accessToken || !session?.user?.id) {
-      throw new Error('נדרש אימות');
-    }
-    
-    if (session.user.id !== userId) {
-      throw new Error('גישה לא מורשית');
-    }
-    
-    const supabaseClient = createServerClient(session.accessToken);
+    // אימות - כל הבדיקות בשורה אחת!
+    await requireAuthAndOwnership(userId);
 
     // **שלב 1: קבלת נתונים במקביל**
-    const existingWordPromise = supabaseClient
+    const existingWordPromise = supabaseAdmin
       .from('user_words')
       .select('*')
       .match({ user_id: userId, word_id: wordId })
       .single();
 
-    const userDataPromise = supabaseClient
+    const userDataPromise = supabaseAdmin
       .from('users')
       .select('practice_counter, last_position')
       .eq('id', userId)
@@ -75,7 +64,7 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
     if (level === 1) {
       // מחיקת המילה
       if (existingWord) {
-        wordUpdateResult = await supabaseClient
+        wordUpdateResult = await supabaseAdmin
           .from('user_words')
           .delete()
           .match({ user_id: userId, word_id: wordId });
@@ -87,7 +76,7 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
         : wordId + intervals[level];
 
       if (existingWord) {
-        wordUpdateResult = await supabaseClient
+        wordUpdateResult = await supabaseAdmin
           .from('user_words')
           .update({
             level,
@@ -95,7 +84,7 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
           })
           .match({ user_id: userId, word_id: wordId });
       } else {
-        wordUpdateResult = await supabaseClient
+        wordUpdateResult = await supabaseAdmin
           .from('user_words')
           .insert([{
             user_id: userId,
@@ -112,7 +101,7 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
     }
 
     // **שלב 4: עדכון נתוני המשתמש וחיפוש המילה הבאה במקביל**
-    const userUpdatePromise = supabaseClient
+    const userUpdatePromise = supabaseAdmin
       .from('users')
       .update({
         last_position: updatedLastPosition,
@@ -121,7 +110,6 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
       .eq('id', userId);
 
     const nextWordPromise = findNextWord(
-      supabaseClient, 
       userId, 
       updatedLastPosition.learning_sequence_pointer,
       category
@@ -138,7 +126,7 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
 
     // בדיקת סף התרגול
     if (newPracticeCounter >= PRACTICE_THRESHOLD) {
-      await supabaseClient
+      await supabaseAdmin
         .from('users')
         .update({ practice_counter: 0 })
         .eq('id', userId);
@@ -167,10 +155,10 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
 }
 
 // **פונקציה עזר לחיפוש המילה הבאה**
-async function findNextWord(supabaseClient, userId, learningSequencePointer, currentCategory) {
+async function findNextWord(userId, learningSequencePointer, currentCategory) {
   try {
     // חיפוש מילים לחזרה - בעדיפות גבוהה
-    const reviewWordsResult = await supabaseClient
+    const reviewWordsResult = await supabaseAdmin
       .from('user_words')
       .select('word_id, next_review')
       .eq('user_id', userId)
@@ -194,26 +182,25 @@ async function findNextWord(supabaseClient, userId, learningSequencePointer, cur
     // אם הגענו לקצה של 300 מילים, עבור למילים לחזרה
     if (learningSequencePointer % 300 !== 0) {
       // נסה למצוא מילה חדשה
-try {
-  const nextIndex = learningSequencePointer + 1;
-  const nextWord = await getWordByIndex(nextIndex);
+      try {
+        const nextIndex = learningSequencePointer + 1;
+        const nextWord = await getWordByIndex(nextIndex);
 
-  if (nextWord) {
-    return {
-      found: true,
-      index: nextWord.index,
-      category: nextWord.category,
-      source: 'new'
-    };
-  }
-} catch (fetchError) {
-  console.warn('Failed to get next word directly:', fetchError);
-}
-
+        if (nextWord) {
+          return {
+            found: true,
+            index: nextWord.index,
+            category: nextWord.category,
+            source: 'new'
+          };
+        }
+      } catch (fetchError) {
+        console.warn('Failed to get next word directly:', fetchError);
+      }
     }
 
     // חיפוש מילים מתקדמות לחזרה
-    const futureWordsResult = await supabaseClient
+    const futureWordsResult = await supabaseAdmin
       .from('user_words')
       .select('word_id, next_review')
       .eq('user_id', userId)

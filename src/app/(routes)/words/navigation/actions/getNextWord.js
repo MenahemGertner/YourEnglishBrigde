@@ -2,33 +2,16 @@
 
 import { headers } from 'next/headers'
 import { PRACTICE_THRESHOLD, categories } from '../helpers/reviewHelperFunctions'
-import { createServerClient } from '@/lib/db/supabase'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/db/supabase'
+import { requireAuthAndOwnership } from '@/utils/auth-helpers'
 
 export async function getNextWord(userId) {
   try {
-    if (!userId) {
-      throw new Error('נדרש מזהה משתמש')
-    }
-
-    // קבלת מידע על הסשן מהשרת
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.accessToken || !session?.user?.id) {
-      throw new Error('נדרש אימות')
-    }
-    
-    // וידוא שהמשתמש מנסה לגשת למידע שלו בלבד
-    if (session.user.id !== userId) {
-      throw new Error('גישה לא מורשית')
-    }
-    
-    // יצירת לקוח Supabase עם הטוקן של המשתמש
-    const supabase = createServerClient(session.accessToken)
+    // אימות - כל הבדיקות בשורה אחת!
+    await requireAuthAndOwnership(userId);
 
     // Get user data
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await supabaseAdmin
       .from('users')
       .select('last_position, practice_counter')
       .eq('id', userId)
@@ -43,7 +26,7 @@ export async function getNextWord(userId) {
     // בדיקת התרגול רק במצב פיתוח, דילוג עליה במצב ייצור
     if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTICE_THRESHOLD) {
       // Reset practice counter
-      await supabase
+      await supabaseAdmin
         .from('users')
         .update({ practice_counter: 0 })
         .eq('id', userId)
@@ -60,7 +43,7 @@ export async function getNextWord(userId) {
     const currentCategory = userData.last_position?.category || '300'
 
     // Try to find word with next_review <= learning_sequence_pointer
-    const { data: wordsLTE, error: wordsLTEError } = await supabase
+    const { data: wordsLTE, error: wordsLTEError } = await supabaseAdmin
       .from('user_words')
       .select('word_id, next_review')
       .eq('user_id', userId)
@@ -105,7 +88,7 @@ export async function getNextWord(userId) {
     }
 
     // Try to find word with next_review > learning_sequence_pointer
-    const { data: wordsGT, error: wordsGTError } = await supabase
+    const { data: wordsGT, error: wordsGTError } = await supabaseAdmin
       .from('user_words')
       .select('word_id, next_review')
       .eq('user_id', userId)

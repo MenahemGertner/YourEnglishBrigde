@@ -1,43 +1,18 @@
-import { createServerClient } from '@/lib/db/supabase';
-import { getServerSession } from "next-auth/next";
-import { authOptions } from '@/lib/auth';
+import { supabaseAdmin } from '@/lib/db/supabase';
+import { requireAuth } from '@/utils/auth-helpers';
 import { getWordByIndex } from '@/lib/db/getWordByIndex';
 
 export async function getUserWordsData() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email || !session?.accessToken) {
-      throw new Error('יש להתחבר כדי לצפות במילים');
-    }
-
-    // יצירת לקוח Supabase עם הטוקן של המשתמש
-    const supabaseClient = createServerClient(session.accessToken);
-    
-    // Get user ID
+    // אימות פשוט - מחזיר את הsession עם user.id
+    const session = await requireAuth();
     const userId = session.user.id;
-    let userIdToUse;
-    
-    if (!userId) {
-      const { data: userData, error: userError } = await supabaseClient
-        .from('users')
-        .select('id')
-        .eq('email', session.user.email)
-        .single();
-
-      if (userError) {
-        throw new Error('משתמש לא נמצא');
-      }
-      
-      userIdToUse = userData.id;
-    } else {
-      userIdToUse = userId;
-    }
 
     // Get word indices and their levels
-    const { data: userWords, error: wordsError } = await supabaseClient
+    const { data: userWords, error: wordsError } = await supabaseAdmin
       .from('user_words')
       .select('word_id, level')
-      .eq('user_id', userIdToUse)
+      .eq('user_id', userId)
       .not('word_id', 'is', null);
 
     if (wordsError) {

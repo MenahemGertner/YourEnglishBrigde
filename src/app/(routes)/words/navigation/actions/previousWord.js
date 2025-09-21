@@ -1,26 +1,14 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { createServerClient } from '@/lib/db/supabase'
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import { supabaseAdmin } from '@/lib/db/supabase'
+import { requireAuthAndOwnership } from '@/utils/auth-helpers'
 
 export async function getPreviousWord(userId, currentIndex) {
-  if (!userId) throw new Error('User ID is required')
+  // אימות - כל הבדיקות בשורה אחת!
+  await requireAuthAndOwnership(userId);
 
-  const session = await getServerSession(authOptions)
-
-  if (!session?.accessToken || !session?.user?.id) {
-    throw new Error('Authentication required')
-  }
-
-  if (session.user.id !== userId) {
-    throw new Error('Unauthorized access')
-  }
-
-  const supabaseClient = createServerClient(session.accessToken)
-
-  const { data: userData, error: userError } = await supabaseClient
+  const { data: userData, error: userError } = await supabaseAdmin
     .from('users')
     .select('last_position')
     .eq('id', userId)
