@@ -5,11 +5,10 @@ import { SessionProvider } from "next-auth/react";
 export default function AuthProvider({ children }) {
   return (
     <SessionProvider 
-      // חידוש כל 5 דקות (בטוח ויעיל)
-      refetchInterval={5 * 60}
-      // חידוש כאשר חוזרים לחלון
-      refetchOnWindowFocus={true}
-    >
+  refetchInterval={60} // כל דקה במקום 5 דקות
+  refetchOnWindowFocus={true}
+  refetchWhenOffline={false}
+>
       {children}
     </SessionProvider>
   );
