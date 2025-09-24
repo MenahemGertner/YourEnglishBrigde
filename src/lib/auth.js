@@ -15,18 +15,20 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // עדכון כל 24 שעות
   },
-  cookies: {
-    sessionToken: {
-      name: 'next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: 30 * 24 * 60 * 60 // 30 days
-      }
+  // auth.js
+cookies: {
+  sessionToken: {
+    name: 'next-auth.session-token',
+    options: {
+      httpOnly: true,
+      sameSite: 'lax', // ← שמור על lax!
+      path: '/',
+      secure: true,
+      maxAge: 30 * 24 * 60 * 60
+      // אל תוסיף domain!
     }
-  },
+  }
+},
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
