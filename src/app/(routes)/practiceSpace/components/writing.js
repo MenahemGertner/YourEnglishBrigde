@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Edit, AlertCircle, CheckCircle2, Loader2, Lightbulb, RotateCcw } from 'lucide-react';
+import AudioButton from '@/components/features/AudioButton';
+import underLine from '@/components/features/UnderLine';
 import WritingService from '../services/writingService';
 
-const Writing = ({ onPracticeCompleted }) => {
+const Writing = ({ words, inflections, onPracticeCompleted }) => {
     const [userInput, setUserInput] = useState('');
     const [feedback, setFeedback] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -11,8 +13,12 @@ const Writing = ({ onPracticeCompleted }) => {
     const [feedbackType, setFeedbackType] = useState(''); // 'success', 'warning', 'info'
     const [validationError, setValidationError] = useState('');
     const [hasCompletedPractice, setHasCompletedPractice] = useState(false);
+    const [processedText, setProcessedText] = useState(''); // הטקסט המעובד עם הדגשות
 
     const MAX_CHARACTERS = 120;
+
+    // שילוב המילים המאתגרות
+    const allChallengeWords = [...(words || []), ...(inflections || [])];
 
     const handleInputChange = (e) => {
         const value = e.target.value;
@@ -25,6 +31,7 @@ const Writing = ({ onPracticeCompleted }) => {
         setUserInput(value);
         setShowFeedback(false);
         setFeedback('');
+        setProcessedText(''); // איפוס הטקסט המעובד
 
         // שימוש בשירות לולידציה
         const error = WritingService.validateInput(value);
@@ -49,6 +56,9 @@ const Writing = ({ onPracticeCompleted }) => {
             setFeedback(result.feedback);
             setFeedbackType(result.feedbackType);
             setShowFeedback(true);
+            
+            // עיבוד הטקסט עם הדגשת מילים מאתגרות
+            setProcessedText(userInput);
 
             // סימון השלמת התרגול
             if (!hasCompletedPractice) {
@@ -64,6 +74,9 @@ const Writing = ({ onPracticeCompleted }) => {
             setFeedback(error.message);
             setFeedbackType('info');
             setShowFeedback(true);
+            
+            // עיבוד הטקסט גם במקרה של שגיאה
+            setProcessedText(userInput);
 
             // סימון השלמת התרגול גם במקרה של שגיאה
             if (!hasCompletedPractice) {
@@ -84,6 +97,7 @@ const Writing = ({ onPracticeCompleted }) => {
         setShowFeedback(false);
         setFeedbackType('');
         setValidationError('');
+        setProcessedText('');
     };
 
     const getFeedbackIcon = () => {
@@ -166,30 +180,70 @@ const Writing = ({ onPracticeCompleted }) => {
                     <div className="flex flex-col items-center space-y-6">
                         <div className="w-full max-w-2xl">
                             <div className="relative">
-                                <textarea
-                                    value={userInput}
-                                    onChange={handleInputChange}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && e.ctrlKey) {
-                                            checkAnswer();
-                                        }
-                                    }}
-                                    className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none ${
-                                        validationError 
-                                            ? 'border-red-300 focus:border-red-500' 
-                                            : 'border-gray-300 focus:border-indigo-500'
-                                    }`}
-                                    placeholder="Write your sentence in English here..."
-                                    rows="3"
-                                    disabled={isLoading}
-                                />
-                                
-                                {/* Character Counter */}
-                                <div className="absolute bottom-2 left-2">
-                                    <span className={`text-xs font-medium ${getCharacterCountColor()}`}>
-                                        {userInput.length}/{MAX_CHARACTERS}
-                                    </span>
-                                </div>
+                                {processedText ? (
+                                    // הצגת הטקסט עם הדגשות אחרי הבדיקה - לחיצה חוזרת לעריכה
+                                    <div 
+                                        onClick={() => setProcessedText('')}
+                                        className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none min-h-[84px] bg-gray-50 cursor-text hover:bg-gray-100 ${
+                                            validationError 
+                                                ? 'border-red-300' 
+                                                : 'border-gray-300'
+                                        } ${userInput.trim() ? 'pl-12' : 'pl-4'}`} 
+                                        dir="ltr"
+                                        title="לחץ לעריכה"
+                                    >
+                                        {underLine(processedText, allChallengeWords)}
+                                        
+                                        {/* Character Counter */}
+                                        <div className="absolute bottom-2 left-2">
+                                            <span className={`text-xs font-medium ${getCharacterCountColor()}`}>
+                                                {userInput.length}/{MAX_CHARACTERS}
+                                            </span>
+                                        </div>
+                                        
+                                        {/* Audio Button */}
+                                        {userInput.trim() && (
+                                            <div className="absolute top-2 left-2">
+                                                <AudioButton text={userInput} />
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    // הצגת ה-textarea הרגיל לפני הבדיקה
+                                    <div>
+                                        <textarea
+                                            value={userInput}
+                                            onChange={handleInputChange}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && e.ctrlKey) {
+                                                    checkAnswer();
+                                                }
+                                            }}
+                                            className={`w-full py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none ${
+                                                validationError 
+                                                    ? 'border-red-300 focus:border-red-500' 
+                                                    : 'border-gray-300 focus:border-indigo-500'
+                                            } ${userInput.trim() ? 'pl-12 pr-4' : 'px-4'}`}
+                                            placeholder="Write your sentence in English here..."
+                                            rows="3"
+                                            disabled={isLoading}
+                                        />
+                                        
+                                        {/* Character Counter */}
+                                        <div className="absolute bottom-2 left-2">
+                                            <span className={`text-xs font-medium ${getCharacterCountColor()}`}>
+                                                {userInput.length}/{MAX_CHARACTERS}
+                                            </span>
+                                        </div>
+                                        
+                                        {/* Audio Button */}
+                                        {userInput.trim() && (
+                                            <div className="absolute top-2 left-2">
+                                                <AudioButton text={userInput} />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             
                             {validationError && (
