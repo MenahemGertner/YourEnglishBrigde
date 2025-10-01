@@ -31,7 +31,9 @@ const Writing = ({ words, inflections, onPracticeCompleted }) => {
         setUserInput(value);
         setShowFeedback(false);
         setFeedback('');
-        setProcessedText(''); // איפוס הטקסט המעובד
+        if (value !== processedText) {
+    setProcessedText('');
+}
 
         // שימוש בשירות לולידציה
         const error = WritingService.validateInput(value);
@@ -180,70 +182,54 @@ const Writing = ({ words, inflections, onPracticeCompleted }) => {
                     <div className="flex flex-col items-center space-y-6">
                         <div className="w-full max-w-2xl">
                             <div className="relative">
-                                {processedText ? (
-                                    // הצגת הטקסט עם הדגשות אחרי הבדיקה - לחיצה חוזרת לעריכה
-                                    <div 
-                                        onClick={() => setProcessedText('')}
-                                        className={`w-full px-4 py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none min-h-[84px] bg-gray-50 cursor-text hover:bg-gray-100 ${
-                                            validationError 
-                                                ? 'border-red-300' 
-                                                : 'border-gray-300'
-                                        } ${userInput.trim() ? 'pl-12' : 'pl-4'}`} 
-                                        dir="ltr"
-                                        title="לחץ לעריכה"
-                                    >
-                                        {underLine(processedText, allChallengeWords)}
-                                        
-                                        {/* Character Counter */}
-                                        <div className="absolute bottom-2 left-2">
-                                            <span className={`text-xs font-medium ${getCharacterCountColor()}`}>
-                                                {userInput.length}/{MAX_CHARACTERS}
-                                            </span>
-                                        </div>
-                                        
-                                        {/* Audio Button */}
-                                        {userInput.trim() && (
-                                            <div className="absolute top-2 left-2">
-                                                <AudioButton text={userInput} />
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : (
-                                    // הצגת ה-textarea הרגיל לפני הבדיקה
-                                    <div>
-                                        <textarea
-                                            value={userInput}
-                                            onChange={handleInputChange}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && e.ctrlKey) {
-                                                    checkAnswer();
-                                                }
-                                            }}
-                                            className={`w-full py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none ${
-                                                validationError 
-                                                    ? 'border-red-300 focus:border-red-500' 
-                                                    : 'border-gray-300 focus:border-indigo-500'
-                                            } ${userInput.trim() ? 'pl-12 pr-4' : 'px-4'}`}
-                                            placeholder="Write your sentence in English here..."
-                                            rows="3"
-                                            disabled={isLoading}
-                                        />
-                                        
-                                        {/* Character Counter */}
-                                        <div className="absolute bottom-2 left-2">
-                                            <span className={`text-xs font-medium ${getCharacterCountColor()}`}>
-                                                {userInput.length}/{MAX_CHARACTERS}
-                                            </span>
-                                        </div>
-                                        
-                                        {/* Audio Button */}
-                                        {userInput.trim() && (
-                                            <div className="absolute top-2 left-2">
-                                                <AudioButton text={userInput} />
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                {/* Textarea - תמיד גלוי */}
+<textarea
+    value={userInput}
+    onChange={handleInputChange}
+    onKeyDown={(e) => {
+        if (e.key === 'Enter' && e.ctrlKey) {
+            checkAnswer();
+        }
+    }}
+    className={`w-full py-3 text-lg border-2 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none transition-colors resize-none ${
+        validationError 
+            ? 'border-red-300 focus:border-red-500' 
+            : 'border-gray-300 focus:border-indigo-500'
+    } ${userInput.trim() ? 'pl-12 pr-4' : 'px-4'}`}
+    placeholder="Write your sentence in English here..."
+    rows="3"
+    disabled={isLoading}
+    dir="ltr"
+/>
+
+{/* Overlay עם הדגשות - מוצג רק כשיש processedText */}
+{processedText && (
+    <div 
+        className="absolute inset-0 px-4 py-3 text-lg rounded-lg pointer-events-none overflow-hidden"
+        style={{ 
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            paddingLeft: userInput.trim() ? '3rem' : '1rem',
+            paddingRight: '1rem'
+        }}
+        dir="ltr"
+    >
+        {underLine(processedText, allChallengeWords)}
+    </div>
+)}
+
+{/* Character Counter */}
+<div className="absolute bottom-2 left-2 pointer-events-none">
+    <span className={`text-xs font-medium ${getCharacterCountColor()}`}>
+        {userInput.length}/{MAX_CHARACTERS}
+    </span>
+</div>
+
+{/* Audio Button - עם z-index גבוה כדי שיהיה לחיץ */}
+{userInput.trim() && (
+    <div className="absolute top-2 left-2 z-10">
+        <AudioButton text={userInput} />
+    </div>
+)}
                             </div>
                             
                             {validationError && (
