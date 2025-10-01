@@ -1,6 +1,7 @@
 // app/practiceSpace/page.js - Server Component חדש
 import { getUserWordsData } from './services/wordsService';
 import PracticeSpaceClient from './components/practiceSpaceClient';
+import ProContent from '@/components/auth/ProContent';
 
 export default async function PracticeSpace() {
   // שליפת נתוני המילים בServer Component
@@ -19,5 +20,9 @@ export default async function PracticeSpace() {
     );
   }
 
-  return <PracticeSpaceClient wordsData={wordsData} />;
+  return(
+    <ProContent>
+  <PracticeSpaceClient wordsData={wordsData} />
+  </ProContent>
+);
 }

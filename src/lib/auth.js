@@ -1,4 +1,4 @@
-// src/lib/auth.js
+// src/lib/auth.js - עדכון עם בדיקת מנוי
 import GoogleProvider from "next-auth/providers/google";
 import { supabaseAdmin } from '@/lib/db/supabase';
 
@@ -15,20 +15,18 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // עדכון כל 24 שעות
   },
-  // auth.js
-cookies: {
-  sessionToken: {
-    name: 'next-auth.session-token',
-    options: {
-      httpOnly: true,
-      sameSite: 'lax', // ← שמור על lax!
-      path: '/',
-      secure: true,
-      maxAge: 30 * 24 * 60 * 60
-      // אל תוסיף domain!
+  cookies: {
+    sessionToken: {
+      name: 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: true,
+        maxAge: 30 * 24 * 60 * 60
+      }
     }
-  }
-},
+  },
   callbacks: {
     async signIn({ user }) {
       if (!user.email) return false;
@@ -58,16 +56,75 @@ cookies: {
     },
     
     async jwt({ token, user }) {
-      // בהתחברות ראשונית, הוסף את מזהה הsupabase
-      if (user) {
-        const { data: userData } = await supabaseAdmin
-          .from('users')
-          .select('id')
-          .eq('email', user.email)
-          .single();
+      // בהתחברות ראשונית או בעדכון תקופתי
+      if (user || !token.subscriptionLastCheck || 
+          Date.now() - token.subscriptionLastCheck > 24 * 60 * 60 * 1000) {
         
-        if (userData) {
-          token.supabaseUserId = userData.id;
+        try {
+          // קבלת פרטי המשתמש
+          const { data: userData } = await supabaseAdmin
+            .from('users')
+            .select('id')
+            .eq('email', user?.email || token.email)
+            .single();
+          
+          if (userData) {
+            token.supabaseUserId = userData.id;
+            
+            // קבלת פרטי המנוי הפעיל
+            const { data: subscriptionData, error: subscriptionError } = await supabaseAdmin
+              .from('subscriptions')
+              .select('status, subscription_type, end_date')
+              .eq('user_id', userData.id)
+              .eq('status', 'active')
+              .single();
+            
+            if (subscriptionError && subscriptionError.code !== 'PGRST116') {
+              console.error('Error fetching subscription:', subscriptionError);
+              // במקרה של שגיאה, נשמור סטטוס לא פעיל
+              token.subscription = {
+                status: 'inactive',
+                subscription_type: null,
+                end_date: null
+              };
+            } else if (subscriptionData) {
+              // מנוי פעיל נמצא
+              token.subscription = {
+                status: subscriptionData.status,
+                subscription_type: subscriptionData.subscription_type,
+                end_date: subscriptionData.end_date
+              };
+            } else {
+              // לא נמצא מנוי פעיל - אולי פג או לא קיים
+              // ננסה לקבל את המנוי האחרון לצורכי תצוגה
+              const { data: lastSubscription } = await supabaseAdmin
+                .from('subscriptions')
+                .select('status, subscription_type, end_date')
+                .eq('user_id', userData.id)
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .single();
+              
+              token.subscription = lastSubscription || {
+                status: 'inactive',
+                subscription_type: null,
+                end_date: null
+              };
+            }
+            
+            // עדכון זמן בדיקה אחרונה
+            token.subscriptionLastCheck = Date.now();
+          }
+        } catch (error) {
+          console.error('JWT callback error:', error);
+          // במקרה של שגיאה, נשאיר את הנתונים הישנים או נאפס
+          if (!token.subscription) {
+            token.subscription = {
+              status: 'inactive',
+              subscription_type: null,
+              end_date: null
+            };
+          }
         }
       }
       
@@ -75,9 +132,13 @@ cookies: {
     },
     
     async session({ session, token }) {
-      // העבר את מזהה המשתמש לסשן
+      // העברת כל המידע לsession
       if (token.supabaseUserId) {
         session.user.id = token.supabaseUserId;
+      }
+      
+      if (token.subscription) {
+        session.user.subscription = token.subscription;
       }
       
       return session;

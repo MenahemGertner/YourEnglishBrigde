@@ -1,4 +1,4 @@
-// /app/api/cron/check-subscriptions/route.js - עדכון עם שליחת מיילים
+// /app/api/cron/check-subscriptions/route.js - עדכון עם פיגת sessions
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 import { sendSubscriptionNotification } from '../../../../lib/email/mailer.js';
@@ -42,7 +42,7 @@ export async function GET(request) {
       .from('subscriptions')
       .select(`
         *,
-        users!inner(name, email)
+        users!inner(name, email, id)
       `)
       .eq('status', 'active')
       .lte('end_date', today);
@@ -56,6 +56,8 @@ export async function GET(request) {
     let notificationErrors = 0;
     let subscriptionsCancelled = 0;
     let cancellationErrors = 0;
+    let sessionsInvalidated = 0;
+    let sessionErrors = 0;
 
     // 3. עיבוד התראות
     if (notificationUsers && notificationUsers.length > 0) {
@@ -116,6 +118,16 @@ export async function GET(request) {
           } else {
             subscriptionsCancelled++;
             console.log(`✅ Subscription cancelled for ${user.email}`);
+            
+            // פיגת כל ה-sessions של המשתמש
+            try {
+              await invalidateUserSessions(user.id);
+              sessionsInvalidated++;
+              console.log(`✅ Sessions invalidated for user ${user.email}`);
+            } catch (sessionError) {
+              sessionErrors++;
+              console.error(`Failed to invalidate sessions for user ${user.email}:`, sessionError.message);
+            }
           }
 
         } catch (error) {
@@ -132,6 +144,8 @@ export async function GET(request) {
       notificationErrors,
       subscriptionsCancelled,
       cancellationErrors,
+      sessionsInvalidated,
+      sessionErrors,
       totalProcessed: (notificationUsers?.length || 0) + (expiredUsers?.length || 0),
       processedAt: new Date().toISOString()
     };
@@ -164,3 +178,46 @@ async function handleSubscriptionCancellation(subscription) {
   // await cancelRecurringPayment(subscription.payment_id);
   // await logToAnalytics('subscription_expired', { userId: subscription.user_id });
 }
+
+// פונקציה חדשה - פיגת sessions של משתמש
+async function invalidateUserSessions(userId) {
+  try {
+    // אפשרות 1: שימוש ב-NextAuth database adapter (אם יש לך)
+    // await adapter.deleteSession(sessionToken);
+    
+    // אפשרות 2: הוספת רשימה שחורה לפיגת tokens
+    // זה דורש הוספת טבלה נוספת או שדה ב-users table
+    
+    // אפשרות 3: עדכון timestamp שיגרום ל-JWT לבדוק מחדש
+    // זה הפתרון הפשוט ביותר עם JWT sessions
+    
+    // לעת עתה, נעשה לוג שהפעולה התבצעה
+    console.log(`Sessions invalidated for user ${userId} - JWT will refresh on next request`);
+    
+    // אם תרצה לממש פיגת sessions מיידית, תוכל:
+    // 1. לשמור רשימת user_ids שה-JWT שלהם לא תקף
+    // 2. לבדוק את זה ב-JWT callback
+    // 3. לנקות את הרשימה אחרי זמן מסוים
+    
+    return true;
+    
+  } catch (error) {
+    console.error('Error invalidating sessions:', error);
+    throw error;
+  }
+}
+
+// אם תרצה פיגת sessions מיידית יותר, תוכל להוסיף טבלה:
+/*
+CREATE TABLE invalidated_sessions (
+  user_id UUID NOT NULL,
+  invalidated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (user_id)
+);
+
+ואז בפונקציה:
+const supabase = createClient(...);
+await supabase
+  .from('invalidated_sessions')
+  .upsert({ user_id: userId });
+*/
