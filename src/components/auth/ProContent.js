@@ -125,7 +125,7 @@ function ExpiredSubscriptionBanner({ subscription, onSwitchToBasic }) {
         {/* כפתורי פעולה */}
         <div className="flex items-center gap-3 flex-wrap">
           <button
-            onClick={() => router.push('/pricing')}
+            onClick={() => router.push('/expired')}
             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 text-sm rounded hover:from-blue-500 hover:to-purple-500 transition-colors"
           >
             חידוש מנוי
@@ -172,7 +172,7 @@ function ExpiredSubscriptionMessage({ subscription }) {
         
         <div className="space-y-3">
           <button
-            onClick={() => router.push('/pricing')}
+            onClick={() => router.push('/expired')}
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:from-blue-500 hover:to-purple-500 transition-colors"
           >
             {subscription?.subscription_type ? 'חידוש מנוי' : 'רכישת מנוי'}

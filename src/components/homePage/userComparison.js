@@ -1,10 +1,19 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { signIn } from "next-auth/react";
 import { User, UserPlus, Check, Book, BarChart2, Brain, Bookmark, AlignLeft, Headphones, Mic, Edit, Clock, BadgeCheck, Lightbulb, Zap, Bot } from 'lucide-react';
 
 const UserComparison = () => {
   const [selectedTab, setSelectedTab] = useState('regular');
+  const handleRegisterClick = async (e) => {
+      e.preventDefault();
+      
+      await signIn('google', { 
+        redirect: true,
+        callbackUrl: '/registration'
+      });
+    };
   
   const regularFeatures = [
     {
@@ -169,11 +178,12 @@ const UserComparison = () => {
                 <div className="flex flex-col md:flex-row justify-center items-center gap-4 sm:gap-6">
                   <div className="p-3 sm:p-4 rounded">
                     <h3 className="font-medium text-lg sm:text-xl mb-2 sm:mb-3 text-center">התנסות ללא התחייבות</h3>
-                    <p className="text-center mb-3 sm:mb-4 text-sm sm:text-base">נסו את כל היתרונות המתקדמים שלנו במשך 14 יום, ללא עלות וללא התחייבות</p>
+                    <p className="text-center mb-3 sm:mb-4 text-sm sm:text-base">נסו את כל היתרונות המתקדמים שלנו במשך 7 יום, ללא עלות וללא התחייבות</p>
                     <div className="flex justify-center">
-                    <Link href="/registration" className="bg-white text-indigo-700 py-2 px-4 sm:px-6 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-sm sm:text-base">
+                    <button
+              onClick={handleRegisterClick} className="bg-white text-indigo-700 py-2 px-4 sm:px-6 rounded-lg font-medium hover:bg-opacity-90 transition-colors text-sm sm:text-base">
                         התחילו בחינם
-                      </Link>
+                      </button>
                     </div>
                   </div>
                   <span className="text-white text-opacity-70 mx-2 text-lg hidden md:block">או</span>
@@ -182,9 +192,10 @@ const UserComparison = () => {
                     <h3 className="font-medium text-black text-lg sm:text-xl mb-2 sm:mb-3 text-center">מנוי שנתי</h3>
                     <p className="text-center text-black mb-3 sm:mb-4 text-sm sm:text-base">חיסכון של 40% לעומת המנוי החודשי, עם גישה מלאה לכל התכונות המתקדמות</p>
                     <div className="flex justify-center">
-                    <Link href="/registration" className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-indigo-900 py-2 px-4 sm:px-6 rounded-lg font-medium hover:shadow-lg transition-shadow text-sm sm:text-base">
+                    <button
+              onClick={handleRegisterClick} className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-indigo-900 py-2 px-4 sm:px-6 rounded-lg font-medium hover:shadow-lg transition-shadow text-sm sm:text-base">
                         הצטרפו עכשיו
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -264,9 +275,10 @@ const UserComparison = () => {
           <Link href="/levelSelection" className="bg-white border-2 border-blue-600 text-blue-600 py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-blue-50 transition-colors text-sm sm:text-base">
             התחילו כמשתמש רגיל
           </Link>
-          <Link href="/registration" className="bg-gradient-to-r from-indigo-700 via-blue-600 to-indigo-700 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-medium hover:shadow-lg transition-shadow text-sm sm:text-base">
+          <button
+              onClick={handleRegisterClick} className="bg-gradient-to-r from-indigo-700 via-blue-600 to-indigo-700 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-lg font-medium hover:shadow-lg transition-shadow text-sm sm:text-base">
             הצטרפו כמשתמש רשום
-          </Link>
+          </button>
         </div>
       </div>
     </div>

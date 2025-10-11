@@ -1,11 +1,20 @@
 'use client'
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { signIn } from "next-auth/react";
 import { Target, Brain, ChartBar, BookOpen, Clock, Smile, Frown, RotateCcw, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const MethodAdvantages = () => {
   
   const [activeTab, setActiveTab] = useState('challenges');
+  const handleRegisterClick = async (e) => {
+    e.preventDefault();
+    
+    await signIn('google', { 
+      redirect: true,
+      callbackUrl: '/registration'
+    });
+  };
 
   const challenges = [
     {
@@ -162,10 +171,12 @@ const MethodAdvantages = () => {
           <div className="p-4 sm:p-8 text-white text-center bg-green-600">
             <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-4">רוצה לשבור את מחסום השפה?</h2>
             <p className="mb-4 sm:mb-6">הצטרף עכשיו ותהנה מחווית לימוד אחרת!</p>
-            <Link href="/registration"
-                  className="bg-white text-green-700 font-bold py-2 px-4 sm:py-3 sm:px-6 rounded underline duration-300 hover:scale-105">
+            <button
+              onClick={handleRegisterClick}
+              className="bg-white text-green-700 font-bold py-2 px-4 sm:py-3 sm:px-6 rounded underline duration-300 hover:scale-105 cursor-pointer"
+            >
               התחל עכשיו - 14 יום חינם
-            </Link>
+            </button>
           </div>
         )}
       </div>

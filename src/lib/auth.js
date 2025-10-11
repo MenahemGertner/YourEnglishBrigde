@@ -71,10 +71,10 @@ export const authOptions = {
           if (userData) {
             token.supabaseUserId = userData.id;
             
-            // קבלת פרטי המנוי הפעיל
+            // קבלת פרטי המנוי הפעיל - הוספנו start_date
             const { data: subscriptionData, error: subscriptionError } = await supabaseAdmin
               .from('subscriptions')
-              .select('status, subscription_type, end_date')
+              .select('status, subscription_type, start_date, end_date')
               .eq('user_id', userData.id)
               .eq('status', 'active')
               .single();
@@ -85,6 +85,7 @@ export const authOptions = {
               token.subscription = {
                 status: 'inactive',
                 subscription_type: null,
+                start_date: null,
                 end_date: null
               };
             } else if (subscriptionData) {
@@ -92,14 +93,15 @@ export const authOptions = {
               token.subscription = {
                 status: subscriptionData.status,
                 subscription_type: subscriptionData.subscription_type,
+                start_date: subscriptionData.start_date,
                 end_date: subscriptionData.end_date
               };
             } else {
               // לא נמצא מנוי פעיל - אולי פג או לא קיים
-              // ננסה לקבל את המנוי האחרון לצורכי תצוגה
+              // ננסה לקבל את המנוי האחרון לצורכי תצוגה - הוספנו start_date
               const { data: lastSubscription } = await supabaseAdmin
                 .from('subscriptions')
-                .select('status, subscription_type, end_date')
+                .select('status, subscription_type, start_date, end_date')
                 .eq('user_id', userData.id)
                 .order('updated_at', { ascending: false })
                 .limit(1)
@@ -108,6 +110,7 @@ export const authOptions = {
               token.subscription = lastSubscription || {
                 status: 'inactive',
                 subscription_type: null,
+                start_date: null,
                 end_date: null
               };
             }
@@ -122,6 +125,7 @@ export const authOptions = {
             token.subscription = {
               status: 'inactive',
               subscription_type: null,
+              start_date: null,
               end_date: null
             };
           }

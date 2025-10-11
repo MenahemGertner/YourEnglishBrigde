@@ -15,7 +15,7 @@ export async function POST(req) {
     }
 
     // בדיקה שה-planId תקין
-    const validPlans = ['free', 'monthly', 'semi-annual'];
+    const validPlans = ['Free Trial', 'Intensive', 'Premium', 'Coupon'];
     if (!planId || !validPlans.includes(planId)) {
       return NextResponse.json(
         { error: 'סוג מנוי לא תקין' },
@@ -23,10 +23,17 @@ export async function POST(req) {
       );
     }
 
-    // בדיקת קופון אם נדרש
+    // בדיקת קופון אם נדרש (רק עבור מסלול Coupon)
     let validatedCoupon = null;
-    if (planId === 'free' && couponCode) {
-      // אם זה לא הקוד המנהלי הישן, בדוק במסד הנתונים
+    if (planId === 'Coupon') {
+      if (!couponCode) {
+        return NextResponse.json(
+          { error: 'נדרש קוד קופון עבור מסלול זה' },
+          { status: 400 }
+        );
+      }
+
+      // בדיקה אם זה הקוד המנהלי הישן
       if (couponCode !== '13579') {
         const { data: coupon, error: couponError } = await supabaseAdmin
           .schema('public')
@@ -99,17 +106,25 @@ export async function POST(req) {
 
     // מיפוי planId לסוג מנוי ותוקף
     const subscriptionMapping = {
-      'free': {
-        type: 'free',
-        durationDays: 90
+      'Free Trial': {
+        type: 'Free Trial',
+        durationDays: 7,
+        basePrice: 0
       },
-      'monthly': {
-        type: 'premium', 
-        durationDays: 30
+      'Intensive': {
+        type: 'Intensive', 
+        durationDays: 90,
+        basePrice: 747 // 249 * 3
       },
-      'semi-annual': {
-        type: 'pro',
-        durationDays: 180
+      'Premium': {
+        type: 'Premium',
+        durationDays: 360,
+        basePrice: 2148 // 179 * 12
+      },
+      'Coupon': {
+        type: 'Coupon',
+        durationDays: 90, // 3 חודשים כמו Intensive
+        basePrice: 0
       }
     };
 
@@ -153,6 +168,25 @@ export async function POST(req) {
 
     console.log('Subscription created successfully:', newSubscription);
 
+    // 🆕 רישום בהיסטוריית המנויים
+    const { error: historyError } = await supabaseAdmin
+      .schema('public')
+      .from('subscription_history')
+      .insert({
+        user_id: newUser.id,
+        subscription_id: newSubscription.id,
+        action_type: 'created',
+        plan_type: selectedPlan.type,
+        amount_paid: selectedPlan.basePrice
+      });
+
+    if (historyError) {
+      // לא נכשיל את כל התהליך בגלל שגיאה בהיסטוריה
+      console.error('Error recording history:', historyError);
+    } else {
+      console.log('✅ Subscription history recorded');
+    }
+
     // סימון הקופון כמשומש אם זה לא הקוד המנהלי
     if (validatedCoupon) {
       const { error: updateCouponError } = await supabaseAdmin
@@ -166,7 +200,6 @@ export async function POST(req) {
 
       if (updateCouponError) {
         console.error('Error marking coupon as used:', updateCouponError);
-        // לא נכשיל את כל התהליך בגלל זה, רק לוג
       } else {
         console.log(`✅ Coupon ${validatedCoupon.code} marked as used`);
       }
@@ -177,7 +210,6 @@ export async function POST(req) {
       await sendWelcomeEmail(email, name);
       console.log('✅ Welcome email sent successfully to:', email);
     } catch (emailError) {
-      // חשוב: אם המייל נכשל, המשתמש עדיין נרשם בהצלחה!
       console.error('⚠️ Failed to send welcome email, but registration completed:', emailError.message);
     }
 
@@ -186,7 +218,7 @@ export async function POST(req) {
       subscription: newSubscription,
       message: 'המשתמש והמנוי נוצרו בהצלחה',
       couponUsed: validatedCoupon ? validatedCoupon.code : (couponCode === '13579' ? 'ADMIN' : null),
-      emailSent: true // או false אם נכשל
+      emailSent: true
     });
 
   } catch (error) {

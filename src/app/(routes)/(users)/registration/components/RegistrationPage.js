@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowRight, Check, AlertCircle, X } from 'lucide-react';
+import { ArrowRight, AlertCircle, X, Gift } from 'lucide-react';
 import { signIn } from "next-auth/react";
-import SuccessModal from './successModal';
+import SuccessModal from '../../successModal';
+import PlansDisplay from '../../plans';
 
 export default function RegistrationPage() {
   const searchParams = useSearchParams();
@@ -27,8 +28,7 @@ export default function RegistrationPage() {
     const image = searchParams.get('image');
     
     if (!email) {
-      // אם אין אימייל, נפנה לזיהוי גוגל
-      const callbackUrl = `/registration${window.location.search}`; // שומר על כל הפרמטרים הקיימים ב-URL
+      const callbackUrl = `/registration${window.location.search}`;
       window.location.href = `/api/auth/signin/google?callbackUrl=${encodeURIComponent(callbackUrl)}`;
       return;
     }
@@ -39,21 +39,20 @@ export default function RegistrationPage() {
   }, [searchParams]);
 
   const handlePlanSelection = async (planId) => {
-    // בדיקה אם זה מנוי בתשלום - חסימה זמנית
-    if (planId === 'monthly' || planId === 'semi-annual') {
-      setError('האתר נמצא בהרצה וכרגע אין אפשרות למנוי בתשלום. אנא בחר באפשרות ההתנסות החינמית.');
+    // בדיקה אם זה מנוי בתשלום או חינמי - חסימה זמנית
+    if (planId === 'Free Trial' || planId === 'Intensive' || planId === 'Premium') {
+      setError('האתר נמצא בהרצה וכרגע אין אפשרות להרשמה דרך מסלולים אלו. אנא השתמש בקוד קופון.');
       return;
     }
 
-    // אם זה המסלול החינמי, נפתח את מודאל הקופון
-    if (planId === 'free') {
+    // אם זה מסלול קופון, נפתח את מודאל הקופון
+    if (planId === 'Coupon') {
       setShowCouponModal(true);
       setCouponCode('');
       setCouponError('');
       return;
     }
 
-    // המשך הטיפול הרגיל לתכניות אחרות (אם יהיו)
     await proceedWithRegistration(planId);
   };
 
@@ -96,7 +95,7 @@ export default function RegistrationPage() {
       // בדיקת הקוד המנהלי הישן
       if (couponCode === '13579') {
         setShowCouponModal(false);
-        await proceedWithRegistration('free');
+        await proceedWithRegistration('Coupon');
         return;
       }
 
@@ -105,7 +104,7 @@ export default function RegistrationPage() {
       
       if (isValid) {
         setShowCouponModal(false);
-        await proceedWithRegistration('free');
+        await proceedWithRegistration('Coupon');
       } else {
         setCouponError('הקוד אינו תקין או שפג תוקפו');
       }
@@ -133,7 +132,7 @@ export default function RegistrationPage() {
           name: userName,
           avatar_url: userImage,
           planId,
-          couponCode: couponCode || null // שולח את קוד הקופון אם קיים
+          couponCode: couponCode || null
         }),
       });
   
@@ -143,14 +142,12 @@ export default function RegistrationPage() {
         throw new Error(data.error || 'Registration failed');
       }
 
-      // שמירת נתוני ההרשמה להצגה במודאל
       setRegistrationData({
         user: data.user,
         subscription: data.subscription,
         selectedPlan: planId
       });
 
-      // הצגת מודאל ההצלחה
       setShowSuccessModal(true);
 
     } catch (err) {
@@ -164,7 +161,6 @@ export default function RegistrationPage() {
   const handleSuccessModalClose = async () => {
     setShowSuccessModal(false);
     
-    // כאן מתחיל התהליך של זיהוי Google
     try {
       await signIn('google', { 
         redirect: true,
@@ -181,33 +177,6 @@ export default function RegistrationPage() {
     setCouponCode('');
     setCouponError('');
   };
-
-  const plans = [
-    {
-      title: 'התנסות חינם',
-      price: '0',
-      duration: '3 חודשים',
-      features: ['גישה מלאה למדריך האישי', 'תמיכה בסיסית'],
-      isPopular: false,
-      planId: 'free'
-    },
-    {
-      title: 'חודשי',
-      price: '99',
-      duration: 'חודש',
-      features: ['גישה מלאה למדריך האישי', 'תמיכה מלאה'],
-      isPopular: false,
-      planId: 'monthly'
-    },
-    {
-      title: 'חצי שנתי',
-      price: '399',
-      duration: '6 חודשים',
-      features: ['גישה מלאה למדריך האישי', 'תמיכה VIP', 'מחוייבות לתהליך'],
-      isPopular: true,
-      planId: 'semi-annual'
-    }
-  ];
 
   const getFirstName = (fullName) => {
     if (!fullName) return '';
@@ -234,11 +203,31 @@ export default function RegistrationPage() {
                 <p className="text-lg m-0">
                   <span className="font-bold">שלום {getFirstName(userName)}!</span>
                   <br />
-                  אנא בחר תכנית מתאימה להרשמה:
+                  האתר נמצא כעת בהרצה ניסיונית
                 </p>
               </div>
             </div>
           )}
+
+          {/* הודעת מצב הרצה */}
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6 mb-8">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-1" />
+              <div className="text-right">
+                <h3 className="font-bold text-yellow-800 mb-2">האתר בהרצה ניסיונית</h3>
+                <p className="text-yellow-700 mb-3">
+                  כרגע ההרשמה אפשרית רק באמצעות קוד קופון מיוחד
+                </p>
+                <button
+                  onClick={() => setShowCouponModal(true)}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-2 mx-auto font-bold shadow-lg"
+                >
+                  <Gift className="h-5 w-5" />
+                  יש לי קוד קופון
+                </button>
+              </div>
+            </div>
+          </div>
   
           {error && (
             <div className="bg-red-50 text-red-600 rounded-lg mb-8">
@@ -250,47 +239,13 @@ export default function RegistrationPage() {
           )}
         </div>
   
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan) => (
-            <div key={plan.planId} className="bg-white rounded-lg shadow-lg relative flex flex-col">
-              <div className="p-6 flex-grow">
-                {plan.isPopular && (
-                  <span className="absolute -top-3 right-4 bg-blue-500 text-white px-4 py-1 rounded-full text-sm">
-                    פופולרי
-                  </span>
-                )}
-  
-                <h3 className="text-xl font-bold mb-4 text-right mt-4">{plan.title}</h3>
-                <div className="text-right mb-6">
-                  <span className="text-3xl font-bold">₪{plan.price}</span>
-                  {plan.duration && <span className="text-gray-500 mr-2">/ {plan.duration}</span>}
-                </div>
-  
-                <ul dir="rtl" className="space-y-3 mb-6 list-none p-0">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <Check className="h-5 w-5 text-green-500 flex-shrink-0" />
-                      <span className="text-right flex-grow">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-  
-              <div className="p-6 pt-0">
-                <button
-                  onClick={() => handlePlanSelection(plan.planId)}
-                  disabled={isLoading}
-                  className={`w-full py-2 px-4 rounded transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                    plan.isPopular
-                      ? 'bg-blue-500 hover:bg-blue-600 text-white'
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                  }`}
-                >
-                  {isLoading ? 'מעבד...' : 'בחר תכנית זו'}
-                </button>
-              </div>
-            </div>
-          ))}
+        {/* כרטיסי התכניות - באמצעות הקומפוננטה החדשה */}
+        <div className="opacity-60 pointer-events-none">
+          <PlansDisplay
+            plansToShow={['Free Trial', 'Intensive', 'Premium']}
+            isBlocked={true}
+            onPlanSelect={handlePlanSelection}
+          />
         </div>
   
         {isLoading && !showSuccessModal && (
@@ -317,7 +272,7 @@ export default function RegistrationPage() {
               </div>
               
               <p className="text-gray-600 mb-4 text-right">
-                על מנת להמשיך עם המסלול החינמי, יש להזין קוד קופון:
+                הזן את קוד הקופון שקיבלת כדי להצטרף לתכנית (3 חודשים):
               </p>
               
               <input
