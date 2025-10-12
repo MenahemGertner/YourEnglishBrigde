@@ -4,12 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { LogOut, User, ChevronDown, Settings, CreditCard, BarChart3, HelpCircle } from "lucide-react";
 import Drawer from "@/components/dashboard/drawer";
 import SubscriptionContent from "@/components/dashboard/components/subscriptionContent";
+import PersonalSettings from "@/components/dashboard/components/personalSettings";
 
 export default function LoginButton() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSubscriptionDrawerOpen, setIsSubscriptionDrawerOpen] = useState(false);
+  const [isSettingsDrawerOpen, setIsSettingsDrawerOpen] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
 
@@ -62,14 +64,14 @@ export default function LoginButton() {
   };
 
   const handleRegisterClick = async () => {
-  setIsMenuOpen(false);
-  
-  // הפניה ישירה ל-Google Auth עם callback לדף ההרשמה
-  await signIn('google', { 
-    redirect: true,
-    callbackUrl: '/registration'
-  });
-};
+    setIsMenuOpen(false);
+    
+    // הפניה ישירה ל-Google Auth עם callback לדף ההרשמה
+    await signIn('google', { 
+      redirect: true,
+      callbackUrl: '/registration'
+    });
+  };
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -82,6 +84,15 @@ export default function LoginButton() {
 
   const closeSubscriptionDrawer = () => {
     setIsSubscriptionDrawerOpen(false);
+  };
+
+  const openSettingsDrawer = () => {
+    setIsMenuOpen(false);
+    setIsSettingsDrawerOpen(true);
+  };
+
+  const closeSettingsDrawer = () => {
+    setIsSettingsDrawerOpen(false);
   };
 
   // פונקציות עזר
@@ -176,29 +187,9 @@ export default function LoginButton() {
 
               {/* אפשרויות התפריט */}
               <div className="py-2">
-                {/* פרטים אישיים - מוערם */}
-                {/* <button 
-                  onClick={() => {
-                    router.push('/dashboard/profile');
-                    setIsMenuOpen(false);
-                  }}
-                  className="
-                    flex items-center gap-3 w-full
-                    px-5 py-3 text-right
-                    text-gray-700 hover:bg-gray-50 hover:text-blue-600
-                    transition-colors duration-200
-                  "
-                >
-                  <User className="w-5 h-5" />
-                  <span>פרטים אישיים</span>
-                </button> */}
-
-                {/* הגדרות - מוערם */}
-                {/* <button 
-                  onClick={() => {
-                    router.push('/dashboard/settings');
-                    setIsMenuOpen(false);
-                  }}
+                {/* הגדרות אישיות - פותח Drawer */}
+                <button 
+                  onClick={openSettingsDrawer}
                   className="
                     flex items-center gap-3 w-full
                     px-5 py-3 text-right
@@ -207,8 +198,8 @@ export default function LoginButton() {
                   "
                 >
                   <Settings className="w-5 h-5" />
-                  <span>הגדרות</span>
-                </button> */}
+                  <span>הגדרות אישיות</span>
+                </button>
 
                 {/* ניהול מנוי - פותח Drawer */}
                 <button 
@@ -223,43 +214,6 @@ export default function LoginButton() {
                   <CreditCard className="w-5 h-5" />
                   <span>ניהול מנוי</span>
                 </button>
-
-                {/* הישגים ופרוגרס - מוערם */}
-                {/* <button 
-                  onClick={() => {
-                    router.push('/dashboard/progress');
-                    setIsMenuOpen(false);
-                  }}
-                  className="
-                    flex items-center gap-3 w-full
-                    px-5 py-3 text-right
-                    text-gray-700 hover:bg-gray-50 hover:text-blue-600
-                    transition-colors duration-200
-                  "
-                >
-                  <BarChart3 className="w-5 h-5" />
-                  <span>הישגים ופרוגרס</span>
-                </button> */}
-
-                {/* קו הפרדה - מוערם */}
-                {/* <div className="h-px bg-gray-100 my-2"></div> */}
-
-                {/* עזרה ותמיכה - מוערם */}
-                {/* <button 
-                  onClick={() => {
-                    router.push('/help');
-                    setIsMenuOpen(false);
-                  }}
-                  className="
-                    flex items-center gap-3 w-full
-                    px-5 py-3 text-right
-                    text-gray-700 hover:bg-gray-50 hover:text-blue-600
-                    transition-colors duration-200
-                  "
-                >
-                  <HelpCircle className="w-5 h-5" />
-                  <span>עזרה ותמיכה</span>
-                </button> */}
 
                 {/* קו הפרדה */}
                 <div className="h-px bg-gray-100 my-2"></div>
@@ -290,6 +244,16 @@ export default function LoginButton() {
           icon={<CreditCard className="w-6 h-6" />}
         >
           <SubscriptionContent />
+        </Drawer>
+
+        {/* Drawer להגדרות אישיות - כאן נוסיף את userId */}
+        <Drawer
+          isOpen={isSettingsDrawerOpen}
+          onClose={closeSettingsDrawer}
+          title="הגדרות אישיות"
+          icon={<Settings className="w-6 h-6" />}
+        >
+          <PersonalSettings userId={session.user.id} />
         </Drawer>
       </>
     );
@@ -370,23 +334,6 @@ export default function LoginButton() {
               <div className="w-5 h-5 text-lg">🔐</div>
               <span>התחברות</span>
             </button>
-
-            {/* התחברות עם אימייל - מוערם */}
-            {/* <button 
-              onClick={() => {
-                alert('בקרוב - התחברות עם אימייל');
-                setIsMenuOpen(false);
-              }}
-              className="
-                flex items-center gap-3 w-full
-                px-5 py-3 text-right
-                text-gray-500 hover:bg-gray-50
-                transition-colors duration-200
-              "
-            >
-              <div className="w-5 h-5 text-lg">📧</div>
-              <span>התחבר עם אימייל</span>
-            </button> */}
 
             {/* קו הפרדה */}
             <div className="h-px bg-gray-100 my-2"></div>

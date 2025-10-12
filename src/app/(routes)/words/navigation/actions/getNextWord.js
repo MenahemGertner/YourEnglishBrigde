@@ -1,30 +1,44 @@
 'use server'
 
 import { headers } from 'next/headers'
-import { PRACTICE_THRESHOLD, categories } from '../helpers/reviewHelperFunctions'
+import { categories } from '../helpers/reviewHelperFunctions'
 import { supabaseAdmin } from '@/lib/db/supabase'
 import { requireAuthAndOwnership } from '@/utils/auth-helpers'
+import { getPracticeThreshold } from '@/lib/userPreferences'
 
 export async function getNextWord(userId) {
   try {
     // אימות - כל הבדיקות בשורה אחת!
     await requireAuthAndOwnership(userId);
 
-    // Get user data
-    const { data: userData, error: userError } = await supabaseAdmin
+    // Get user data and practice threshold in parallel
+    const userDataPromise = supabaseAdmin
       .from('users')
       .select('last_position, practice_counter')
       .eq('id', userId)
-      .single()
+      .single();
+
+    const practiceThresholdPromise = getPracticeThreshold(userId);
+
+    const [{ data: userData, error: userError }, practiceThreshold] = await Promise.all([
+      userDataPromise,
+      practiceThresholdPromise
+    ]);
 
     if (userError) throw userError
 
     // הגדרת lastPosition לשימוש בכל ההחזרות
     const lastPosition = userData.last_position
+    const learningSequencePointer = userData.last_position?.learning_sequence_pointer || 0
 
     // Check if practice threshold reached
+    // כאשר סיימנו רשימת 300 מילים (אין עוד מילים חדשות), נעבור לתרגול תכוף (10)
+    const effectiveThreshold = (learningSequencePointer % 300 === 0) 
+      ? 10 
+      : practiceThreshold;
+
     // בדיקת התרגול רק במצב פיתוח, דילוג עליה במצב ייצור
-    if (process.env.NODE_ENV == 'development' && userData.practice_counter >= PRACTICE_THRESHOLD) {
+    if (process.env.NODE_ENV == 'development' && userData.practice_counter >= effectiveThreshold) {
       // Reset practice counter
       await supabaseAdmin
         .from('users')
@@ -39,7 +53,6 @@ export async function getNextWord(userId) {
       }
     }
 
-    const learningSequencePointer = userData.last_position?.learning_sequence_pointer || 0
     const currentCategory = userData.last_position?.category || '300'
 
     // Try to find word with next_review <= learning_sequence_pointer

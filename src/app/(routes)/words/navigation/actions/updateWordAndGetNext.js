@@ -1,9 +1,10 @@
 'use server'
 
-import { intervals, PRACTICE_THRESHOLD, categories } from '../helpers/reviewHelperFunctions';
+import { intervals, categories } from '../helpers/reviewHelperFunctions';
 import { supabaseAdmin } from '@/lib/db/supabase';
 import { requireAuthAndOwnership } from '@/utils/auth-helpers';
 import { getWordByIndex } from '@/lib/db/getWordByIndex';
+import { getPracticeThreshold } from '@/lib/userPreferences';
 
 export async function updateWordAndGetNext(userId, wordId, level, category) {
   try {
@@ -16,7 +17,7 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
     // אימות - כל הבדיקות בשורה אחת!
     await requireAuthAndOwnership(userId);
 
-    // **שלב 1: קבלת נתונים במקביל**
+    // **שלב 1: קבלת נתונים במקביל (כולל הסף המותאם אישית)**
     const existingWordPromise = supabaseAdmin
       .from('user_words')
       .select('*')
@@ -29,9 +30,14 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
       .eq('id', userId)
       .single();
 
-    // המתנה לשני הפרומיסים
-    const existingWordResult = await existingWordPromise;
-    const userDataResult = await userDataPromise;
+    const practiceThresholdPromise = getPracticeThreshold(userId);
+
+    // המתנה לשלושת הפרומיסים
+    const [existingWordResult, userDataResult, practiceThreshold] = await Promise.all([
+      existingWordPromise,
+      userDataPromise,
+      practiceThresholdPromise
+    ]);
 
     // טיפול בשגיאות
     if (existingWordResult.error && existingWordResult.error.code !== 'PGRST116') {
@@ -116,16 +122,24 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
     );
 
     // ביצוע שני הפרומיסים במקביל
-    const userUpdateResult = await userUpdatePromise;
-    const nextWordResult = await nextWordPromise;
+    const [userUpdateResult, nextWordResult] = await Promise.all([
+      userUpdatePromise,
+      nextWordPromise
+    ]);
 
     // בדיקת שגיאות
     if (userUpdateResult.error) {
       throw userUpdateResult.error;
     }
 
-    // בדיקת סף התרגול
-    if (newPracticeCounter >= PRACTICE_THRESHOLD) {
+    // בדיקת סף התרגול - עם לוגיקה מותאמת
+    // כאשר סיימנו רשימת 300 מילים (אין עוד מילים חדשות), נעבור לתרגול תכוף (10)
+    // כדי "לנקות" את כל החזרות שנשארו לפני המעבר לרשימה הבאה
+    const effectiveThreshold = (learningSequencePointer % 300 === 0) 
+      ? 10 
+      : practiceThreshold;
+
+    if (newPracticeCounter >= effectiveThreshold) {
       await supabaseAdmin
         .from('users')
         .update({ practice_counter: 0 })
