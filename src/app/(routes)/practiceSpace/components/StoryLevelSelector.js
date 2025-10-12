@@ -1,9 +1,12 @@
 'use client';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Tooltip from '@/components/features/Tooltip';
+import { Settings } from 'lucide-react';
 
-const StoryLevelSelector = ({ selectedLevel, onLevelChange, disabled = false }) => {
+const StoryLevelSelector = ({ selectedLevel, onLevelChange, disabled = false, userId }) => {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showHintIcon, setShowHintIcon] = useState(false);
     const levels = [1, 2, 3, 4, 5];
 
     const handleLevelSelect = (level) => {
@@ -15,12 +18,15 @@ const StoryLevelSelector = ({ selectedLevel, onLevelChange, disabled = false }) 
     const toggleExpanded = () => {
         if (!disabled) {
             setIsExpanded(!isExpanded);
+            if (!isExpanded && userId && !showHintIcon) {
+                setShowHintIcon(true);
+            }
         }
     };
 
     return (
         <div className="flex items-center justify-start gap-1 mb-4 relative w-full">
-            {/* המסגרת הוירטואלית שמכסה את כל האזור */}
+            {/* מסגרת וירטואלית לאזור ההרחבה */}
             <div 
                 className="absolute inset-0 z-0"
                 style={{
@@ -31,6 +37,7 @@ const StoryLevelSelector = ({ selectedLevel, onLevelChange, disabled = false }) 
                 onMouseLeave={() => setIsExpanded(false)}
             />
 
+            {/* כפתור ראשי */}
             <motion.button 
                 className={`
                     px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
@@ -72,7 +79,8 @@ const StoryLevelSelector = ({ selectedLevel, onLevelChange, disabled = false }) 
                     )}
                 </AnimatePresence>
             </motion.button>
-                     
+
+            {/* כפתורי רמות + כפתור הינט */}
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
@@ -83,29 +91,55 @@ const StoryLevelSelector = ({ selectedLevel, onLevelChange, disabled = false }) 
                         transition={{ duration: 0.3, ease: "easeOut", delay: 0.3 }}
                         style={{ transformOrigin: 'right', right: '120px' }}
                     >
-                        {levels.map((level) => (
-                            <motion.button
-                                key={level}
-                                onClick={() => handleLevelSelect(level)}
-                                disabled={disabled}
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
-                                transition={{duration: 0.2 }}
-                                whileHover={!disabled ? { scale: 1.1 } : {}}
-                                whileTap={!disabled ? { scale: 0.9 } : {}}
-                                className={`
-                                    w-8 h-8 rounded-full text-sm font-medium transition-all duration-200
-                                    ${selectedLevel === level
-                                        ? 'bg-indigo-500 text-white shadow-md'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600'
-                                    }
-                                    ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                                `}
-                            >
-                                {level}
-                            </motion.button>
-                        ))}
+                        <>
+                            {levels.map((level) => (
+                                <motion.button
+                                    key={level}
+                                    onClick={() => handleLevelSelect(level)}
+                                    disabled={disabled}
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    whileHover={!disabled ? { scale: 1.1 } : {}}
+                                    whileTap={!disabled ? { scale: 0.9 } : {}}
+                                    className={`
+                                        w-8 h-8 rounded-full text-sm font-medium transition-all duration-200
+                                        ${selectedLevel === level
+                                            ? 'bg-indigo-500 text-white shadow-md'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600'
+                                        }
+                                        ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                    `}
+                                >
+                                    {level}
+                                </motion.button>
+                            ))}
+
+                            {/* עיגול הינט כסיום לסדרה */}
+                            {showHintIcon && userId && (
+                                <motion.div
+                                    key="hint-icon"
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                >
+                                    <Tooltip 
+                                        content={
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <Settings className="w-4 h-4 flex-shrink-0" />
+                                                <span>ניתן להגדיר רמת קושי קבועה בהגדרות האישיות שלך</span>
+                                            </div>
+                                        }
+                                    >
+                                        <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center hover:bg-indigo-600 transition-colors cursor-help">
+                                            <Settings className="w-4 h-4" />
+                                        </div>
+                                    </Tooltip>
+                                </motion.div>
+                            )}
+                        </>
                     </motion.div>
                 )}
             </AnimatePresence>

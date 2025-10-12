@@ -1,31 +1,36 @@
 'use client'
 
-import { User, Bell, Lock, Palette, Globe, Shield, Target } from 'lucide-react';
+import { User, Bell, Lock, Palette, Globe, Shield, Target, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { getPracticeThreshold, updatePracticeThreshold } from '@/lib/userPreferences';
+import { getPracticeThreshold, updatePracticeThreshold, getStoryLevel, updateStoryLevel } from '@/lib/userPreferences';
 
 export default function PersonalSettings({ userId }) {
   const [practiceThreshold, setPracticeThreshold] = useState(25);
+  const [storyLevel, setStoryLevel] = useState(3);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState(null);
 
-  // טעינת ההגדרה הנוכחית
+  // טעינת ההגדרות הנוכחיות
   useEffect(() => {
-    async function loadThreshold() {
+    async function loadSettings() {
       try {
-        const threshold = await getPracticeThreshold(userId);
+        const [threshold, level] = await Promise.all([
+          getPracticeThreshold(userId),
+          getStoryLevel(userId)
+        ]);
         setPracticeThreshold(threshold);
+        setStoryLevel(level);
       } catch (error) {
-        console.error('Error loading threshold:', error);
+        console.error('Error loading settings:', error);
       } finally {
         setIsLoading(false);
       }
     }
-    loadThreshold();
+    loadSettings();
   }, [userId]);
 
-  // שמירת ההגדרה
+  // שמירת סף תרגול
   const handleSaveThreshold = async (newValue) => {
     setIsSaving(true);
     setMessage(null);
@@ -43,7 +48,30 @@ export default function PersonalSettings({ userId }) {
       setMessage({ type: 'error', text: 'שגיאה בשמירת ההגדרות' });
     } finally {
       setIsSaving(false);
-      // הסתרת ההודעה אחרי 3 שניות
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  // שמירת רמת סיפור
+  const handleSaveStoryLevel = async (newLevel) => {
+    setIsSaving(true);
+    setMessage(null);
+
+    try {
+      const result = await updateStoryLevel(userId, newLevel);
+      
+      if (result.success) {
+        setStoryLevel(newLevel);
+        // עדכון גם ב-localStorage
+        localStorage.setItem(`story_level_${userId}`, newLevel.toString());
+        setMessage({ type: 'success', text: 'רמת הסיפור עודכנה בהצלחה!' });
+      } else {
+        setMessage({ type: 'error', text: result.error || 'שגיאה בשמירת ההגדרות' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'שגיאה בשמירת ההגדרות' });
+    } finally {
+      setIsSaving(false);
       setTimeout(() => setMessage(null), 3000);
     }
   };
@@ -81,10 +109,10 @@ export default function PersonalSettings({ userId }) {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                תדירות מעבר לתרגול אקטיבי
+                תדירות הצגת אזור התרגול האקטיבי
               </label>
               <p className="text-xs text-gray-500 mb-4">
-                בחר באיזו תדירות תרצה לעבור לתרגול מעמיק של שמיעה, דיבור, קריאה וכתיבה על המילים שלמדת
+                בחר באיזו תדירות תרצה לעבור מלימוד מילים חדשות, לתרגול מעמיק של שמיעה, דיבור, קריאה וכתיבה על המילים שלמדת.
               </p>
               
               <div className="space-y-3">
@@ -108,7 +136,7 @@ export default function PersonalSettings({ userId }) {
                         תרגול תכוף
                       </div>
                       <div className="text-sm text-gray-600">
-                        מעבר מהיר לתרגול מעמיק
+                        תרגול אינטנסיבי להטמעה מירבית
                       </div>
                     </div>
                     {practiceThreshold === 15 && (
@@ -139,7 +167,7 @@ export default function PersonalSettings({ userId }) {
                         תרגול מאוזן
                       </div>
                       <div className="text-sm text-gray-600">
-                        איזון אידיאלי בין למידה לתרגול
+                        שינון מילים ומעבר לתרגול באופן מאוזן (מומלץ!)
                       </div>
                     </div>
                     {practiceThreshold === 25 && (
@@ -170,7 +198,7 @@ export default function PersonalSettings({ userId }) {
                         תרגול מרווח
                       </div>
                       <div className="text-sm text-gray-600">
-                        למידה מרובה לפני תרגול
+                        למידה רציפה יותר של מילים חדשות ופחות תרגול
                       </div>
                     </div>
                     {practiceThreshold === 40 && (
@@ -186,109 +214,67 @@ export default function PersonalSettings({ userId }) {
         )}
       </section>
 
-      {/* פרופיל */}
+      {/* הגדרות רמת סיפור */}
       <section className="bg-white border border-gray-200 rounded-lg p-5">
         <div className="flex items-center gap-3 mb-4">
-          <User className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-900">פרופיל אישי</h3>
+          <BookOpen className="w-5 h-5 text-purple-600" />
+          <h3 className="text-lg font-semibold text-gray-900">רמת סיפור מועדפת</h3>
         </div>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">שם מלא</label>
-            <input 
-              type="text" 
-              placeholder="הזן שם מלא"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              disabled
-            />
+        
+        {isLoading ? (
+          <div className="text-center py-4 text-gray-500">טוען...</div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                רמת קושי לסיפורים
+              </label>
+              <p className="text-xs text-gray-500 mb-4">
+                בחר את רמת הקושי המועדפת עליך של יצירת סיפורים באזור התרגול. ניתן תמיד לשנות את הרמה בעמוד הסיפור עצמו.
+              </p>
+              
+              <div className="grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map((level) => (
+                  <button
+                    key={level}
+                    onClick={() => handleSaveStoryLevel(level)}
+                    disabled={isSaving}
+                    className={`
+                      relative px-4 py-6 rounded-lg border-2 transition-all
+                      ${storyLevel === level
+                        ? 'border-purple-600 bg-purple-50'
+                        : 'border-gray-200 bg-white hover:border-purple-300 hover:bg-purple-50/50'
+                      }
+                      ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                    `}
+                  >
+                    <div className="text-center">
+                      <div className={`text-3xl font-bold mb-1 ${
+                        storyLevel === level ? 'text-purple-700' : 'text-gray-900'
+                      }`}>
+                        {level}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {level === 1 && 'מתחיל'}
+                        {level === 2 && 'קל'}
+                        {level === 3 && 'בינוני'}
+                        {level === 4 && 'מאתגר'}
+                        {level === 5 && 'מתקדם'}
+                      </div>
+                    </div>
+                    {storyLevel === level && (
+                      <div className="absolute top-2 right-2 w-4 h-4 bg-purple-600 rounded-full flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">אימייל</label>
-            <input 
-              type="email" 
-              placeholder="example@email.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
-              disabled
-            />
-          </div>
-        </div>
+        )}
       </section>
 
-      {/* התראות */}
-      <section className="bg-white border border-gray-200 rounded-lg p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <Bell className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-900">התראות</h3>
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-gray-700">התראות אימייל</span>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" disabled />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-700">התראות SMS</span>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" disabled />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-            </label>
-          </div>
-        </div>
-      </section>
-
-      {/* פרטיות ואבטחה */}
-      <section className="bg-white border border-gray-200 rounded-lg p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <Shield className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-900">פרטיות ואבטחה</h3>
-        </div>
-        <div className="space-y-3">
-          <button className="w-full text-right px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-between">
-            <span className="text-gray-700">שנה סיסמה</span>
-            <Lock className="w-4 h-4 text-gray-500" />
-          </button>
-          <button className="w-full text-right px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
-            <span className="text-gray-700">אימות דו-שלבי</span>
-          </button>
-        </div>
-      </section>
-
-      {/* העדפות תצוגה */}
-      <section className="bg-white border border-gray-200 rounded-lg p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <Palette className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-900">העדפות תצוגה</h3>
-        </div>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">ערכת צבעים</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled>
-              <option>בהיר</option>
-              <option>כהה</option>
-              <option>אוטומטי</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      {/* שפה ואזור */}
-      <section className="bg-white border border-gray-200 rounded-lg p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <Globe className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-gray-900">שפה ואזור</h3>
-        </div>
-        <div className="space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">שפת ממשק</label>
-            <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled>
-              <option>עברית</option>
-              <option>English</option>
-            </select>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

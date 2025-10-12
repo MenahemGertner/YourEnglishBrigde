@@ -1,6 +1,7 @@
 // app/practiceSpace/components/PracticeSpaceClient.js - Updated Client Component
 'use client'
 import React, { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { motion } from 'framer-motion';
 import PracticeLogic from './practiceLogic';
 import ChallengingWords from './challengingWords';
@@ -10,6 +11,7 @@ import AIVoiceChatComponent from './AIVoiceChatComponent'
 import { ChevronDown, ChevronLeft, Book, PenTool, Headphones } from 'lucide-react';
 
 const PracticeSpaceClient = ({ wordsData }) => {
+    const { data: session } = useSession();
     const [isVisible, setIsVisible] = useState(false);
     const [activeTab, setActiveTab] = useState('reading');
     
@@ -88,6 +90,9 @@ const PracticeSpaceClient = ({ wordsData }) => {
     // Check if current tab is completed
     const isCurrentTabCompleted = completionStatus[activeTab];
 
+    // Get userId from session
+    const userId = session?.user?.id;
+
     // Render active tab content
     const renderActiveTabContent = () => {
         const commonProps = {
@@ -100,6 +105,7 @@ const PracticeSpaceClient = ({ wordsData }) => {
                     <Reading 
                         words={readingData.words}
                         inflections={readingData.inflections}
+                        userId={userId}
                         {...commonProps}
                     />
                 );
@@ -108,6 +114,7 @@ const PracticeSpaceClient = ({ wordsData }) => {
                     <Writing 
                         words={readingData.words}
                         inflections={readingData.inflections}
+                        userId={userId}
                         {...commonProps}
                     />
                 );
@@ -117,6 +124,7 @@ const PracticeSpaceClient = ({ wordsData }) => {
                         <AIVoiceChatComponent
                         words={readingData.words}
                         inflections={readingData.inflections}
+                        userId={userId}
                         {...commonProps}
                         />
                     </div>

@@ -6,12 +6,12 @@ import AudioButton from '@/components/features/AudioButton';
 import Tooltip from '@/components/features/Tooltip';
 import underLine from '@/components/features/UnderLine';
 import ReadingComprehension from './readingComprehension';
-import StoryLevelSelector from './StoryLevelSelector'; // הקומפוננטה החדשה
+import StoryLevelSelector from './StoryLevelSelector';
 import { BookOpen, Info, RefreshCw, Wand2, CheckCircle } from 'lucide-react';
 import { generateStoryFromWords } from '../services/generateStory';
 import questionService from '../services/questionService';
 
-const Reading = ({ words, inflections, onPracticeCompleted }) => {
+const Reading = ({ words, inflections, onPracticeCompleted, userId }) => {
     const [activeIndex, setActiveIndex] = useState(null);
     const [sentences, setSentences] = useState([]);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -20,16 +20,59 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
     const [showComprehension, setShowComprehension] = useState(false);
     
     // מצב רמת הקושי
-    const [storyLevel, setStoryLevel] = useState(3); // רמה בינונית כברירת מחדל
+    const [storyLevel, setStoryLevel] = useState(null); // התחלה ב-null עד לטעינה
+    const [isLoadingLevel, setIsLoadingLevel] = useState(true);
     
     // מצב השאלה
     const [question, setQuestion] = useState(null);
     const [isGeneratingQuestion, setIsGeneratingQuestion] = useState(false);
     const [questionError, setQuestionError] = useState(null);
 
+    // טעינת רמת המשתמש המועדפת בטעינה ראשונית
+    useEffect(() => {
+        async function loadUserPreferredLevel() {
+            if (!userId) {
+                // אם אין משתמש מחובר, ברירת מחדל היא 3
+                setStoryLevel(3);
+                setIsLoadingLevel(false);
+                return;
+            }
+
+            try {
+                // ניסיון ראשון - בדיקה ב-localStorage
+                const cachedLevel = localStorage.getItem(`story_level_${userId}`);
+                
+                if (cachedLevel !== null) {
+                    const level = parseInt(cachedLevel);
+                    if (level >= 1 && level <= 5) {
+                        setStoryLevel(level);
+                        setIsLoadingLevel(false);
+                        return;
+                    }
+                }
+
+                // אם אין ב-localStorage, קריאה מהשרת
+                const { getStoryLevel } = await import('@/lib/userPreferences');
+                const level = await getStoryLevel(userId);
+                setStoryLevel(level);
+                
+                // שמירה ב-localStorage לפעם הבאה
+                localStorage.setItem(`story_level_${userId}`, level.toString());
+            } catch (error) {
+                console.error('Error loading preferred story level:', error);
+                // במקרה של שגיאה, ברירת מחדל היא 3
+                setStoryLevel(3);
+            } finally {
+                setIsLoadingLevel(false);
+            }
+        }
+
+        loadUserPreferredLevel();
+    }, [userId]);
+
     // Generate story - with level parameter
     const generateStory = async () => {
-        if (!words?.length) return;
+        if (!words?.length || storyLevel === null) return;
 
         setIsGenerating(true);
         setError(null);
@@ -77,12 +120,12 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
         }
     };
 
-    // Auto-generate on mount
+    // Auto-generate on mount - רק אחרי שהרמה נטענה
     useEffect(() => {
-        if (!hasGenerated && words?.length > 0) {
+        if (!isLoadingLevel && !hasGenerated && words?.length > 0 && storyLevel !== null) {
             generateStory();
         }
-    }, [hasGenerated, words]);
+    }, [isLoadingLevel, hasGenerated, words, storyLevel]);
 
     // יצירת השאלה כאשר הסיפור מוכן
     useEffect(() => {
@@ -93,7 +136,7 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
 
     // Regenerate story when level changes
     useEffect(() => {
-        if (hasGenerated) {
+        if (hasGenerated && storyLevel !== null) {
             generateStory();
         }
     }, [storyLevel]);
@@ -107,6 +150,12 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
     // טיפול בשינוי רמת הקושי
     const handleLevelChange = (newLevel) => {
         setStoryLevel(newLevel);
+        
+        // עדכון localStorage מיידית
+        if (userId) {
+            localStorage.setItem(`story_level_${userId}`, newLevel.toString());
+        }
+        
         // אם כבר יש סיפור, נגנרט מחדש
         if (hasGenerated) {
             setHasGenerated(false);
@@ -139,6 +188,18 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
                 preGeneratedQuestion={question}
                 onPracticeCompleted={onPracticeCompleted}
             />
+        );
+    }
+
+    // הצגת טעינה אם הרמה עדיין נטענת
+    if (isLoadingLevel) {
+        return (
+            <div className="max-w-3xl mx-auto my-12 px-4">
+                <div className="text-center py-8">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <p className="mt-2 text-gray-600">טוען הגדרות...</p>
+                </div>
+            </div>
         );
     }
 
@@ -181,6 +242,7 @@ const Reading = ({ words, inflections, onPracticeCompleted }) => {
                         selectedLevel={storyLevel}
                         onLevelChange={handleLevelChange}
                         disabled={isGenerating}
+                        userId={userId}
                     />
                 </motion.div>
             )}
