@@ -14,9 +14,9 @@ const DEFAULT_STORY_LEVEL = 3;
 export async function getPracticeThreshold(userId) {
   try {
     const { data, error } = await supabaseAdmin
-      .from('users')
+      .from('user_preferences')
       .select('practice_threshold')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     if (error) {
@@ -42,9 +42,9 @@ export async function updatePracticeThreshold(userId, value) {
     }
 
     const { error } = await supabaseAdmin
-      .from('users')
+      .from('user_preferences')
       .update({ practice_threshold: value })
-      .eq('id', userId);
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Error updating practice threshold:', error);
@@ -77,9 +77,9 @@ export async function getStoryLevel(userId) {
 
     // אם אין ב-localStorage או שאנחנו בשרת, מביאים מהמסד
     const { data, error } = await supabaseAdmin
-      .from('users')
+      .from('user_preferences')
       .select('story_level')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     if (error) {
@@ -114,9 +114,9 @@ export async function updateStoryLevel(userId, level) {
 
     // עדכון במסד הנתונים
     const { error } = await supabaseAdmin
-      .from('users')
+      .from('user_preferences')
       .update({ story_level: level })
-      .eq('id', userId);
+      .eq('user_id', userId);
 
     if (error) {
       console.error('Error updating story level:', error);

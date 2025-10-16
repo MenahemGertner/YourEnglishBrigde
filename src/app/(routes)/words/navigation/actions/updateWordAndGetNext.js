@@ -25,10 +25,10 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
       .single();
 
     const userDataPromise = supabaseAdmin
-      .from('users')
-      .select('practice_counter, last_position')
-      .eq('id', userId)
-      .single();
+  .from('user_preferences')
+  .select('practice_counter, last_position')
+  .eq('user_id', userId)
+  .single();
 
     const practiceThresholdPromise = getPracticeThreshold(userId);
 
@@ -108,12 +108,12 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
 
     // **שלב 4: עדכון נתוני המשתמש וחיפוש המילה הבאה במקביל**
     const userUpdatePromise = supabaseAdmin
-      .from('users')
-      .update({
-        last_position: updatedLastPosition,
-        practice_counter: newPracticeCounter
-      })
-      .eq('id', userId);
+  .from('user_preferences')
+  .update({
+    last_position: updatedLastPosition,
+    practice_counter: newPracticeCounter
+  })
+  .eq('user_id', userId);
 
     const nextWordPromise = findNextWord(
       userId, 
@@ -141,9 +141,9 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
 
     if (newPracticeCounter >= effectiveThreshold) {
       await supabaseAdmin
-        .from('users')
-        .update({ practice_counter: 0 })
-        .eq('id', userId);
+  .from('user_preferences')
+  .update({ practice_counter: 0 })
+  .eq('user_id', userId);
 
       return {
         success: true,

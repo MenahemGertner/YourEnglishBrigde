@@ -13,9 +13,9 @@ export async function getNextWord(userId) {
 
     // Get user data and practice threshold in parallel
     const userDataPromise = supabaseAdmin
-      .from('users')
+      .from('user_preferences')
       .select('last_position, practice_counter')
-      .eq('id', userId)
+      .eq('user_id', userId)
       .single();
 
     const practiceThresholdPromise = getPracticeThreshold(userId);
@@ -41,9 +41,9 @@ export async function getNextWord(userId) {
     if (process.env.NODE_ENV == 'development' && userData.practice_counter >= effectiveThreshold) {
       // Reset practice counter
       await supabaseAdmin
-        .from('users')
+        .from('user_preferences')
         .update({ practice_counter: 0 })
-        .eq('id', userId)
+        .eq('user_id', userId)
 
       return {
         found: false,

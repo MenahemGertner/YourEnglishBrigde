@@ -39,22 +39,34 @@ export default function RegistrationPage() {
   }, [searchParams]);
 
   const handlePlanSelection = async (planId) => {
-    // בדיקה אם זה מנוי בתשלום או חינמי - חסימה זמנית
-    if (planId === 'Free Trial' || planId === 'Intensive' || planId === 'Premium') {
-      setError('האתר נמצא בהרצה וכרגע אין אפשרות להרשמה דרך מסלולים אלו. אנא השתמש בקוד קופון.');
-      return;
-    }
+  // הסרת החסימה - כל המסלולים פתוחים
+  
+  // אם זה מסלול קופון - נשאר עם התהליך הישן
+  if (planId === 'Coupon') {
+    setShowCouponModal(true);
+    setCouponCode('');
+    setCouponError('');
+    return;
+  }
 
-    // אם זה מסלול קופון, נפתח את מודאל הקופון
-    if (planId === 'Coupon') {
-      setShowCouponModal(true);
-      setCouponCode('');
-      setCouponError('');
-      return;
-    }
-
+  // אם זה Free Trial - נשאר עם התהליך הישן (ללא תשלום)
+  if (planId === 'Free Trial') {
     await proceedWithRegistration(planId);
-  };
+    return;
+  }
+
+  // אם זה Intensive או Premium - מעבר לדף תשלום
+  if (planId === 'Intensive' || planId === 'Premium') {
+    const planPrice = planId === 'Intensive' ? 747 : 2148;
+    const planDuration = planId === 'Intensive' ? 90 : 360;
+    
+    // מעבר לדף תשלום עם כל הפרמטרים
+    router.push(
+      `/payment?plan=${planId}&price=${planPrice}&duration=${planDuration}&email=${encodeURIComponent(userEmail)}&name=${encodeURIComponent(userName)}&image=${encodeURIComponent(userImage)}`
+    );
+    return;
+  }
+};
 
   const validateCoupon = async (code) => {
     try {
@@ -203,7 +215,7 @@ export default function RegistrationPage() {
                 <p className="text-lg m-0">
                   <span className="font-bold">שלום {getFirstName(userName)}!</span>
                   <br />
-                  האתר נמצא כעת בהרצה ניסיונית
+                  ברוך הבא!
                 </p>
               </div>
             </div>
@@ -240,13 +252,10 @@ export default function RegistrationPage() {
         </div>
   
         {/* כרטיסי התכניות - באמצעות הקומפוננטה החדשה */}
-        <div className="opacity-60 pointer-events-none">
-          <PlansDisplay
-            plansToShow={['Free Trial', 'Intensive', 'Premium']}
-            isBlocked={true}
-            onPlanSelect={handlePlanSelection}
-          />
-        </div>
+        <PlansDisplay
+  plansToShow={['Free Trial', 'Intensive', 'Premium']}
+  onPlanSelect={handlePlanSelection}
+/>
   
         {isLoading && !showSuccessModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">

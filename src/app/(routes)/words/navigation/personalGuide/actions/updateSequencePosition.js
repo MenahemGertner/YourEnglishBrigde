@@ -26,9 +26,9 @@ export async function updateSequencePosition(userId, targetIndex, shouldReset = 
         
         // Second operation: update the users table
         const { error: updateError } = await supabase
-          .from('users')
+          .from('user_preferences')
           .update({ practice_counter: 0 }) // Reset practice counter when resetting sequence
-          .eq('id', userId); // חשוב להוסיף תנאי כדי לעדכן רק את המשתמש הספציפי
+          .eq('user_id', userId); // חשוב להוסיף תנאי כדי לעדכן רק את המשתמש הספציפי
         
         if (updateError) throw updateError;
       }
@@ -43,7 +43,7 @@ export async function updateSequencePosition(userId, targetIndex, shouldReset = 
   
       // Update last_position with new values and reset practice_counter
       const { error: updateError } = await supabase
-        .from('users')
+        .from('user_preferences')
         .update({
           last_position: {
             index: targetIndex,
@@ -51,7 +51,7 @@ export async function updateSequencePosition(userId, targetIndex, shouldReset = 
             learning_sequence_pointer: targetIndex - 1
           }}
           )
-        .eq('id', userId)
+        .eq('user_id', userId)
   
       if (updateError) throw updateError
   

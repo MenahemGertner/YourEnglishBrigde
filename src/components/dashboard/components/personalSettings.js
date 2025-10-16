@@ -1,6 +1,6 @@
 'use client'
 
-import { User, Bell, Lock, Palette, Globe, Shield, Target, BookOpen } from 'lucide-react';
+import { Target, BookOpen } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { getPracticeThreshold, updatePracticeThreshold, getStoryLevel, updateStoryLevel } from '@/lib/userPreferences';
 

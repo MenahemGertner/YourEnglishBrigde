@@ -123,15 +123,6 @@ export default function PlansDisplay({
               isHighlighted && !isBlocked ? 'ring-4 ring-purple-400 ring-opacity-50 hover:shadow-2xl hover:scale-105' : ''
             }`}
           >
-            {/* תג חסום */}
-            {isBlocked && (
-              <div className="absolute inset-0 bg-gray-900 bg-opacity-50 rounded-lg flex items-center justify-center z-10">
-                <div className="bg-white px-4 py-2 rounded-lg font-bold text-gray-800">
-                  בקרוב
-                </div>
-              </div>
-            )}
-
             {/* תג פופולרי או מומלץ */}
             {plan.badge && !isBlocked && (
               <div className="absolute -top-3 right-4 z-20">
@@ -213,12 +204,10 @@ export default function PlansDisplay({
             {/* כפתור */}
             <div className="p-6 pt-0">
               <button
-                onClick={() => !isBlocked && onPlanSelect && onPlanSelect(plan.id)}
-                disabled={isBlocked || isLoading}
+                onClick={() => onPlanSelect && onPlanSelect(plan.id)}
+                disabled={isLoading}
                 className={`w-full py-3 px-4 rounded-xl font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
-                  isBlocked
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : isHighlighted
+                  isHighlighted
                     ? `bg-gradient-to-r ${plan.color} text-white hover:shadow-lg hover:scale-105`
                     : 'bg-gray-800 text-white hover:bg-gray-700'
                 }`}
@@ -228,8 +217,6 @@ export default function PlansDisplay({
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     מעבד...
                   </>
-                ) : isBlocked ? (
-                  'בקרוב'
                 ) : (
                   isHighlighted ? 'בחר עכשיו!' : 'בחר תכנית זו'
                 )}

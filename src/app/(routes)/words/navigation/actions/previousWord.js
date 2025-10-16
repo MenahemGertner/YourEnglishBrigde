@@ -9,9 +9,9 @@ export async function getPreviousWord(userId, currentIndex) {
   await requireAuthAndOwnership(userId);
 
   const { data: userData, error: userError } = await supabaseAdmin
-    .from('users')
+    .from('user_preferences')
     .select('last_position')
-    .eq('id', userId)
+    .eq('user_id', userId)
     .single()
 
   if (userError) throw userError
