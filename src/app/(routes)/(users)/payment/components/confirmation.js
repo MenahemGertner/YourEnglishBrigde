@@ -108,7 +108,7 @@ export default function Step4Confirmation({ orderData }) {
         // משתמש חדש - הצגת הודעה ואז התחברות
         setShowRedirectMessage(true);
         
-        // המתנה של 2 שניות ואז מעבר לאימות
+        // המתנה של שניה ואז מעבר לאימות
         setTimeout(async () => {
           await signIn('google', { 
             redirect: true,
@@ -253,7 +253,7 @@ export default function Step4Confirmation({ orderData }) {
                     <span className="font-bold text-gray-800">{formatPrice(paymentDetails.regularPayment)} × {installmentsCount - 1}</span>
                   </div>
                   <div className="flex justify-between text-sm pt-2 border-t border-blue-200">
-                    <span className="text-gray-600">סה"כ:</span>
+                    <span className="text-gray-600">סה&quot;כ:</span>
                     <span className="font-bold text-gray-800">{formatPrice(orderData.basePrice)}</span>
                   </div>
                 </div>

@@ -8,6 +8,7 @@ export default function Step2PaymentDetails({ orderData, onComplete }) {
     return <div className="text-center p-8">שגיאה: נתונים חסרים</div>;
   }
 
+  // ⬅️ כל השורות האלה ימשיכו רק אם orderData בטוח קיים
   const paymentConfig = getPaymentOptions(orderData.plan);
   const isRenewal = orderData.mode === 'renewal';
   const discount = orderData.discount || 0;
