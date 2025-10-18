@@ -4,16 +4,11 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Check, ArrowRight, Sparkles, Crown, AlertCircle } from 'lucide-react';
 import PlansDisplay from '../plans';
-import SuccessModal from '../successModal';
 
 export default function ExpiredPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [renewalData, setRenewalData] = useState(null);
 
   // הפניה למשתמשים לא מחוברים
   useEffect(() => {
@@ -90,54 +85,45 @@ export default function ExpiredPage() {
 
   const content = getContentByPreviousSubscription();
 
-  const handlePlanSelection = async (planId) => {
-    setIsLoading(true);
-    setError('');
-    setSelectedPlan(planId);
-
-    try {
-      const response = await fetch('/expired/api/renew-subscription', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ newPlanId: planId }),
-      });
-
-      // בדיקה שהתשובה היא JSON
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        console.error('Response is not JSON:', await response.text());
-        throw new Error('שגיאת שרת - התקבלה תשובה לא תקינה');
-      }
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'שגיאה בחידוש המנוי');
-      }
-
-      // הצלחה! שמור את הנתונים ופתח את המודל
-      setRenewalData({
-        subscription: data.subscription,
-        actionType: data.actionType,
-        wasExtended: data.wasExtended,
-        daysAdded: data.daysAdded
-      });
-      setShowSuccessModal(true);
-
-    } catch (err) {
-      console.error('Renewal error:', err);
-      setError(err.message || 'אירעה שגיאה. אנא נסה שוב.');
-      setSelectedPlan(null);
-    } finally {
-      setIsLoading(false);
-    }
+  // מיפוי תכניות למחירים (אחרי הנחה)
+  const getPlanDetails = (planId) => {
+    const plans = {
+      'Intensive': { basePrice: 747, duration: 90 },
+      'Premium': { basePrice: 2148, duration: 360 }
+    };
+    
+    const plan = plans[planId];
+    const discount = discounts[planId] || 0;
+    const finalPrice = Math.floor(plan.basePrice * (1 - discount / 100));
+    
+    return {
+      ...plan,
+      finalPrice,
+      discount
+    };
   };
 
-  const handleSuccessModalClose = () => {
-    setShowSuccessModal(false);
-    router.push('/');
+  const handlePlanSelection = (planId) => {
+    setSelectedPlan(planId);
+    
+    const planDetails = getPlanDetails(planId);
+    
+    // בניית URL עם כל הפרטים הנדרשים
+    const params = new URLSearchParams({
+      plan: planId,
+      price: planDetails.finalPrice.toString(),
+      duration: planDetails.duration.toString(),
+      email: session.user.email,
+      name: session.user.name || '',
+      image: session.user.image || '',
+      mode: 'renewal', // זיהוי שזה חידוש מנוי
+      previousPlan: previousPlanType,
+      discount: planDetails.discount.toString(),
+      userId: session.user.id || ''
+    });
+
+    // הפניה לדף התשלום
+    router.push(`/payment?${params.toString()}`);
   };
 
   return (
@@ -172,18 +158,9 @@ export default function ExpiredPage() {
               </p>
             </div>
           )}
-
-          {error && (
-            <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4 max-w-md mx-auto">
-              <div className="flex items-center gap-2 text-red-600">
-                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            </div>
-          )}
         </div>
 
-        {/* כרטיסי המנויים - באמצעות הקומפוננטה החדשה */}
+        {/* כרטיסי המנויים */}
         <div className="mb-12">
           <PlansDisplay
             plansToShow={content.recommendedPlans}
@@ -191,7 +168,7 @@ export default function ExpiredPage() {
             onPlanSelect={handlePlanSelection}
             discounts={discounts}
             highlightPlan={content.highlightPlan}
-            isLoading={isLoading}
+            isLoading={false}
             selectedPlan={selectedPlan}
           />
         </div>
@@ -202,7 +179,7 @@ export default function ExpiredPage() {
             <h3 className="text-lg font-bold mb-3 text-gray-800">
               למה לחדש עכשיו?
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+            <div className={`grid grid-cols-1 ${discounts.Intensive > 0 || discounts.Premium > 0 ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4 text-sm text-gray-600`}>
               <div className="flex flex-col items-center gap-2">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                   <Check className="h-5 w-5 text-blue-600" />
@@ -215,12 +192,15 @@ export default function ExpiredPage() {
                 </div>
                 <p>גישה לכל התכנים</p>
               </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <Crown className="h-5 w-5 text-green-600" />
+              {/* הנחת נאמנות - רק אם יש הנחה בפועל */}
+              {(discounts.Intensive > 0 || discounts.Premium > 0) && (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <Crown className="h-5 w-5 text-green-600" />
+                  </div>
+                  <p>הנחת נאמנות</p>
                 </div>
-                <p>הנחת נאמנות</p>
-              </div>
+              )}
             </div>
           </div>
 
@@ -235,29 +215,6 @@ export default function ExpiredPage() {
           </div>
         </div>
       </div>
-
-      {/* Loading overlay */}
-      {isLoading && !showSuccessModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-sm mx-4 text-center">
-            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-lg font-medium text-gray-800">מעדכן את המנוי שלך...</p>
-            <p className="text-sm text-gray-600 mt-2">רק עוד רגע קטן</p>
-          </div>
-        </div>
-      )}
-
-      {/* Success Modal */}
-      <SuccessModal 
-        isOpen={showSuccessModal}
-        onClose={handleSuccessModalClose}
-        userInfo={session?.user}
-        subscriptionInfo={renewalData?.subscription}
-        mode="renewal"
-        actionType={renewalData?.actionType}
-        wasExtended={renewalData?.wasExtended}
-        daysAdded={renewalData?.daysAdded}
-      />
     </div>
   );
 }

@@ -1,12 +1,11 @@
-// ============================================
-// Step 3: Payment Processing (Mock)
-// ============================================
-import React, { useState} from 'react';
-import { CheckCircle, Loader } from 'lucide-react';
-function Step3PaymentProcessing({ orderData, onComplete }) {
+import React, { useState, useEffect } from 'react';
+import { Loader, CheckCircle } from 'lucide-react';
+import { formatPrice } from './payment-utils';
+
+export default function Step3PaymentProcessing({ orderData, onComplete }) {
   const [status, setStatus] = useState('processing'); // processing, success
 
-  React.useEffect(() => {
+  useEffect(() => {
     // דמה תהליך תשלום - 2 שניות
     const timer = setTimeout(() => {
       setStatus('success');
@@ -18,8 +17,9 @@ function Step3PaymentProcessing({ orderData, onComplete }) {
     return () => clearTimeout(timer);
   }, [onComplete]);
 
-  const installmentPrice = Math.ceil(orderData.basePrice / 3);
-  const currentPrice = orderData.paymentMethod === 'full' ? orderData.basePrice : installmentPrice;
+  // שימוש בפירוט התשלומים שעבר מהשלב הקודם
+  const { paymentDetails, installmentsCount } = orderData;
+  const currentPayment = paymentDetails?.firstPayment || orderData.basePrice;
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -34,9 +34,11 @@ function Step3PaymentProcessing({ orderData, onComplete }) {
               </p>
               <div className="bg-blue-50 rounded-lg p-6">
                 <p className="text-sm text-gray-600 mb-2">סכום לתשלום:</p>
-                <p className="text-3xl font-bold text-blue-600">₪{currentPrice.toLocaleString()}</p>
-                {orderData.paymentMethod === 'installments' && (
-                  <p className="text-sm text-gray-500 mt-2">תשלום ראשון מתוך 3</p>
+                <p className="text-3xl font-bold text-blue-600">{formatPrice(currentPayment)}</p>
+                {installmentsCount > 1 && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    תשלום ראשון מתוך {installmentsCount}
+                  </p>
                 )}
               </div>
             </>
@@ -52,5 +54,3 @@ function Step3PaymentProcessing({ orderData, onComplete }) {
     </div>
   );
 }
-
-export default Step3PaymentProcessing
