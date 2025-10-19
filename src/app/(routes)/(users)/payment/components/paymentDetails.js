@@ -3,20 +3,12 @@ import { CreditCard, MapPin, User, Phone, Mail, ChevronDown } from 'lucide-react
 import { calculatePayments, getPaymentOptions, formatPrice, getPaymentDescription } from './payment-utils';
 
 export default function Step2PaymentDetails({ orderData, onComplete }) {
-  if (!orderData) {
-    console.error('❌ orderData is missing!');
-    return <div className="text-center p-8">שגיאה: נתונים חסרים</div>;
-  }
-
-  // ⬅️ כל השורות האלה ימשיכו רק אם orderData בטוח קיים
-  const paymentConfig = getPaymentOptions(orderData.plan);
-  const isRenewal = orderData.mode === 'renewal';
-  const discount = orderData.discount || 0;
+  // Hooks חייבים להיות תמיד בהתחלה, לפני כל return!
   const [selectedInstallments, setSelectedInstallments] = useState(1);
   const [isInstallmentsOpen, setIsInstallmentsOpen] = useState(false);
-  const [formData, setFormData] = useState(orderData.formData || {
-    fullName: orderData.userName || '',
-    email: orderData.userEmail || '',
+  const [formData, setFormData] = useState(orderData?.formData || {
+    fullName: orderData?.userName || '',
+    email: orderData?.userEmail || '',
     phone: '',
     city: '',
     street: '',
@@ -24,6 +16,26 @@ export default function Step2PaymentDetails({ orderData, onComplete }) {
     zipCode: ''
   });
   const [errors, setErrors] = useState({});
+
+  // בדיקות ומשתנים - אחרי כל ה-hooks
+  if (!orderData) {
+    console.error('❌ orderData is missing!');
+    return <div className="text-center p-8">שגיאה: נתונים חסרים</div>;
+  }
+
+  const paymentConfig = getPaymentOptions(orderData.plan);
+  const isRenewal = orderData.mode === 'renewal';
+  const discount = orderData.discount || 0;
+  
+  console.log('🔍 Step2 Debug:', { 
+    mode: orderData.mode, 
+    isRenewal, 
+    discount,
+    plan: orderData.plan,
+    basePrice: orderData.basePrice,
+    paymentConfig,
+    formData: orderData.formData
+  });
 
   // חישוב התשלומים בצורה מרכזית
   const paymentDetails = calculatePayments(orderData.basePrice, selectedInstallments);
