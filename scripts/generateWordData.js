@@ -5,7 +5,7 @@ const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
 // הגדרה להתחלת האינדקס
-const START_INDEX = 1501;
+const START_INDEX = 1413;
 
 // הגדרות API
 const API_KEY = process.env.CLAUDE_API_KEY;
@@ -88,7 +88,7 @@ const promptTemplate = (word) => `
             'Negative Forms',
             'Contractions']
    - דוגמאות שימוש 'פשוטות' באנגלית 'ברמה של המילה הנלמדת' עם תרגום לעברית ("examples") - אם יש פחות מ 5 הטיות, אז להשלים משפטים נוספים, כך שיהיו בסך הכל 5 משפטים לפחות
-8. ביטויים נפוצים ("ex") - 3 ביטויים ופתגמים 'קצרים' שכוללים את המילה
+8. ביטויים נפוצים ("ex") - 2 ביטויים ופתגמים 'קצרים' שכוללים את המילה
 9. מילים נרדפות ("syn") - להשאיר ריק
 10. מילים מנוגדות ("con") - להשאיר ריק
 
@@ -312,8 +312,7 @@ const promptTemplate = (word) => `
   ],
   "ex": {
     "part of": "חלק מ-",
-    "of course": "כמובן",
-    "proud of": "גאה ב-"
+    "of course": "כמובן"
   },
   "syn": [],
   "con": []
@@ -480,8 +479,7 @@ const promptTemplate = (word) => `
   ],
   "ex": {
     "water down": "לדלל, להחליש",
-    "like water": "בשפע",
-    "under water": "מתחת למים"
+    "like water": "בשפע"
   },
   "syn": [],
   "con": []
@@ -542,17 +540,17 @@ function validateQuality(obj, word) {
  */
 function createCustomObjectId(index) {
   // חלק 1: חותמת זמן (4 בתים, 8 תווים הקסדצימליים)
-  const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+  // const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
   
   // חלק 2: מזהה מכונה + מזהה תהליך (5 בתים, 10 תווים הקסדצימליים)
   // בדוגמה זו נשתמש בערך קבוע, אך ניתן להחליף לערך ייחודי למכונה או לתהליך
-  const machineAndProcess = 'f6dabc96dd'; // לקוח מהדוגמה שלך למען עקביות
+  const machineAndProcess = 'f6dabc96ddf6dabc96dd'; // לקוח מהדוגמה שלך למען עקביות
   
   // חלק 3: מונה (3 בתים, 6 תווים הקסדצימליים)
   // נשתמש באינדקס שמועבר כפרמטר
-  const counter = index.toString().padStart(6, '0');
+  const counter = index.toString().padStart(4, '0');
   
-  return timestamp + machineAndProcess + counter;
+  return machineAndProcess + counter;
 }
 
 /**

@@ -48,7 +48,6 @@ const GrammarTranslator = ({ definition }) => {
     'Contractions': 'קיצורים'
   };
 
-  // אם לא נמצא תרגום, החזר את ההגדרה המקורית
   const hebrewTranslation = translations[definition];
 
   return (

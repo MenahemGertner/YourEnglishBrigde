@@ -29,7 +29,7 @@
     "**/*.js",
     "**/*.jsx",
     "middleware.js",
-    "src/hooks/openWindow.js", "src/app/api/sendWords"],
+    "src/hooks/openWindow.js", "src/app/api/sendWords", "scripts/generate-coupons.mjs", "scripts/exportAllWords.mjs"],
   "exclude": [
     "node_modules"
   ]

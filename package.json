@@ -11,7 +11,10 @@
     "update-mongo": "node -r dotenv/config scripts/updatingIDInMongoDB.js",
     "update-confused-words": "node -r dotenv/config scripts/update-confused-words.js",
     "remove-third-ex-value.js": "node -r dotenv/config scripts/remove-third-ex-value.js",
-    "generate-coupons": "node scripts/generate-coupons.js"
+    "generate-coupons": "node scripts/generate-coupons.js",
+    "regenerate-sentences": "node -r dotenv/config scripts/regenerate-sentences.js",
+    "list-words": "node -r dotenv/config scripts/list-words-1001-1500.js",
+    "update-word": "node -r dotenv/config scripts/update-word-indexes.js"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.1.0",
