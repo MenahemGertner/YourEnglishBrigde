@@ -309,7 +309,7 @@ const PracticeSpaceClient = ({ wordsData }) => {
                                                   }`
                                         }`}
                                     >
-                                        {isReturning ? 'טוען...' : 'חזרה לרשימת המילים'}
+                                        {isReturning ? 'טוען...' : 'המשך ללמוד מילים חדשות!'}
                                     </button>
                                 </motion.div>
                             </div>
