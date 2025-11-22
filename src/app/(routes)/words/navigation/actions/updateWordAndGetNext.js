@@ -140,27 +140,35 @@ export async function updateWordAndGetNext(userId, wordId, level, category) {
       : practiceThreshold;
 
     if (newPracticeCounter >= effectiveThreshold) {
-      await supabaseAdmin
-  .from('user_preferences')
-  .update({ practice_counter: 0 })
-  .eq('user_id', userId);
+  await supabaseAdmin
+    .from('user_preferences')
+    .update({ practice_counter: 0 })
+    .eq('user_id', userId);
 
-      return {
-        success: true,
-        action: level === 1 ? 'deleted' : (existingWord ? 'updated' : 'created'),
-        nextWord: {
-          found: false,
-          status: 'PRACTICE_NEEDED',
-          lastPosition: updatedLastPosition
-        }
-      };
+  return {
+    success: true,
+    action: level === 1 ? 'deleted' : (existingWord ? 'updated' : 'created'),
+    nextWord: {
+      found: false,
+      status: 'PRACTICE_NEEDED',
+      lastPosition: updatedLastPosition
+    },
+    practiceProgress: {
+      counter: 0,
+      threshold: practiceThreshold
     }
+  };
+}
 
-    return {
-      success: true,
-      action: level === 1 ? 'deleted' : (existingWord ? 'updated' : 'created'),
-      nextWord: nextWordResult
-    };
+   return {
+  success: true,
+  action: level === 1 ? 'deleted' : (existingWord ? 'updated' : 'created'),
+  nextWord: nextWordResult,
+  practiceProgress: {
+    counter: newPracticeCounter,
+    threshold: practiceThreshold
+  }
+};
 
   } catch (error) {
     console.error('Error in updateWordAndGetNext:', error);

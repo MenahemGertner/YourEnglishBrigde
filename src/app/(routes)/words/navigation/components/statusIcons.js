@@ -1,26 +1,24 @@
 'use client'
 
 import { CircleDot, Info, ArrowRight } from 'lucide-react'
-import { useWordRating } from '../hooks/useWordRating'
 import { usePreviousNavigation } from '../hooks/usePreviousNavigation'
 import Tooltip from '@/components/features/Tooltip'
 import IconData from '@/lib/data/ColorMap'
 import NavigationMessage from './navigationMessage'
 
-const StatusIcons = ({ index, category }) => {
-  const { 
-    handleWordRating, 
-    isLoading, 
-    error,
-    navigationState,
-    handleNextCategory
-  } = useWordRating({ index, category })
-  
+// StatusIcons.js
+const StatusIcons = ({ 
+  handleWordRating,
+  isLoading,
+  error,
+  navigationState,
+  handleNextCategory
+}) => {
   const { handlePrevious, isPrevLoading, message } = usePreviousNavigation()
   
   return (
     <>
-      <div className="flex flex-col gap-2 border-t p-2 sm:p-4">
+      <div className="flex flex-col gap-2 p-2 sm:p-4">
         {error && (
           <div className="text-red-600 text-xs sm:text-sm text-center mb-2">
             {error}

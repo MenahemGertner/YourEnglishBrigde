@@ -28,7 +28,7 @@ export function useWordRating({ index, category }) {
       setNavigationState({ showMessage: false })
     }
   }
-
+const [practiceProgress, setPracticeProgress] = useState({ counter: 0, threshold: 25 })
   const handleWordRating = async (level) => {
     if (!session?.user?.id) {
       setError('נא להתחבר כדי להמשיך')
@@ -49,15 +49,20 @@ export function useWordRating({ index, category }) {
 
       // **קריאה אחת בלבד למסד הנתונים!**
       const result = await updateWordAndGetNext(
-        session.user.id,
-        index,
-        level,
-        category
-      )
+    session.user.id,
+    index,
+    level,
+    category
+  )
 
-      if (!result?.success) {
-        throw new Error(result?.error || 'שגיאה בעדכון המילה')
-      }
+  if (!result?.success) {
+    throw new Error(result?.error || 'שגיאה בעדכון המילה')
+  }
+
+  // עדכון ההתקדמות מהתשובה
+  if (result.practiceProgress) {
+    setPracticeProgress(result.practiceProgress)
+  }
 
       // המתנה לסיום האנימציה (אם עדיין רצה)
       await colorPromise
@@ -94,6 +99,7 @@ export function useWordRating({ index, category }) {
     handleWordRating,
     navigationState,
     handleNextCategory,
+    practiceProgress,
     isAuthenticated: status === 'authenticated',
     isSessionLoading: status === 'loading'
   }
