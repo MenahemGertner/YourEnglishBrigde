@@ -1,15 +1,16 @@
 'use client'
 
 import { Target, BookOpen } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getPracticeThreshold, updatePracticeThreshold, getStoryLevel, updateStoryLevel } from '@/lib/userPreferences';
 
-export default function PersonalSettings({ userId }) {
+export default function PersonalSettings({ userId, scrollToStoryLevel, onScrollComplete }) {
   const [practiceThreshold, setPracticeThreshold] = useState(25);
   const [storyLevel, setStoryLevel] = useState(3);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState(null);
+  const storyLevelRef = useRef(null);
 
   // טעינת ההגדרות הנוכחיות
   useEffect(() => {
@@ -29,6 +30,22 @@ export default function PersonalSettings({ userId }) {
     }
     loadSettings();
   }, [userId]);
+
+  // גלילה לאזור רמת הסיפור
+  useEffect(() => {
+    if (scrollToStoryLevel && !isLoading && storyLevelRef.current) {
+      // מחכים קצת יותר כדי שה-Drawer יסיים את האנימציה
+      const timer = setTimeout(() => {
+        storyLevelRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        });
+        onScrollComplete?.();
+      }, 500);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [scrollToStoryLevel, isLoading, onScrollComplete]);
 
   // שמירת סף תרגול
   const handleSaveThreshold = async (newValue) => {
@@ -214,8 +231,12 @@ export default function PersonalSettings({ userId }) {
         )}
       </section>
 
-      {/* הגדרות רמת סיפור */}
-      <section className="bg-white border border-gray-200 rounded-lg p-5">
+      {/* הגדרות רמת סיפור - עם ref לגלילה */}
+      <section 
+        ref={storyLevelRef}
+        className="bg-white border border-gray-200 rounded-lg p-5 scroll-mt-4"
+        data-setting="story-level"
+      >
         <div className="flex items-center gap-3 mb-4">
           <BookOpen className="w-5 h-5 text-purple-600" />
           <h3 className="text-lg font-semibold text-gray-900">רמת סיפור מועדפת</h3>

@@ -7,10 +7,15 @@ if (typeof window !== 'undefined') {
   window.tooltipEvent = window.tooltipEvent || new EventTarget();
 }
 
-export default function Tooltip({ content, children }) {
-  const [open, setOpen] = React.useState(false)
+export default function Tooltip({ content, children, open: controlledOpen, onOpenChange }) {
+  const [internalOpen, setInternalOpen] = React.useState(false)
   const tooltipRef = React.useRef(null)
   const uniqueId = React.useId()
+  
+  // שימוש ב-controlled או uncontrolled mode
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? onOpenChange : setInternalOpen;
   
   // האזנה לאירוע פתיחת טולטיפ
   React.useEffect(() => {
@@ -27,7 +32,7 @@ export default function Tooltip({ content, children }) {
         window.tooltipEvent.removeEventListener('tooltip-open', handleOtherTooltipOpen);
       };
     }
-  }, [uniqueId, open]);
+  }, [uniqueId, open, setOpen]);
   
   // לחיצה על הטולטיפ
   const handleToggle = (e) => {
@@ -49,14 +54,14 @@ export default function Tooltip({ content, children }) {
     <TooltipPrimitive.Provider>
       <TooltipPrimitive.Root open={open}>
         <TooltipPrimitive.Trigger asChild>
-  <span 
-    className="cursor-pointer inline" 
-    onClick={handleToggle}
-    onTouchEnd={handleToggle}
-  >
-    {children}
-  </span>
-</TooltipPrimitive.Trigger>
+          <span 
+            className="cursor-pointer inline" 
+            onClick={handleToggle}
+            onTouchEnd={handleToggle}
+          >
+            {children}
+          </span>
+        </TooltipPrimitive.Trigger>
         {open && (
           <TooltipPrimitive.Portal>
             <TooltipPrimitive.Content
