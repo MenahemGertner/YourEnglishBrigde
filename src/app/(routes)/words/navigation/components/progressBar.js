@@ -1,8 +1,9 @@
 import { ChevronDown, ChevronUp, Settings } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const ProgressBar = ({ progress, onOpenSettings }) => {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const infoContainerRef = useRef(null);
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -42,6 +43,23 @@ const ProgressBar = ({ progress, onOpenSettings }) => {
     };
   }, []);
 
+  // האזנה ללחיצות מחוץ לקומפוננטה
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (infoContainerRef.current && !infoContainerRef.current.contains(event.target)) {
+        setIsInfoOpen(false);
+      }
+    };
+
+    if (isInfoOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isInfoOpen]);
+
   return (
     <div className="w-full p-2 sm:p-4 space-y-2">
       {/* Progress Bar עם אינדיקטור - עטוף ברוחב מוגבל */}
@@ -74,7 +92,7 @@ const ProgressBar = ({ progress, onOpenSettings }) => {
 
       {/* פאנל הסבר מתרחב */}
 {isInfoOpen && (
-  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2 animate-slideDown max-w-xs sm:max-w-sm md:max-w-md mx-auto">
+  <div ref={infoContainerRef} className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2 animate-slideDown max-w-xs sm:max-w-sm md:max-w-md mx-auto">
     {/* כותרת */}
     <div className="flex items-center gap-2">
       <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
