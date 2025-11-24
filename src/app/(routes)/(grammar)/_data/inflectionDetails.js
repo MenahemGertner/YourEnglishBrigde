@@ -7,15 +7,15 @@ export const InflectionDetails = {
         },
         inflections: {
         'Singular': {
-            translation: 'יחיד',
-            explanation: 'צורת שם עצם היחידה, המציינת דבר אחד',
-            example: 'book, cat, student'
-        },
-        'Plural': {
-            translation: 'רבים',
-            explanation: 'צורת שם עצם המציינת יותר מדבר אחד',
-            example: 'books, cats, students'
-        },
+    translation: 'יחיד',
+    explanation: 'צורה דקדוקית המציינת ישות בודדת אחת. משמשת בעיקר בשמות עצם',
+    example: 'book, cat, student'
+},
+'Plural': {
+    translation: 'רבים',
+    explanation: 'צורה דקדוקית המציינת יותר מישות אחת. משמשת בעיקר בשמות עצם',
+    example: 'books, cats, students'
+},
         'Common Noun': {
             translation: 'שם עצם כללי',
             explanation: 'שם עצם המציין דבר או יצור ללא ייחוד פרטני',

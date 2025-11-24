@@ -1,73 +1,73 @@
 export const ExtendedInflectionDetails = {
     nouns: {
         'Singular': {
-            detailedExplanation: `שם עצם ביחיד באנגלית הוא הצורה הבסיסית של המילה המתייחסת לישות אחת. באנגלית, צורה זו משמשת כבסיס ליצירת צורות אחרות של המילה. שמות עצם ביחיד באנגלית מחייבים שימוש במילות יחס מתאימות (a/an/the) כאשר מדובר בשם עצם ספיר.`,
-            examples: [
-                {
-                    english: 'book',
-                    hebrew: 'ספר',
-                    inSentence: {
-                        english: 'The book is on the table',
-                        hebrew: 'הספר נמצא על השולחן',
-                        explanation: 'שימוש בשם עצם ביחיד עם הפועל is המתאים ליחיד'
-                    }
-                },
-                {
-                    english: 'student',
-                    hebrew: 'תלמיד',
-                    inSentence: {
-                        english: 'A student studies hard',
-                        hebrew: 'תלמיד לומד קשה',
-                        explanation: 'שימוש במילת היחס a לפני שם העצם ובפועל המתאים ליחיד (studies)'
-                    }
-                },
-                {
-                    english: 'child',
-                    hebrew: 'ילד',
-                    inSentence: {
-                        english: 'The child plays in the garden',
-                        hebrew: 'הילד משחק בגינה',
-                        explanation: 'דוגמה לשם עצם שיש לו צורת רבים לא רגילה (children)'
-                    }
-                }
-            ],
-            commonMistakes: 'טעויות נפוצות בשימוש בשמות עצם ביחיד באנגלית כוללות: שימוש בפועל ברבים עם שם עצם ביחיד, שכחת מילות היחס הנדרשות, ושימוש שגוי במילות היחס a/an.',
-            usageTips: 'חשוב לזכור: שם עצם ספיר ביחיד באנגלית תמיד דורש מילת יחס (a/an/the). הפועל המתאים צריך להיות בצורת יחיד. לדוגמה: is, was, has, goes.'
+    detailedExplanation: `יחיד (Singular) הוא צורה דקדוקית המתייחסת לישות בודדת אחת. זוהי הצורה הבסיסית במילון. השימוש העיקרי של צורת היחיד הוא בשמות עצם, אך היא משפיעה גם על פעלים, כינויים ומילים אחרות במשפט. שמות עצם ספירים ביחיד באנגלית מחייבים שימוש במילות יחס מתאימות (a/an/the).`,
+    examples: [
+        {
+            english: 'book',
+            hebrew: 'ספר',
+            inSentence: {
+                english: 'The book is on the table',
+                hebrew: 'הספר נמצא על השולחן',
+                explanation: 'המילה book בצורת יחיד מחייבת את הפועל is (גם ביחיד)'
+            }
         },
-        'Plural': {
-            detailedExplanation: `צורת הרבים באנגלית מציינת יותר מאחד. באנגלית יש מספר דרכים ליצירת צורת הרבים: הוספת s בסוף המילה (הדרך הנפוצה ביותר), הוספת es למילים המסתיימות ב-s, sh, ch, x, o, או שינוי לא רגיל של המילה במקרה של יוצאים מן הכלל.`,
-            examples: [
-                {
-                    english: 'books',
-                    hebrew: 'ספרים',
-                    inSentence: {
-                        english: 'The books are on the shelf',
-                        hebrew: 'הספרים נמצאים על המדף',
-                        explanation: 'דוגמה לרבים רגיל עם הוספת s ושימוש בפועל ברבים (are)'
-                    }
-                },
-                {
-                    english: 'boxes',
-                    hebrew: 'קופסאות',
-                    inSentence: {
-                        english: 'The boxes contain many items',
-                        hebrew: 'הקופסאות מכילות הרבה פריטים',
-                        explanation: 'דוגמה להוספת es למילה המסתיימת ב-x'
-                    }
-                },
-                {
-                    english: 'children',
-                    hebrew: 'ילדים',
-                    inSentence: {
-                        english: 'The children are playing',
-                        hebrew: 'הילדים משחקים',
-                        explanation: 'דוגמה לצורת רבים לא רגילה'
-                    }
-                }
-            ],
-            commonMistakes: 'טעויות נפוצות ברבים באנגלית: שכחת שינוי הפועל לצורת רבים, שימוש שגוי בצורות רבים לא רגילות (למשל childs במקום children), הוספת s למילים שאינן ספירות.',
-            usageTips: 'ברבים לא משתמשים ב-a/an. אפשר להשתמש ב-the או לא להשתמש במילת יחס כלל כשמדברים על הכללה. הפועל חייב להיות בצורת רבים (are, were, have, go).'
+        {
+            english: 'student',
+            hebrew: 'תלמיד',
+            inSentence: {
+                english: 'A student studies hard',
+                hebrew: 'תלמיד לומד קשה',
+                explanation: 'צורת היחיד student דורשת את מילת היחס a ואת הפועל studies (עם s)'
+            }
         },
+        {
+            english: 'child',
+            hebrew: 'ילד',
+            inSentence: {
+                english: 'The child plays in the garden',
+                hebrew: 'הילד משחק בגינה',
+                explanation: 'דוגמה למילה שיש לה צורת רבים לא רגילה (children)'
+            }
+        }
+    ],
+    commonMistakes: 'טעויות נפוצות בשימוש בצורת יחיד כוללות: שימוש בפועל ברבים כשהנושא ביחיד, שכחת מילות היחס הנדרשות לפני שמות עצם ספירים, ושימוש שגוי במילות היחס a/an.',
+    usageTips: 'חשוב לזכור: כאשר הנושא במשפט הוא ביחיד, הפועל חייב להתאים לכך (is, was, has, goes). שמות עצם ספירים ביחיד תמיד דורשים מילת יחס (a/an/the).'
+},
+'Plural': {
+    detailedExplanation: `רבים (Plural) הוא צורה דקדוקית המציינת יותר מישות אחת. השימוש העיקרי של צורת הרבים הוא בשמות עצם, אך היא משפיעה גם על פעלים וכינויים במשפט. באנגלית יש מספר דרכים ליצירת צורת הרבים בשמות עצם: הוספת s (הדרך הנפוצה ביותר), הוספת es למילים המסתיימות ב-s, sh, ch, x, o, או שינוי לא רגיל של המילה.`,
+    examples: [
+        {
+            english: 'books',
+            hebrew: 'ספרים',
+            inSentence: {
+                english: 'The books are on the shelf',
+                hebrew: 'הספרים נמצאים על המדף',
+                explanation: 'צורת הרבים books מחייבת את הפועל are (גם ברבים)'
+            }
+        },
+        {
+            english: 'boxes',
+            hebrew: 'קופסאות',
+            inSentence: {
+                english: 'The boxes contain many items',
+                hebrew: 'הקופסאות מכילות הרבה פריטים',
+                explanation: 'דוגמה ליצירת רבים עם הוספת es למילה המסתיימת ב-x'
+            }
+        },
+        {
+            english: 'children',
+            hebrew: 'ילדים',
+            inSentence: {
+                english: 'The children are playing',
+                hebrew: 'הילדים משחקים',
+                explanation: 'דוגמה לצורת רבים לא רגילה (child → children)'
+            }
+        }
+    ],
+    commonMistakes: 'טעויות נפוצות בשימוש בצורת רבים: שכחת שינוי הפועל להתאמה לרבים, שימוש שגוי בצורות רבים לא רגילות (למשל childs במקום children), הוספת s לשמות עצם שאינם ספירים.',
+    usageTips: 'ברבים לא משתמשים ב-a/an. אפשר להשתמש ב-the או להשמיט מילת יחס לגמרי כשמדברים בהכללה. הפועל חייב להיות בצורת רבים (are, were, have, go - ללא s בסוף).'
+},
     'Common Noun': {
         detailedExplanation: `שם עצם כללי באנגלית מתייחס לאובייקטים, מקומות או דברים כלליים. בניגוד לשם עצם פרטי, הוא נכתב באות קטנה אלא אם הוא בתחילת משפט. שמות עצם כלליים יכולים להיות ספירים או בלתי ספירים, ומקבלים את כל צורות היידוע (a, an, the).`,
         examples: [
