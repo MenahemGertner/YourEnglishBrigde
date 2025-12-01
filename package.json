@@ -14,7 +14,8 @@
     "generate-coupons": "node scripts/generate-coupons.js",
     "regenerate-sentences": "node -r dotenv/config scripts/regenerate-sentences.js",
     "list-words": "node -r dotenv/config scripts/list-words-1001-1500.js",
-    "update-word": "node -r dotenv/config scripts/update-word-indexes.js"
+    "update-word": "node -r dotenv/config scripts/update-word-indexes.js",
+    "validate-ps-field.js": "node -r dotenv/config scripts/validate-ps-field.js"
   },
   "dependencies": {
     "@google-cloud/text-to-speech": "^6.1.0",

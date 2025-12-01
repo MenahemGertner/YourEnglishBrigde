@@ -8,9 +8,9 @@ const fs = require('fs');
 const path = require('path');
 
 // ====== הגדרות כלליות ======
-const START_INDEX = 1216; // מאיזה אינדקס להתחיל
-const BATCH_SIZE = 285; // כמה מילים לעבד בריצה אחת
-const COLLECTION_NAME = '1500'; // שם הקולקציה
+const START_INDEX = 831; // מאיזה אינדקס להתחיל
+const BATCH_SIZE = 1; // כמה מילים לעבד בריצה אחת
+const COLLECTION_NAME = '900'; // שם הקולקציה
 
 // ====== הגדרות MongoDB ======
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -91,7 +91,7 @@ Example of what TO do:
 - "will have" (Future): "I'll have pizza for lunch!"
 
 REQUIREMENTS:
-1. LEVEL 3/5: 7-14 words
+1. LEVEL 2/5: 5-10 words
 2. Write like a real person talks - natural, casual, everyday situations
 3. Each sentence about something DIFFERENT and REAL from daily life
 4. Make it sound like something you'd actually say to a friend
