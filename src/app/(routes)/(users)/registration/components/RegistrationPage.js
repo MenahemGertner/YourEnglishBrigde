@@ -134,7 +134,7 @@ export default function RegistrationPage() {
     setError('');
   
     try {
-      const response = await fetch('/registration/api/register', {
+      const response = await fetch('/registration/api/validate-coupon', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
