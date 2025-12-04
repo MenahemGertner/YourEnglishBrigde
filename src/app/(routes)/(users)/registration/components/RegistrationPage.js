@@ -39,34 +39,31 @@ export default function RegistrationPage() {
   }, [searchParams]);
 
   const handlePlanSelection = async (planId) => {
-  // הסרת החסימה - כל המסלולים פתוחים
-  
-  // אם זה מסלול קופון - נשאר עם התהליך הישן
-  if (planId === 'Coupon') {
-    setShowCouponModal(true);
-    setCouponCode('');
-    setCouponError('');
-    return;
-  }
+    // אם זה מסלול קופון - פתיחת מודל הקופון
+    if (planId === 'Coupon') {
+      setShowCouponModal(true);
+      setCouponCode('');
+      setCouponError('');
+      return;
+    }
 
-  // אם זה Free Trial - נשאר עם התהליך הישן (ללא תשלום)
-  if (planId === 'Free Trial') {
-    await proceedWithRegistration(planId);
-    return;
-  }
+    // אם זה Free Trial - הרשמה ישירה (ללא תשלום)
+    if (planId === 'Free Trial') {
+      await proceedWithRegistration(planId);
+      return;
+    }
 
-  // אם זה Intensive או Premium - מעבר לדף תשלום
-  if (planId === 'Intensive' || planId === 'Premium') {
-    const planPrice = planId === 'Intensive' ? 747 : 2148;
-    const planDuration = planId === 'Intensive' ? 90 : 360;
-    
-    // מעבר לדף תשלום עם כל הפרמטרים
-    router.push(
-      `/payment?plan=${planId}&price=${planPrice}&duration=${planDuration}&email=${encodeURIComponent(userEmail)}&name=${encodeURIComponent(userName)}&image=${encodeURIComponent(userImage)}`
-    );
-    return;
-  }
-};
+    // אם זה Intensive או Premium - מעבר לדף תשלום
+    if (planId === 'Intensive' || planId === 'Premium') {
+      const planPrice = planId === 'Intensive' ? 747 : 2148;
+      const planDuration = planId === 'Intensive' ? 90 : 360;
+      
+      router.push(
+        `/payment?plan=${planId}&price=${planPrice}&duration=${planDuration}&email=${encodeURIComponent(userEmail)}&name=${encodeURIComponent(userName)}&image=${encodeURIComponent(userImage)}`
+      );
+      return;
+    }
+  };
 
   const validateCoupon = async (code) => {
     try {
@@ -134,7 +131,8 @@ export default function RegistrationPage() {
     setError('');
   
     try {
-      const response = await fetch('/registration/api/validate-coupon', {
+      // שליחה ל-complete-purchase (הAPI הקיים שכבר עובד)
+      const response = await fetch('/payment/api/complete-purchase', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,8 +141,11 @@ export default function RegistrationPage() {
           email: userEmail,
           name: userName,
           avatar_url: userImage,
-          planId,
-          couponCode: couponCode || null
+          planId: planId === 'Coupon' ? 'Intensive' : planId, // קופון = Intensive (90 ימים)
+          installmentsCount: 1, // עבור Free Trial/Coupon תמיד 1
+          paymentDetails: null, // אין פרטי תשלום
+          transactionId: planId === 'Coupon' ? `COUPON-${couponCode}` : 'FREE-TRIAL',
+          mode: 'new' // תמיד רישום חדש
         }),
       });
   
@@ -152,6 +153,11 @@ export default function RegistrationPage() {
   
       if (!response.ok) {
         throw new Error(data.error || 'Registration failed');
+      }
+
+      // אם זה קופון והצליח - סימון הקופון כמשומש
+      if (planId === 'Coupon' && couponCode !== '13579') {
+        await markCouponAsUsed(couponCode, data.user.id);
       }
 
       setRegistrationData({
@@ -164,9 +170,27 @@ export default function RegistrationPage() {
 
     } catch (err) {
       console.error('Registration error:', err);
-      setError('אירעה שגיאה בתהליך ההרשמה. אנא נסה שוב.');
+      setError(err.message || 'אירעה שגיאה בתהליך ההרשמה. אנא נסה שוב.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const markCouponAsUsed = async (code, userId) => {
+    try {
+      await fetch('/registration/api/mark-coupon-used', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          couponCode: code,
+          userId: userId
+        }),
+      });
+    } catch (error) {
+      console.error('Error marking coupon as used:', error);
+      // לא נעצור את התהליך בגלל זה
     }
   };
 
@@ -220,26 +244,6 @@ export default function RegistrationPage() {
               </div>
             </div>
           )}
-
-          {/* הודעת מצב הרצה */}
-          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6 mb-8">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-1" />
-              <div className="text-right">
-                <h3 className="font-bold text-yellow-800 mb-2">האתר בהרצה ניסיונית</h3>
-                <p className="text-yellow-700 mb-3">
-                  כרגע ההרשמה אפשרית רק באמצעות קוד קופון מיוחד
-                </p>
-                <button
-                  onClick={() => setShowCouponModal(true)}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-3 rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-2 mx-auto font-bold shadow-lg"
-                >
-                  <Gift className="h-5 w-5" />
-                  יש לי קוד קופון
-                </button>
-              </div>
-            </div>
-          </div>
   
           {error && (
             <div className="bg-red-50 text-red-600 rounded-lg mb-8">
@@ -251,11 +255,40 @@ export default function RegistrationPage() {
           )}
         </div>
   
-        {/* כרטיסי התכניות - באמצעות הקומפוננטה החדשה */}
-        <PlansDisplay
-  plansToShow={['Free Trial', 'Intensive', 'Premium']}
-  onPlanSelect={handlePlanSelection}
-/>
+        {/* כרטיסי התכניות - מוצללים בהרצה */}
+        <div className="relative">
+          {/* שכבת הצללה */}
+          <div className="absolute inset-0 bg-gray-900 bg-opacity-40 z-10 rounded-2xl flex items-center justify-center">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 text-center">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertCircle className="h-8 w-8 text-yellow-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                בקרוב!
+              </h3>
+              <p className="text-gray-600 mb-4">
+                המסלולים הללו יהיו זמינים בקרוב.
+                <br />
+                כרגע ניתן להצטרף רק באמצעות קוד קופון.
+              </p>
+              <button
+                onClick={() => setShowCouponModal(true)}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-3 mx-auto font-bold shadow-lg text-lg"
+              >
+                <Gift className="h-6 w-6" />
+                יש לי קוד קופון
+              </button>
+            </div>
+          </div>
+          
+          {/* כרטיסי התכניות - מוצללים */}
+          <div className="pointer-events-none blur-sm">
+            <PlansDisplay
+              plansToShow={['Free Trial', 'Intensive', 'Premium']}
+              onPlanSelect={handlePlanSelection}
+            />
+          </div>
+        </div>
   
         {isLoading && !showSuccessModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40">
