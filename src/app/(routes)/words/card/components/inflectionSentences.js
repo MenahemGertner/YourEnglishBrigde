@@ -1,18 +1,55 @@
 'use client'
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { ChevronDown, Book, PlayCircle } from 'lucide-react';
 import InflectionRenderer from "./InflectionRenderer";
 import partOfSpeechInflection from '../helpers/partOfSpeechInflection.js';
+import { getInflectionViewMode } from '@/lib/userPreferences';
+import { useSession } from 'next-auth/react';
 
 const InflectionSentences = ({ infl }) => {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSentenceId, setActiveSentenceId] = useState(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [viewMode, setViewMode] = useState('practice');
+  // קריאה מיידית מ-localStorage
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window !== 'undefined' && userId) {
+      const cached = localStorage.getItem(`inflection_view_mode_${userId}`);
+      if (cached && ['practice', 'default'].includes(cached)) {
+        return cached;
+      }
+    }
+    return 'practice'; // ברירת מחדל
+  });
+  
+  const [defaultMode, setDefaultMode] = useState(viewMode);
+  const [isLoadingDefault, setIsLoadingDefault] = useState(false);
+  
   const maxItems = 5;
   const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
   const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
   const [visibleTranslations, setVisibleTranslations] = useState({});
+
+  // טעינה מ-localStorage ברגע שיש userId
+  useEffect(() => {
+    if (!userId || typeof window === 'undefined') return;
+    
+    const cached = localStorage.getItem(`inflection_view_mode_${userId}`);
+    if (cached && ['practice', 'default'].includes(cached)) {
+      setViewMode(cached);
+      setDefaultMode(cached);
+    }
+    
+    // גם לסנכרן עם השרת ברקע
+    getInflectionViewMode(userId).then(mode => {
+      if (mode && mode !== cached) {
+        setViewMode(mode);
+        setDefaultMode(mode);
+      }
+    }).catch(err => console.error('Error syncing inflection mode:', err));
+  }, [userId]);
 
   // בדיקה שיש נתונים בפורמט החדש (מערך)
   const hasInflData = infl && Array.isArray(infl) && infl.length > 0;
@@ -25,7 +62,6 @@ const InflectionSentences = ({ infl }) => {
     if (!data || !Array.isArray(data)) return [];
     
     return data.map((item, index) => {
-      // קבל את פרטי ההטיה כולל התיאור
       const inflectionDetails = partOfSpeechInflection(item.ps);
       
       return {
@@ -34,13 +70,10 @@ const InflectionSentences = ({ infl }) => {
         inflec: inflectionDetails.abbreviation,
         translateInflection: item.tr,
         Inflections: item.ps,
-        // קח את המשפט הראשון מרשימת הדוגמאות אם קיים
         sentence: item.examples && item.examples.length > 0 ? item.examples[0].sen : '',
         translateSentence: item.examples && item.examples.length > 0 ? item.examples[0].trn : '',
         type: inflectionDetails.type,
-        // שמור את תיאור ההטיה
         inflectionDescription: inflectionDetails.description,
-        // שמור את כל הדוגמאות
         examples: item.examples || []
       };
     });
@@ -64,9 +97,7 @@ const InflectionSentences = ({ infl }) => {
   const goToNextInflection = () => {
     const currentIndex = inflItems.findIndex(item => item.id === activeSentenceId);
     
-    // Check if the next item would be outside currently visible items
     if (currentIndex + 1 >= visibleDefaultItems && currentIndex + 1 < inflItems.length) {
-      // Load more items before proceeding to next one
       loadMoreDefaultItems();
     }
     
@@ -77,13 +108,11 @@ const InflectionSentences = ({ infl }) => {
     }
   };
 
-  // Function to check if current inflection is the last one
   const isLastInflection = () => {
     const currentIndex = inflItems.findIndex(item => item.id === activeSentenceId);
     return currentIndex === inflItems.length - 1;
   };
 
-  // Function to toggle translation visibility
   const toggleTranslation = (translationId) => {
     setVisibleTranslations(prev => ({
       ...prev,
@@ -91,18 +120,22 @@ const InflectionSentences = ({ infl }) => {
     }));
   };
 
+  const handleDefaultChange = (newMode) => {
+    setDefaultMode(newMode);
+  };
+
   return (
     <div 
       className={`max-h-[75vh] window-content fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 rounded-lg bg-white shadow-xl overflow-auto ${
         viewMode === 'default' 
-          ? 'w-[85%] md:w-[380px]'  // Mobile-friendly width for default view
-          : 'w-[85%] md:w-[380px]'  // Consistent width for both mobile and desktop
+          ? 'w-[85%] md:w-[380px]'
+          : 'w-[85%] md:w-[380px]'
       }`}
       dir="ltr"
     >
       <div className="bg-gradient-to-r from-blue-400 to-purple-400 rounded-t-lg p-4 border-b border-blue-100 sticky top-0 z-10 flex justify-between items-center">
         <div className="flex items-center bg-white/20 rounded-lg">
-          {/* שינוי סדר הכפתורים - לימוד והבנה בצד שמאל */}
+          {/* כפתור להבין יותר - צד שמאל */}
           <button 
             onClick={() => setViewMode('default')}
             className={`px-2 py-1 text-sm rounded-l-md transition ${
@@ -114,7 +147,8 @@ const InflectionSentences = ({ infl }) => {
               <span>להבין יותר</span>
             </div>
           </button>
-          {/* משפטים ברצף בצד ימין */}
+
+          {/* כפתור משפטים ברצף - צד ימין */}
           <button 
             onClick={() => setViewMode('practice')}
             className={`px-2 py-1 text-sm rounded-r-md transition ${
@@ -136,7 +170,6 @@ const InflectionSentences = ({ infl }) => {
       </p>
 
       {viewMode === 'default' ? (
-        // מצב ברירת מחדל - הטיות עם משפטים
         <div className="p-4 relative" dir="ltr">
           <div>
             <InflectionRenderer
@@ -164,7 +197,6 @@ const InflectionSentences = ({ infl }) => {
           </div>
         </div>
       ) : (
-        // מצב תרגול - רק משפטים ברצף
         <div className="p-4 max-w-2xl mx-auto">
           <InflectionRenderer
             viewMode={viewMode}

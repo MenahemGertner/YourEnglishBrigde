@@ -1,12 +1,20 @@
 'use client'
 
-import { Target, BookOpen } from 'lucide-react';
+import { Target, BookOpen, FileText } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { getPracticeThreshold, updatePracticeThreshold, getStoryLevel, updateStoryLevel } from '@/lib/userPreferences';
+import { 
+  getPracticeThreshold, 
+  updatePracticeThreshold, 
+  getStoryLevel, 
+  updateStoryLevel,
+  getInflectionViewMode,
+  updateInflectionViewMode 
+} from '@/lib/userPreferences';
 
 export default function PersonalSettings({ userId, scrollToStoryLevel, onScrollComplete }) {
   const [practiceThreshold, setPracticeThreshold] = useState(25);
   const [storyLevel, setStoryLevel] = useState(3);
+  const [inflectionViewMode, setInflectionViewMode] = useState('practice');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState(null);
@@ -16,12 +24,14 @@ export default function PersonalSettings({ userId, scrollToStoryLevel, onScrollC
   useEffect(() => {
     async function loadSettings() {
       try {
-        const [threshold, level] = await Promise.all([
+        const [threshold, level, viewMode] = await Promise.all([
           getPracticeThreshold(userId),
-          getStoryLevel(userId)
+          getStoryLevel(userId),
+          getInflectionViewMode(userId)
         ]);
         setPracticeThreshold(threshold);
         setStoryLevel(level);
+        setInflectionViewMode(viewMode);
       } catch (error) {
         console.error('Error loading settings:', error);
       } finally {
@@ -34,7 +44,6 @@ export default function PersonalSettings({ userId, scrollToStoryLevel, onScrollC
   // גלילה לאזור רמת הסיפור
   useEffect(() => {
     if (scrollToStoryLevel && !isLoading && storyLevelRef.current) {
-      // מחכים קצת יותר כדי שה-Drawer יסיים את האנימציה
       const timer = setTimeout(() => {
         storyLevelRef.current?.scrollIntoView({ 
           behavior: 'smooth', 
@@ -79,9 +88,30 @@ export default function PersonalSettings({ userId, scrollToStoryLevel, onScrollC
       
       if (result.success) {
         setStoryLevel(newLevel);
-        // עדכון גם ב-localStorage
         localStorage.setItem(`story_level_${userId}`, newLevel.toString());
         setMessage({ type: 'success', text: 'רמת הסיפור עודכנה בהצלחה!' });
+      } else {
+        setMessage({ type: 'error', text: result.error || 'שגיאה בשמירת ההגדרות' });
+      }
+    } catch (error) {
+      setMessage({ type: 'error', text: 'שגיאה בשמירת ההגדרות' });
+    } finally {
+      setIsSaving(false);
+      setTimeout(() => setMessage(null), 3000);
+    }
+  };
+
+  // שמירת מצב תצוגת הטיות
+  const handleSaveInflectionMode = async (newMode) => {
+    setIsSaving(true);
+    setMessage(null);
+
+    try {
+      const result = await updateInflectionViewMode(userId, newMode);
+      
+      if (result.success) {
+        setInflectionViewMode(newMode);
+        setMessage({ type: 'success', text: 'מצב תצוגת ההטיות עודכן בהצלחה!' });
       } else {
         setMessage({ type: 'error', text: result.error || 'שגיאה בשמירת ההגדרות' });
       }
@@ -231,7 +261,94 @@ export default function PersonalSettings({ userId, scrollToStoryLevel, onScrollC
         )}
       </section>
 
-      {/* הגדרות רמת סיפור - עם ref לגלילה */}
+      {/* הגדרות תצוגת הטיות - חדש! */}
+      <section className="bg-white border border-gray-200 rounded-lg p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <FileText className="w-5 h-5 text-indigo-600" />
+          <h3 className="text-lg font-semibold text-gray-900">תצוגת הטיות ומשפטים</h3>
+        </div>
+        
+        {isLoading ? (
+          <div className="text-center py-4 text-gray-500">טוען...</div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                מצב תצוגה מועדף
+              </label>
+              <p className="text-xs text-gray-500 mb-4">
+                בחר איך תרצה לראות את ההטיות והמשפטים כברירת מחדל כשאתה פותח כרטיס מילה.
+              </p>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleSaveInflectionMode('practice')}
+                  disabled={isSaving}
+                  className={`
+                    w-full text-right px-5 py-4 rounded-lg border-2 transition-all
+                    ${inflectionViewMode === 'practice'
+                      ? 'border-indigo-600 bg-indigo-50'
+                      : 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50'
+                    }
+                    ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className={`font-semibold mb-1 ${
+                        inflectionViewMode === 'practice' ? 'text-indigo-700' : 'text-gray-900'
+                      }`}>
+                        משפטים ברצף
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        תרגול מהיר ואינטנסיבי עם משפטים רצופים
+                      </div>
+                    </div>
+                    {inflectionViewMode === 'practice' && (
+                      <div className="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => handleSaveInflectionMode('default')}
+                  disabled={isSaving}
+                  className={`
+                    w-full text-right px-5 py-4 rounded-lg border-2 transition-all
+                    ${inflectionViewMode === 'default'
+                      ? 'border-indigo-600 bg-indigo-50'
+                      : 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50'
+                    }
+                    ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className={`font-semibold mb-1 ${
+                        inflectionViewMode === 'default' ? 'text-indigo-700' : 'text-gray-900'
+                      }`}>
+                        להבין יותר
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        למידה מעמיקה עם הסברים והטיות מפורטות
+                      </div>
+                    </div>
+                    {inflectionViewMode === 'default' && (
+                      <div className="w-5 h-5 bg-indigo-600 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* הגדרות רמת סיפור */}
       <section 
         ref={storyLevelRef}
         className="bg-white border border-gray-200 rounded-lg p-5 scroll-mt-4"
