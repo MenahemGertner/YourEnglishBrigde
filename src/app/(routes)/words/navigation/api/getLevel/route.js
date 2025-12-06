@@ -2,6 +2,8 @@ import { supabaseAdmin } from '@/lib/db/supabase';
 import { requireAuth } from '@/utils/auth-helpers';
 import { NextResponse } from 'next/server';
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request) {
   try {
     // אימות פשוט - אם לא מחובר, מחזיר level: null
