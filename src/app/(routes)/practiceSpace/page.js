@@ -1,4 +1,6 @@
 // app/practiceSpace/page.js - Server Component חדש
+export const dynamic = 'force-dynamic';
+
 import { getUserWordsData } from './services/wordsService';
 import PracticeSpaceClient from './components/practiceSpaceClient';
 import ProContent from '@/components/auth/ProContent';
