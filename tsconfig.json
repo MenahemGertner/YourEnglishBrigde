@@ -16,7 +16,7 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "plugins": [
       {
         "name": "next"
@@ -29,7 +29,12 @@
     "**/*.js",
     "**/*.jsx",
     "middleware.js",
-    "src/hooks/openWindow.js", "src/app/api/sendWords", "scripts/generate-coupons.mjs", "scripts/exportAllWords.mjs"],
+    "src/hooks/openWindow.js",
+    "src/app/api/sendWords",
+    "scripts/generate-coupons.mjs",
+    "scripts/exportAllWords.mjs",
+    ".next/dev/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]
