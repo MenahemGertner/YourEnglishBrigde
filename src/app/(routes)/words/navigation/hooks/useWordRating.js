@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { ColorContext } from '../components/colorContext'
-import { updateWordAndGetNext } from '../actions/updateWordAndGetNext' // הפונקציה החדשה!
+import { updateWordAndGetNext } from '../actions/updateWordAndGetNext'
 import { getStartingIndexForCategory } from '../helpers/reviewHelperFunctions'
+
+const STORAGE_KEY = 'practiceProgress'
 
 export function useWordRating({ index, category }) {
   const router = useRouter()
@@ -21,6 +23,32 @@ export function useWordRating({ index, category }) {
     currentCategory: null
   })
 
+  // טעינת הנתונים מ-localStorage בטעינה ראשונית
+  const [practiceProgress, setPracticeProgress] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY)
+        if (stored) {
+          return JSON.parse(stored)
+        }
+      } catch (err) {
+        console.error('Error loading practiceProgress from localStorage:', err)
+      }
+    }
+    return { counter: 0, threshold: 25 }
+  })
+
+  // שמירת הנתונים ב-localStorage כל פעם שהם משתנים
+  useEffect(() => {
+    if (typeof window !== 'undefined' && practiceProgress) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(practiceProgress))
+      } catch (err) {
+        console.error('Error saving practiceProgress to localStorage:', err)
+      }
+    }
+  }, [practiceProgress])
+
   const handleNextCategory = async () => {
     if (navigationState.nextCategory) {
       const startingIndex = getStartingIndexForCategory(navigationState.nextCategory)
@@ -28,7 +56,7 @@ export function useWordRating({ index, category }) {
       setNavigationState({ showMessage: false })
     }
   }
-const [practiceProgress, setPracticeProgress] = useState({ counter: 0, threshold: 25 })
+
   const handleWordRating = async (level) => {
     if (!session?.user?.id) {
       setError('נא להתחבר כדי להמשיך')
@@ -49,20 +77,20 @@ const [practiceProgress, setPracticeProgress] = useState({ counter: 0, threshold
 
       // **קריאה אחת בלבד למסד הנתונים!**
       const result = await updateWordAndGetNext(
-    session.user.id,
-    index,
-    level,
-    category
-  )
+        session.user.id,
+        index,
+        level,
+        category
+      )
 
-  if (!result?.success) {
-    throw new Error(result?.error || 'שגיאה בעדכון המילה')
-  }
+      if (!result?.success) {
+        throw new Error(result?.error || 'שגיאה בעדכון המילה')
+      }
 
-  // עדכון ההתקדמות מהתשובה
-  if (result.practiceProgress) {
-    setPracticeProgress(result.practiceProgress)
-  }
+      // עדכון ההתקדמות מהתשובה (יישמר אוטומטית ב-localStorage דרך useEffect)
+      if (result.practiceProgress) {
+        setPracticeProgress(result.practiceProgress)
+      }
 
       // המתנה לסיום האנימציה (אם עדיין רצה)
       await colorPromise
