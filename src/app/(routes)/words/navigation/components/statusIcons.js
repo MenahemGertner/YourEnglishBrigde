@@ -1,6 +1,6 @@
 'use client'
 
-import { CircleDot, Info, ArrowRight } from 'lucide-react'
+import { CircleDot, Info, ArrowRight, Loader2 } from 'lucide-react'
 import { usePreviousNavigation } from '../hooks/usePreviousNavigation'
 import Tooltip from '@/components/features/Tooltip'
 import IconData from '@/lib/data/ColorMap'
@@ -16,8 +16,23 @@ const StatusIcons = ({
 }) => {
   const { handlePrevious, isPrevLoading, message } = usePreviousNavigation()
   
+  // 🔒 חסימת כפתורים כאשר טוענים תרגול
+  const isDisabled = isLoading || navigationState.isLoadingPractice
+  
   return (
     <>
+      {/* 🎨 הודעת טעינה לתרגול */}
+      {navigationState.isLoadingPractice && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 shadow-xl flex flex-col items-center gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <p className="text-lg font-medium text-gray-800">
+              {navigationState.message || 'ממשיכים לתרגול...'}
+            </p>
+          </div>
+        </div>
+      )}
+      
       <div className="flex flex-col gap-2 p-2 sm:p-4">
         {error && (
           <div className="text-red-600 text-xs sm:text-sm text-center mb-2">
@@ -32,10 +47,10 @@ const StatusIcons = ({
         <div className="flex gap-2 sm:gap-4 justify-between items-center">
           <button
             onClick={handlePrevious}
-            disabled={isPrevLoading}
+            disabled={isPrevLoading || isDisabled}
             title="למילה האחרונה"
             className={`p-1 sm:p-2 duration-300 hover:scale-125 ${
-              isPrevLoading ? 'opacity-50 cursor-not-allowed' : ''
+              (isPrevLoading || isDisabled) ? 'opacity-50 cursor-not-allowed' : ''
             }`}
           >
             <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 text-blue-900/80" />
@@ -51,7 +66,7 @@ const StatusIcons = ({
                 </Tooltip>
                                 
                 <button
-                  disabled={isLoading}
+                  disabled={isDisabled}
                   onClick={() => handleWordRating(icon.level)}
                   className={`
                     p-1 sm:p-2
@@ -60,7 +75,7 @@ const StatusIcons = ({
                     transform hover:scale-110 hover:shadow-lg
                     active:scale-95
                     focus:outline-none focus:ring-2 focus:ring-opacity-50 focus:ring-blue-500
-                    ${isLoading ? 'opacity-50 cursor-not-allowed' : 'shadow-md'}
+                    ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'shadow-md'}
                   `}
                 >
                   <div className="relative">

@@ -11,7 +11,7 @@ import SequenceReset from './personalGuide/components/sequenceReset';
 import Drawer from '@/components/dashboard/drawer';
 import PersonalSettings from '@/components/dashboard/components/personalSettings';
 import { Settings } from 'lucide-react';
-import { useWordRating } from './hooks/useWordRating';
+import { useWordRating } from './hooks/useWordRating.v2';
 
 // NavigationWrapper.js
 export default function NavigationWrapper({ index, category, categorySize }) {
