@@ -384,7 +384,6 @@ export async function POST(req) {
       .from('subscription_history')
       .insert({
         user_id: userIdFinal,
-        subscription_id: newSubscription.id,
         action_type: actionType,
         plan_type: selectedPlan.type,
         amount_paid: amountPaid,
