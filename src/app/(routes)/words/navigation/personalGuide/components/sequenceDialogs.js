@@ -14,12 +14,12 @@ export function LevelResetDialog({ isOpen, onClose, onLevelReset, currentLevelIn
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   const levelNames = ['רמה 1', 'רמה 2', 'רמה 3', 'רמה 4', 'רמה 5'];
   
   const canGoPrevious = currentLevelIndex > 0;
   const canGoNext = currentLevelIndex < 4;
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
@@ -113,6 +113,7 @@ export function PositionDialog({ isOpen, onClose, onSubmit, position, setPositio
           value={position}
           onChange={(e) => setPosition(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded-md mb-6 text-right"
+          autoFocus
         />
         <div className="flex justify-end space-x-4">
           <button
