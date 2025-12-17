@@ -22,6 +22,9 @@ export default function RegistrationPage() {
   const [couponError, setCouponError] = useState('');
   const [validatingCoupon, setValidatingCoupon] = useState(false);
 
+  // State for terms agreement
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+
   useEffect(() => {
     const email = searchParams.get('email');
     const name = searchParams.get('name');
@@ -39,6 +42,12 @@ export default function RegistrationPage() {
   }, [searchParams]);
 
   const handlePlanSelection = async (planId) => {
+    // בדיקה שהמשתמש אישר את התנאים
+    if (!agreedToTerms) {
+      setError('יש לאשר את תנאי השימוש ומדיניות הפרטיות לפני המשך ההרשמה');
+      return;
+    }
+
     // אם זה מסלול קופון - פתיחת מודל הקופון
     if (planId === 'Coupon') {
       setShowCouponModal(true);
@@ -244,6 +253,46 @@ export default function RegistrationPage() {
               </div>
             </div>
           )}
+
+          {/* Terms Agreement Checkbox */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6 mb-8 shadow-sm">
+            <label className="flex items-start gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => {
+                  setAgreedToTerms(e.target.checked);
+                  if (e.target.checked) {
+                    setError(''); // מנקה שגיאות קודמות כשמאשרים
+                  }
+                }}
+                className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              />
+              <span className="text-right text-gray-700 group-hover:text-gray-900 transition-colors">
+                אני מאשר/ת שקראתי והסכמתי ל
+                <a
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 underline font-medium mx-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  תנאי השימוש
+                </a>
+                ול
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-700 underline font-medium mx-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  מדיניות הפרטיות
+                </a>
+                של האתר.
+              </span>
+            </label>
+          </div>
   
           {error && (
             <div className="bg-red-50 text-red-600 rounded-lg mb-8">
@@ -272,7 +321,13 @@ export default function RegistrationPage() {
                 כרגע ניתן להצטרף רק באמצעות קוד קופון.
               </p>
               <button
-                onClick={() => setShowCouponModal(true)}
+                onClick={() => {
+                  if (!agreedToTerms) {
+                    setError('יש לאשר את תנאי השימוש ומדיניות הפרטיות לפני המשך ההרשמה');
+                    return;
+                  }
+                  setShowCouponModal(true);
+                }}
                 className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-4 rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all flex items-center gap-3 mx-auto font-bold shadow-lg text-lg"
               >
                 <Gift className="h-6 w-6" />
