@@ -40,6 +40,17 @@ const CheckYourLevel = () => {
     return Math.max(successProgress, failureProgress);
   };
 
+  // פונקציה לטיפול בבחירת תשובה עם תיקון ה-hover state
+  const handleAnswerClick = (index, event) => {
+    // קריאה לפונקציה המקורית
+    handleAnswerSelection(index);
+    
+    // הסרת הפוקוס מהכפתור כדי למנוע hover state תקוע במובייל
+    if (event.currentTarget) {
+      event.currentTarget.blur();
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4">
       <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -84,7 +95,7 @@ const CheckYourLevel = () => {
                   {currentQuestion.options.map((option, index) => (
                     <button
                       key={index}
-                      onClick={() => handleAnswerSelection(index)}
+                      onClick={(e) => handleAnswerClick(index, e)}
                       className="w-full text-left p-3 bg-white border border-gray-300 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 ease-in-out text-gray-700 hover:text-blue-700 shadow-sm hover:shadow-md"
                       dir="ltr"
                     >
