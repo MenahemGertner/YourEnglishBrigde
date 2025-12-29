@@ -8,7 +8,7 @@ export default function ResultsSummary({ results, onPlayAgain, onNextLevel, onBa
   const [saveData, setSaveData] = useState(null);
   const [levelUnlocked, setLevelUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-const hasSavedRef = useRef(false);
+  const hasSavedRef = useRef(false);
 
   const rating = getRating(results.accuracy, results.livesLeft, results.maxLives);
   const finalScoreData = calculateFinalScore(
@@ -22,25 +22,24 @@ const hasSavedRef = useRef(false);
   const nextLevelExists = getNextLevel(results.levelId) !== null;
 
   useEffect(() => {
-  if (hasSavedRef.current) return; // ⛔️ חשוב
-  hasSavedRef.current = true;
+    if (hasSavedRef.current) return; // ⛔️ חשוב
+    hasSavedRef.current = true;
 
-  const saved = saveLevelResults(results.levelId, {
-    score: finalScoreData.finalScore,
-    accuracy: results.accuracy,
-    levelCompleted: results.levelCompleted,
-  });
+    const saved = saveLevelResults(results.levelId, {
+      score: finalScoreData.finalScore,
+      accuracy: results.accuracy,
+      levelCompleted: results.levelCompleted,
+    });
 
-  setSaveData(saved);
+    setSaveData(saved);
 
-  if (canUnlockNext && nextLevelExists) {
-    const unlocked = unlockNextLevel(results.levelId);
-    setLevelUnlocked(unlocked);
-  }
+    if (canUnlockNext && nextLevelExists) {
+      const unlocked = unlockNextLevel(results.levelId);
+      setLevelUnlocked(unlocked);
+    }
 
-  setIsLoading(false);
-}, []); // ⬅️ ריק בכוונה
-
+    setIsLoading(false);
+  }, []); // ⬅️ ריק בכוונה
 
   // Show loading while saving
   if (isLoading) {
@@ -66,12 +65,23 @@ const hasSavedRef = useRef(false);
         </div>
       )}
 
-      {/* Level Unlocked Banner */}
-      {levelUnlocked && (
+      {/* ✅ תיקון: Level Unlocked Banner - רק אם המשחק הושלם */}
+      {levelUnlocked && results.levelCompleted && (
         <div className="bg-gradient-to-r from-green-400 to-blue-400 text-white rounded-xl p-4 mb-6 text-center">
           <div className="text-3xl mb-2">🔓</div>
           <div className="font-bold text-xl">רמה חדשה נפתחה!</div>
           <div className="text-sm">רמה {results.levelId + 1} זמינה עכשיו!</div>
+        </div>
+      )}
+
+      {/* ✅ הוספה: Timeout Message - אם הזמן אזל */}
+      {!results.levelCompleted && results.incompleteSentences > 0 && (
+        <div className="bg-gradient-to-r from-orange-400 to-red-400 text-white rounded-xl p-4 mb-6 text-center">
+          <div className="text-3xl mb-2">⏱️</div>
+          <div className="font-bold text-xl">הזמן אזל!</div>
+          <div className="text-sm">
+            לא הספקת לענות על {results.incompleteSentences} משפטים
+          </div>
         </div>
       )}
 
@@ -194,6 +204,7 @@ const hasSavedRef = useRef(false);
             <div>results.accuracy: {results.accuracy}</div>
             <div>results.score (base): {results.score}</div>
             <div>finalScore (with bonuses): {finalScoreData.finalScore}</div>
+            <div>results.incompleteSentences: {results.incompleteSentences || 0}</div>
             {saveData && (
               <>
                 <div>---</div>
@@ -204,7 +215,7 @@ const hasSavedRef = useRef(false);
           </div>
         )}
 
-        {canUnlockNext && nextLevelExists && onNextLevel && (
+        {canUnlockNext && nextLevelExists && onNextLevel && results.levelCompleted && (
           <button
             onClick={onNextLevel}
             className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"

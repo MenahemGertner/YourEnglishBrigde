@@ -40,6 +40,7 @@ export const initializeGame = (levelId) => {
     correctAnswers: 0,
     wrongAnswers: 0,
     totalAttempts: 0,
+    incompleteSentences: 0, // ✅ שדה חדש - משפטים שלא הושלמו בגלל timeout
     
     // Timer
     timeRemaining: level.initialTime,
@@ -239,13 +240,20 @@ export const updateTimer = (gameState, deltaTime) => {
 
   const newTime = Math.max(0, gameState.timeRemaining - deltaTime);
 
-  // Check if time ran out
+  // ✅ תיקון: Check if time ran out
   if (newTime <= 0) {
+    // חשב כמה משפטים נותרו
+    const remainingSentences = gameState.totalSentences - gameState.completedSentences;
+    
     return {
       ...gameState,
       timeRemaining: 0,
       isPlaying: false,
       isGameOver: true,
+      // ✅ עדכן totalAttempts לצורך חישוב דיוק נכון
+      // אבל לא wrongAnswers (כי המשתמש לא טעה, פשוט לא הספיק)
+      totalAttempts: gameState.totalAttempts + remainingSentences,
+      incompleteSentences: remainingSentences,
     };
   }
 
@@ -284,6 +292,10 @@ export const getFinalResults = (gameState) => {
     totalSentences: gameState.totalSentences,
     levelCompleted,
     lives: gameState.lives,
+    totalAttempts: gameState.totalAttempts,
+    correctAnswers: gameState.correctAnswers,
+    accuracy: accuracy + '%',
+    incompleteSentences: gameState.incompleteSentences,
   }); // Debug
 
   return {
@@ -298,5 +310,6 @@ export const getFinalResults = (gameState) => {
     maxLives: gameState.maxLives,
     mistakes: gameState.mistakes,
     timeUsed: gameState.maxTime - gameState.timeRemaining,
+    incompleteSentences: gameState.incompleteSentences, // ✅ מידע נוסף
   };
 };

@@ -32,8 +32,8 @@ export const calculateScore = (basePoints, timeLeft, maxTime) => {
 export const calculateFinalScore = (correctAnswers, totalScore, livesLeft, totalLives, levelCompleted) => {
   let finalScore = totalScore;
 
-  // Lives bonus - for each life left
-  if (livesLeft > 0) {
+  // ✅ תיקון: Lives bonus - only if level completed
+  if (livesLeft > 0 && levelCompleted) {
     const livesBonus = livesLeft * 50;
     finalScore += livesBonus;
   }
@@ -43,16 +43,16 @@ export const calculateFinalScore = (correctAnswers, totalScore, livesLeft, total
     finalScore += 200;
   }
 
-  // Perfect game bonus (no mistakes)
-  if (livesLeft === totalLives) {
+  // ✅ תיקון: Perfect game bonus (no mistakes AND level completed)
+  if (livesLeft === totalLives && levelCompleted) {
     finalScore += 300;
   }
 
   return {
     baseScore: totalScore,
-    livesBonus: livesLeft * 50,
+    livesBonus: (livesLeft > 0 && levelCompleted) ? livesLeft * 50 : 0,
     completionBonus: levelCompleted ? 200 : 0,
-    perfectBonus: (livesLeft === totalLives) ? 300 : 0,
+    perfectBonus: (livesLeft === totalLives && levelCompleted) ? 300 : 0,
     finalScore
   };
 };

@@ -2,8 +2,9 @@
 
 import { getExplanation } from '../lib/explanations';
 
-export default function MistakesReview({ mistakes }) {
-  if (!mistakes || mistakes.length === 0) {
+export default function MistakesReview({ mistakes, levelCompleted }) {
+  // ✅ תיקון: הצג "מושלם" רק אם אין טעויות והמשחק הושלם
+  if ((!mistakes || mistakes.length === 0) && levelCompleted) {
     return (
       <div className="bg-green-50 border-2 border-green-500 rounded-xl p-6 text-center">
         <div className="text-5xl mb-3">🎉</div>
@@ -11,6 +12,11 @@ export default function MistakesReview({ mistakes }) {
         <p className="text-gray-700">לא עשית אף טעות במשחק הזה!</p>
       </div>
     );
+  }
+
+  // ✅ אם אין טעויות אבל המשחק לא הושלם - אל תציג כלום
+  if (!mistakes || mistakes.length === 0) {
+    return null;
   }
 
   return (
