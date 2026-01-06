@@ -30,8 +30,10 @@ export async function POST(request) {
 async function generateStoryWithGPT(words, level = 3, retryCount = 0) {
   const MAX_RETRIES = 2;
   const OPENAI_TIMEOUT = 20000; // 20 שניות
+  const firstRange = level + 1
+    const secondRange = level + 2
 
-  const prompt = createStoryPrompt(words, level);
+  const prompt = createStoryPrompt(words, level, firstRange, secondRange);
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), OPENAI_TIMEOUT);
 
@@ -69,7 +71,7 @@ async function generateStoryWithGPT(words, level = 3, retryCount = 0) {
 
     const data = await response.json();
     const storyText = data.choices[0].message.content;
-
+    
     return parseStoryResponse(storyText);
 
   } catch (error) {
@@ -85,17 +87,17 @@ async function generateStoryWithGPT(words, level = 3, retryCount = 0) {
   }
 }
 
-function createStoryPrompt(words, level) {
+function createStoryPrompt(words, level, firstRange, secondRange) {
   const wordsList = words.join(', ');
 
-  return `Write a short, friendly paragraph (5–6 sentences) in English.
+  return `Write a short, friendly paragraph (${firstRange}–${secondRange} sentences) in English.
 
 SPEAKER'S VOICE: Imagine this is a friendly English teacher talking to a student. Keep the tone warm and personal.
 
 REQUIREMENTS:
 1. The paragraph should feel like someone is sharing a small story or thought with the learner.
 2. Assuming level 1 is very basic English and level 5 is very advanced English, write the story at level ${level}.
-3. Gently include 3–5 words from the following list, or their inflections (ed, ing, est, etc), if they fit naturally: ${wordsList}
+3. Gently include ${firstRange}–${secondRange} words from the following list, or their inflections (ed, ing, est, etc), if they fit naturally: ${wordsList}
 4. After the paragraph, provide a sentence-by-sentence Hebrew translation. Focus on simultaneous and natural translation that captures the meaning and context.
 5. Return ONLY valid JSON, no explanations.
 
