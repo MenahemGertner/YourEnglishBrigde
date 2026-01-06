@@ -27,7 +27,7 @@ const InflectionSentences = ({ infl }) => {
   const [defaultMode, setDefaultMode] = useState(viewMode);
   const [isLoadingDefault, setIsLoadingDefault] = useState(false);
   
-  const maxItems = 5;
+  const maxItems = 3;
   const [visibleDefaultItems, setVisibleDefaultItems] = useState(maxItems);
   const [visiblePracticeItems, setVisiblePracticeItems] = useState(maxItems);
   const [visibleTranslations, setVisibleTranslations] = useState({});

@@ -25,27 +25,34 @@ class AudioCacheManager {
   }
 
   async init() {
-    try {
-      // בדיקת תמיכה ב-Persistent Cache
-      if (this.persistentCacheEnabled) {
-        this.persistentCacheSupported = 'caches' in window;
-        if (this.persistentCacheSupported) {
-          await this.cleanExpiredPersistent();
-        }
-      }
-      
-      // ניקוי Memory Cache מפריטים פגי תוקף
-      this.cleanExpiredMemory();
-      
-      console.log('AudioCacheManager initialized', {
-        persistentSupported: this.persistentCacheSupported,
-        memoryItems: this.memoryCache.size
-      });
-    } catch (error) {
-      console.warn('AudioCache init failed:', error);
-      this.stats.errors++;
+  try {
+    // ✅ בדיקה אם אנחנו בצד הלקוח
+    if (typeof window === 'undefined') {
+      this.persistentCacheSupported = false;
+      console.log('AudioCacheManager: Running on server, skipping initialization');
+      return;
     }
+
+    // בדיקת תמיכה ב-Persistent Cache
+    if (this.persistentCacheEnabled) {
+      this.persistentCacheSupported = 'caches' in window;
+      if (this.persistentCacheSupported) {
+        await this.cleanExpiredPersistent();
+      }
+    }
+    
+    // ניקוי Memory Cache מפריטים פגי תוקף
+    this.cleanExpiredMemory();
+    
+    console.log('AudioCacheManager initialized', {
+      persistentSupported: this.persistentCacheSupported,
+      memoryItems: this.memoryCache.size
+    });
+  } catch (error) {
+    console.warn('AudioCache init failed:', error);
+    this.stats.errors++;
   }
+}
 
   // בדיקת quota של הדפדפן
   async checkStorageQuota() {

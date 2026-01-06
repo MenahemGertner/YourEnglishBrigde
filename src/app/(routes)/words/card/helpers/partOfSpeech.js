@@ -1,5 +1,4 @@
 import Tooltip from '@/components/features/Tooltip';
-import Link from "next/link";
 
 export const partOfSpeechMap = {
     'V': {
@@ -136,29 +135,29 @@ const PartOfSpeech = ({
         
         // חישוב נקודות לטקסט בכל חלק
         const textN = {
-            x: centerX + (radius * textDistanceFactor) * Math.cos(55 * Math.PI / 180),
-            y: centerY + (radius * textDistanceFactor) * Math.sin(55 * Math.PI / 180)
-        };
-        
-        const textD = { // D עבור Adverb במקום Adv
-            x: centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 4) * Math.PI / 180),
-            y: centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 4) * Math.PI / 180)
-        };
-        
-        const textV = {
-            x: centerX + (radius * textDistanceFactor) * Math.cos((55 + 72) * Math.PI / 180),
-            y: centerY + (radius * textDistanceFactor) * Math.sin((55 + 72) * Math.PI / 180)
-        };
-        
-        const textF = {
-            x: centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 2) * Math.PI / 180),
-            y: centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 2) * Math.PI / 180)
-        };
-        
-        const textA = {
-            x: centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 3) * Math.PI / 180),
-            y: centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 3) * Math.PI / 180)
-        };
+    x: Math.round((centerX + (radius * textDistanceFactor) * Math.cos(55 * Math.PI / 180)) * 100) / 100,
+    y: Math.round((centerY + (radius * textDistanceFactor) * Math.sin(55 * Math.PI / 180)) * 100) / 100
+};
+
+const textD = { // D עבור Adverb במקום Adv
+    x: Math.round((centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 4) * Math.PI / 180)) * 100) / 100,
+    y: Math.round((centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 4) * Math.PI / 180)) * 100) / 100
+};
+
+const textV = {
+    x: Math.round((centerX + (radius * textDistanceFactor) * Math.cos((55 + 72) * Math.PI / 180)) * 100) / 100,
+    y: Math.round((centerY + (radius * textDistanceFactor) * Math.sin((55 + 72) * Math.PI / 180)) * 100) / 100
+};
+
+const textF = {
+    x: Math.round((centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 2) * Math.PI / 180)) * 100) / 100,
+    y: Math.round((centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 2) * Math.PI / 180)) * 100) / 100
+};
+
+const textA = {
+    x: Math.round((centerX + (radius * textDistanceFactor) * Math.cos((55 + 72 * 3) * Math.PI / 180)) * 100) / 100,
+    y: Math.round((centerY + (radius * textDistanceFactor) * Math.sin((55 + 72 * 3) * Math.PI / 180)) * 100) / 100
+};
         
         return (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
