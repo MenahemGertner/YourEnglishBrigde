@@ -9,14 +9,14 @@ import Tooltip from '@/components/features/Tooltip';
 const ChallengingWords = ({ challengingWords, wordTranslations }) => {
 
     // בלי loading ו-error handling - הכל מגיע מוכן מהServer Component
-    const columns = [4, 3, 2]
+    const columns = [4, 2]
         .map(level => {
             const iconData = IconData.find(icon => icon.level === level);
             return {
                 level,
                 color: iconData.color,
                 title: level === 4 ? "מילים מאתגרות" :
-                       level === 3 ? "מילים בינוניות" :
+                    //    level === 3 ? "מילים בינוניות" :
                                     "מילים קלות",
                 words: challengingWords[`level${level}`]
             };

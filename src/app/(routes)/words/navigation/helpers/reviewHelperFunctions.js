@@ -1,6 +1,6 @@
 export const intervals = { 
       2: 40,
-      3: 15, 
+      // 3: 15, 
       4: 7 
     };
     
