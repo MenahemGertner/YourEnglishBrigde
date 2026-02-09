@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import AudioButton from '@/components/features/AudioButton';
 import Tooltip from '@/components/features/Tooltip';
@@ -53,8 +53,8 @@ const Reading = ({ words, inflections, onPracticeCompleted, userId }) => {
         loadUserPreferredLevel();
     }, [userId]);
 
-    // Generate story
-    const generateStory = async () => {
+    // ✅ Generate story - עטוף ב-useCallback
+    const generateStory = useCallback(async () => {
         if (!words?.length || storyLevel === null) return;
 
         setIsGenerating(true);
@@ -73,10 +73,10 @@ const Reading = ({ words, inflections, onPracticeCompleted, userId }) => {
         } finally {
             setIsGenerating(false);
         }
-    };
+    }, [words, storyLevel]);
 
-    // יצירת השאלה
-    const generateQuestion = async (storyData) => {
+    // ✅ יצירת השאלה - עטוף ב-useCallback
+    const generateQuestion = useCallback(async (storyData) => {
         setIsGeneratingQuestion(true);
         setQuestionError(null);
         
@@ -99,47 +99,43 @@ const Reading = ({ words, inflections, onPracticeCompleted, userId }) => {
         } finally {
             setIsGeneratingQuestion(false);
         }
-    };
+    }, []);
 
-    // Auto-generate on mount
+    // ✅ Auto-generate on mount
     useEffect(() => {
         if (!isLoadingLevel && !hasGenerated && words?.length > 0 && storyLevel !== null) {
             generateStory();
         }
-    }, [isLoadingLevel, hasGenerated, words, storyLevel]);
+    }, [isLoadingLevel, hasGenerated, words, storyLevel, generateStory]);
 
-    // יצירת השאלה כאשר הסיפור מוכן
+    // ✅ יצירת השאלה כאשר הסיפור מוכן
     useEffect(() => {
-        if (sentences.length > 0 && !question && !isGeneratingQuestion) {
+        if (sentences.length > 0 && !question && !isGeneratingQuestion && !questionError) {
             generateQuestion({ sentences });
         }
-    }, [sentences, question, isGeneratingQuestion]);
+    }, [sentences, question, isGeneratingQuestion, questionError, generateQuestion]);
 
-    // Regenerate story when level changes
-    useEffect(() => {
-        if (hasGenerated && storyLevel !== null) {
-            generateStory();
-        }
-    }, [storyLevel]);
-
-    // Regenerate story
+    // ✅ Regenerate story - פונקציה רגילה (לא useCallback כי היא לא ב-dependency)
     const handleRegenerateStory = () => {
         setHasGenerated(false);
+        setSentences([]);
+        setQuestion(null);
         generateStory();
     };
 
-    // ✨ הפתרון: טיפול בשינוי רמה - רק ב-state, БЕЗ localStorage!
+    // ✅ טיפול בשינוי רמה
     const handleLevelChange = (newLevel) => {
-        // עדכון ה-state בלבד - זו בחירה זמנית רק לסשן הנוכחי
         setStoryLevel(newLevel);
         
         // אם כבר יש סיפור, נגנרט מחדש
         if (hasGenerated) {
             setHasGenerated(false);
+            setSentences([]);
+            setQuestion(null);
         }
     };
 
-    // מעבר לשאלה
+    // ✅ מעבר לשאלה
     const handleShowComprehension = () => {
         setShowComprehension(true);
     };

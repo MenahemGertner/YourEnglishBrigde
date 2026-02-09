@@ -12,6 +12,16 @@ import { ChevronDown, ChevronLeft, Book, PenTool, Headphones } from 'lucide-reac
 
 const PracticeSpaceClient = ({ wordsData }) => {
     const { data: session } = useSession();
+    if (!wordsData) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    <p className="mt-2 text-gray-600">טוען...</p>
+                </div>
+            </div>
+        );
+    }
     const [isVisible, setIsVisible] = useState(false);
     const [activeTab, setActiveTab] = useState('reading');
     
