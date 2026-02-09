@@ -1,14 +1,15 @@
+// app/practiceSpace/services/wordsService.js - גרסה מהירה
+
 import { supabaseAdmin } from '@/lib/db/supabase';
 import { requireAuth } from '@/utils/auth-helpers';
-import { getWordByIndex } from '@/lib/db/getWordByIndex';
+import { getWordsByIndices } from '@/lib/db/getWordByIndex'; // ← שים לב לשינוי!
 
 export async function getUserWordsData() {
   try {
-    // אימות פשוט - מחזיר את הsession עם user.id
     const session = await requireAuth();
     const userId = session.user.id;
 
-    // Get word indices and their levels
+    // 1️⃣ קבל את רשימת המילים של המשתמש
     const { data: userWords, error: wordsError } = await supabaseAdmin
       .from('user_words')
       .select('word_id, level')
@@ -19,7 +20,7 @@ export async function getUserWordsData() {
       throw new Error('שגיאה בשליפת המילים');
     }
 
-    // Organize indices by level
+    // 2️⃣ ארגן לפי רמות
     const wordIndicesByLevel = {
       level2: [],
       level3: [],
@@ -32,44 +33,44 @@ export async function getUserWordsData() {
       }
     });
 
-    // Remove duplicates
+    // הסר כפילויות
     for (const level of [2, 3, 4]) {
       wordIndicesByLevel[`level${level}`] = [...new Set(wordIndicesByLevel[`level${level}`])];
     }
 
-    // Get all unique indices
+    // קבל את כל האינדקסים הייחודיים
     const allIndices = [
       ...wordIndicesByLevel.level2,
       ...wordIndicesByLevel.level3,
       ...wordIndicesByLevel.level4
     ];
 
-    // Fetch words using your existing server component
-    const wordPromises = allIndices.map(async (index) => {
-      try {
-        const wordData = await getWordByIndex(index);
-        return { ...wordData, originalIndex: index };
-      } catch (error) {
-        console.error(`Error fetching word ${index}:`, error);
-        return null;
+    // 🔥 3️⃣ קבל את כל המילים בשאילתה אחת (במקום N שאילתות!)
+    const validWords = await getWordsByIndices(allIndices);
+
+    // 4️⃣ הוסף את ה-originalIndex לכל מילה
+    const indexToWordMap = {};
+    validWords.forEach(word => {
+      // מצא את האינדקס המקורי מה-_id
+      const idStr = word._id.toString();
+      const indexMatch = idStr.match(/(\d{4})$/);
+      if (indexMatch) {
+        word.originalIndex = parseInt(indexMatch[1]);
+        indexToWordMap[word.originalIndex] = word;
       }
     });
 
-    const wordResults = await Promise.all(wordPromises);
-    const validWords = wordResults.filter(word => word !== null);
-
-    // Process data for components
-    const baseWords = []; // המילים הבסיסיות בלבד
-    const inflections = []; // ההטיות בלבד
-    const combinedWords = []; // המילים הבסיסיות + ההטיות (לתאימות לאחור)
-    const challengingWordsByLevel = { // For ChallengingWords component
+    // 5️⃣ עבד על הנתונים
+    const baseWords = [];
+    const inflections = [];
+    const combinedWords = [];
+    const challengingWordsByLevel = {
       level2: [],
       level3: [],
       level4: []
     };
-    const wordTranslations = {}; // מפת תרגומים לפי מילה
+    const wordTranslations = {};
 
-    // Create a map of index to level for easy lookup
     const indexToLevel = {};
     userWords.forEach(item => {
       if (item.word_id && item.level >= 2 && item.level <= 4) {
@@ -77,48 +78,41 @@ export async function getUserWordsData() {
       }
     });
 
-    // Process each word
     validWords.forEach(wordData => {
       const level = indexToLevel[wordData.originalIndex];
       
-      // Add to challenging words by level (base word only)
       if (level && wordData.word) {
         challengingWordsByLevel[`level${level}`].push(wordData.word);
-        // שמירת התרגום במפה נפרדת
         if (wordData.tr) {
           wordTranslations[wordData.word] = wordData.tr;
         }
       }
       
-      // Add base word
       if (wordData.word) {
         baseWords.push(wordData.word);
-        combinedWords.push(wordData.word); // לתאימות לאחור
+        combinedWords.push(wordData.word);
       }
       
-      // Add inflections
       if (wordData.inf && Array.isArray(wordData.inf)) {
         inflections.push(...wordData.inf);
-        combinedWords.push(...wordData.inf); // לתאימות לאחור
+        combinedWords.push(...wordData.inf);
       }
     });
 
-    // Remove duplicates
     const uniqueBaseWords = [...new Set(baseWords)];
     const uniqueInflections = [...new Set(inflections)];
     const uniqueCombinedWords = [...new Set(combinedWords)];
 
-    // Remove duplicates from challenging words by level
     for (const level of [2, 3, 4]) {
       challengingWordsByLevel[`level${level}`] = [...new Set(challengingWordsByLevel[`level${level}`])];
     }
 
     return {
-      words: uniqueBaseWords, // המילים הבסיסיות
-      inflections: uniqueInflections, // ההטיות
-      allWords: uniqueCombinedWords, // לתאימות לאחור - כל המילים ביחד
+      words: uniqueBaseWords,
+      inflections: uniqueInflections,
+      allWords: uniqueCombinedWords,
       challengingWords: challengingWordsByLevel,
-      wordTranslations, // מפת תרגומים
+      wordTranslations,
       stats: {
         level2: challengingWordsByLevel.level2.length,
         level3: challengingWordsByLevel.level3.length,

@@ -1,3 +1,5 @@
+// lib/db/getWordByIndex.js - גרסה מהירה
+
 import { connectToDatabase } from './mongodb';
 import { ObjectId } from 'mongodb';
 
@@ -14,47 +16,99 @@ function createCustomObjectId(index) {
   return `f6dabc96ddf6dabc96dd${index.toString().padStart(4, '0')}`;
 }
 
-export async function getWordByIndex(index) {
+// 🔥 פונקציה חדשה - קבל הרבה מילים בבת אחת!
+export async function getWordsByIndices(indices) {
   const { db } = await connectToDatabase();
-
-  const category = getCategoryByIndex(index);
-  if (!category) throw new Error('Invalid index');
-
-  const customId = new ObjectId(createCustomObjectId(index));
-  const collection = db.collection(category);
-
-  const wordData = await collection.findOne({ _id: customId });
-  if (!wordData) throw new Error('Word not found');
-
-  const wordForms = [wordData.word, ...(wordData.inf || [])];
-  wordData.wordForms = wordForms;
-
-  const categories = ['300', '600', '900', '1200', '1500'];
-
-  async function loadRelatedWords(ids) {
-    const results = [];
-
-    for (const id of ids || []) {
-      for (const cat of categories) {
-        const word = await db.collection(cat).findOne({ _id: new ObjectId(id) });
-        if (word) {
-          results.push({
-            word: word.word,
-            translation: word.tr,
-            index: word.index,
-          });
-          break;
-        }
-      }
+  
+  // ארגן לפי קטגוריות
+  const indicesByCategory = {
+    '300': [],
+    '600': [],
+    '900': [],
+    '1200': [],
+    '1500': []
+  };
+  
+  indices.forEach(index => {
+    const category = getCategoryByIndex(index);
+    if (category) {
+      indicesByCategory[category].push(index);
     }
-
-    return results;
+  });
+  
+  // קבל את כל המילים בשאילתה אחת לכל קטגוריה
+  const allWords = [];
+  
+  for (const [category, categoryIndices] of Object.entries(indicesByCategory)) {
+    if (categoryIndices.length === 0) continue;
+    
+    const objectIds = categoryIndices.map(idx => 
+      new ObjectId(createCustomObjectId(idx))
+    );
+    
+    const collection = db.collection(category);
+    const words = await collection.find({ _id: { $in: objectIds } }).toArray();
+    
+    words.forEach(word => {
+      word.category = category;
+      word.wordForms = [word.word, ...(word.inf || [])];
+    });
+    
+    allWords.push(...words);
   }
+  
+  // אסוף את כל ה-synonyms וה-confused IDs
+  const allRelatedIds = new Set();
+  allWords.forEach(word => {
+    (word.syn || []).forEach(id => allRelatedIds.add(id));
+    (word.con || []).forEach(id => allRelatedIds.add(id));
+  });
+  
+  // טען את כל המילים הקשורות בשאילתה אחת
+  const relatedWordsMap = {};
+  
+  if (allRelatedIds.size > 0) {
+    const categories = ['300', '600', '900', '1200', '1500'];
+    const relatedObjectIds = Array.from(allRelatedIds).map(id => new ObjectId(id));
+    
+    for (const cat of categories) {
+      const relatedWords = await db.collection(cat).find({
+        _id: { $in: relatedObjectIds }
+      }).toArray();
+      
+      relatedWords.forEach(word => {
+        relatedWordsMap[word._id.toString()] = {
+          word: word.word,
+          translation: word.tr,
+          index: word.index
+        };
+      });
+    }
+  }
+  
+  // הוסף synonyms ו-confused לכל מילה
+  allWords.forEach(word => {
+    word.synonyms = (word.syn || [])
+      .map(id => relatedWordsMap[id])
+      .filter(Boolean);
+    
+    word.confused = (word.con || [])
+      .map(id => relatedWordsMap[id])
+      .filter(Boolean);
+  });
+  
+  return allWords;
+}
 
-  wordData.synonyms = await loadRelatedWords(wordData.syn);
-  wordData.confused = await loadRelatedWords(wordData.con);
-  wordData.category = category;
+// הפונקציה המקורית - נשאר לתאימות לאחור
+export async function getWordByIndex(index) {
+  const words = await getWordsByIndices([index]);
+  if (words.length === 0) throw new Error('Word not found');
+  
+  const wordData = words[0];
+  const { db } = await connectToDatabase();
+  const collection = db.collection(wordData.category);
   wordData.categorySize = await collection.countDocuments();
-
+  
   return wordData;
 }
